@@ -2,6 +2,7 @@ package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
 import com.nikkin.devicesdb.Services.SolidStateDriveService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/flash")
+@RequestMapping("api/ssd")
 public class SolidStateDriveController {
     private final SolidStateDriveService ssdService;
 
@@ -48,5 +49,11 @@ public class SolidStateDriveController {
     public ResponseEntity<SolidStateDriveDto> replaceSolidStateDrive(@PathVariable Long id, @RequestBody SolidStateDriveDto ssdDto) {
         SolidStateDriveDto updatedSsdDto = ssdService.update(id, ssdDto);
         return new ResponseEntity<SolidStateDriveDto>(updatedSsdDto, HttpStatus.OK);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(EntityNotFoundException.class)
+    public String handleException(EntityNotFoundException exception) {
+        return exception.getMessage();
     }
 }

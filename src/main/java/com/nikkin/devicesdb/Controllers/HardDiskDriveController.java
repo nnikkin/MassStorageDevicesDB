@@ -2,6 +2,7 @@ package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
 import com.nikkin.devicesdb.Services.HardDiskDriveService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/flash")
+@RequestMapping("api/hdd")
 public class HardDiskDriveController {
     private final HardDiskDriveService hddService;
 
@@ -48,5 +49,11 @@ public class HardDiskDriveController {
     public ResponseEntity<HardDiskDriveDto> replaceHardDiskDrive(@PathVariable Long id, @RequestBody HardDiskDriveDto hddDto) {
         HardDiskDriveDto updatedHddDto = hddService.update(id, hddDto);
         return new ResponseEntity<HardDiskDriveDto>(updatedHddDto, HttpStatus.OK);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(EntityNotFoundException.class)
+    public String handleException(EntityNotFoundException exception) {
+        return exception.getMessage();
     }
 }

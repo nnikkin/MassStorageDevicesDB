@@ -2,6 +2,7 @@ package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Services.FlashDriveService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,5 +49,11 @@ public class FlashDriveController {
     public ResponseEntity<FlashDriveDto> replaceFlashDrive(@PathVariable Long id, @RequestBody FlashDriveDto flashDriveDto) {
         FlashDriveDto updatedFlashDriveDto = flashDriveService.update(id, flashDriveDto);
         return new ResponseEntity<FlashDriveDto>(updatedFlashDriveDto, HttpStatus.OK);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ResponseStatusException.class)
+    public String handleException(ResponseStatusException exception) {
+        return exception.getMessage();
     }
 }

@@ -2,6 +2,7 @@ package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
 import com.nikkin.devicesdb.Services.RandomAccessMemoryService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/flash")
+@RequestMapping("api/ram")
 public class RandomAccessMemoryController {
     private final RandomAccessMemoryService ramService;
 
@@ -48,5 +49,11 @@ public class RandomAccessMemoryController {
     public ResponseEntity<RandomAccessMemoryDto> replaceRandomAccessMemory(@PathVariable Long id, @RequestBody RandomAccessMemoryDto ramDto) {
         RandomAccessMemoryDto updatedRamDto = ramService.update(id, ramDto);
         return new ResponseEntity<RandomAccessMemoryDto>(updatedRamDto, HttpStatus.OK);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(EntityNotFoundException.class)
+    public String handleException(EntityNotFoundException exception) {
+        return exception.getMessage();
     }
 }

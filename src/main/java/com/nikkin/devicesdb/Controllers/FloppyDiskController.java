@@ -2,6 +2,7 @@ package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.FloppyDiskDto;
 import com.nikkin.devicesdb.Services.FloppyDiskService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/flash")
+@RequestMapping("api/floppy")
 public class FloppyDiskController {
     private final FloppyDiskService floppyDiskService;
 
@@ -48,5 +49,11 @@ public class FloppyDiskController {
     public ResponseEntity<FloppyDiskDto> replaceFloppyDisk(@PathVariable Long id, @RequestBody FloppyDiskDto floppyDiskDto) {
         FloppyDiskDto updatedFloppyDiskDto = floppyDiskService.update(id, floppyDiskDto);
         return new ResponseEntity<FloppyDiskDto>(updatedFloppyDiskDto, HttpStatus.OK);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(EntityNotFoundException.class)
+    public String handleException(EntityNotFoundException exception) {
+        return exception.getMessage();
     }
 }
