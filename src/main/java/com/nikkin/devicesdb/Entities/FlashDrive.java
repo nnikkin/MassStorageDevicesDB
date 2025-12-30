@@ -8,7 +8,6 @@ public class FlashDrive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
     private String name;
 
     @Column(nullable = false)
@@ -16,13 +15,14 @@ public class FlashDrive {
 
     private String usbType;         // 1.0, 2.0, 3.0...
 
-    @Positive
+    @Column(nullable = false)
+    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
     private float capacity;
 
-    @Positive
+    @Positive(message = "Скорость записи не может быть отрицательной либо равной нулю")
     private float writeSpeed;
 
-    @Positive
+    @Positive(message = "Скорость чтения не может быть отрицательной либо равной нулю")
     private float readSpeed;
 
     public Long getId() {

@@ -10,7 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/FlashDrives")
+@RequestMapping("api/flash")
 public class FlashDriveController {
     private final FlashDriveService flashDriveService;
 
@@ -26,13 +26,13 @@ public class FlashDriveController {
 
     @GetMapping
     public ResponseEntity<List<FlashDriveDto>> getAllFlashDrives() {
-        List<FlashDriveDto> allFlashDriveDtos = flashDriveService.getAllFlashDrives();
+        List<FlashDriveDto> allFlashDriveDtos = flashDriveService.getAll();
         return new ResponseEntity<List<FlashDriveDto>>(allFlashDriveDtos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FlashDriveDto> getFlashDriveById(@PathVariable Long id) {
-        FlashDriveDto flashDriveDto = flashDriveService.getFlashDriveById(id).orElseThrow(
+        FlashDriveDto flashDriveDto = flashDriveService.getById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         return new ResponseEntity<FlashDriveDto>(flashDriveDto, HttpStatus.OK);
@@ -40,13 +40,13 @@ public class FlashDriveController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<FlashDriveDto> deleteFlashDrive(@PathVariable Long id) {
-        FlashDriveDto deleted = flashDriveService.deleteFlashDrive(id);
+        FlashDriveDto deleted = flashDriveService.delete(id);
         return ResponseEntity.ok(deleted); // 200 OK с телом
     }
 
     @PutMapping("/{id}")
-    public void replaceFlashDrive() {}
-
-    @PatchMapping("/{id}")
-    public void updateFlashDrive() {}
+    public ResponseEntity<FlashDriveDto> replaceFlashDrive(@PathVariable Long id, @RequestBody FlashDriveDto flashDriveDto) {
+        FlashDriveDto updatedFlashDriveDto = flashDriveService.update(id, flashDriveDto);
+        return new ResponseEntity<FlashDriveDto>(updatedFlashDriveDto, HttpStatus.OK);
+    }
 }

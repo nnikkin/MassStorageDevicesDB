@@ -1,0 +1,52 @@
+package com.nikkin.devicesdb.Controllers;
+
+import com.nikkin.devicesdb.Dto.FloppyDiskDto;
+import com.nikkin.devicesdb.Services.FloppyDiskService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("api/flash")
+public class FloppyDiskController {
+    private final FloppyDiskService floppyDiskService;
+
+    public FloppyDiskController(FloppyDiskService floppyDiskService) {
+        this.floppyDiskService = floppyDiskService;
+    }
+
+    @PostMapping
+    public ResponseEntity<FloppyDiskDto> addFloppyDisk(@RequestBody FloppyDiskDto floppyDiskDto) {
+        FloppyDiskDto createdFloppyDiskDto = floppyDiskService.add(floppyDiskDto);
+        return new ResponseEntity<FloppyDiskDto>(createdFloppyDiskDto, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<FloppyDiskDto>> getAllFloppyDisks() {
+        List<FloppyDiskDto> allFloppyDiskDtos = floppyDiskService.getAll();
+        return new ResponseEntity<List<FloppyDiskDto>>(allFloppyDiskDtos, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<FloppyDiskDto> getFloppyDiskById(@PathVariable Long id) {
+        FloppyDiskDto floppyDiskDto = floppyDiskService.getById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        return new ResponseEntity<FloppyDiskDto>(floppyDiskDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<FloppyDiskDto> deleteFloppyDisk(@PathVariable Long id) {
+        FloppyDiskDto deleted = floppyDiskService.delete(id);
+        return ResponseEntity.ok(deleted); // 200 OK с телом
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<FloppyDiskDto> replaceFloppyDisk(@PathVariable Long id, @RequestBody FloppyDiskDto floppyDiskDto) {
+        FloppyDiskDto updatedFloppyDiskDto = floppyDiskService.update(id, floppyDiskDto);
+        return new ResponseEntity<FloppyDiskDto>(updatedFloppyDiskDto, HttpStatus.OK);
+    }
+}

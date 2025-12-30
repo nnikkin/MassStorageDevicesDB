@@ -25,7 +25,7 @@ public class FlashDriveService {
         return mapToDto(saved);
     }
 
-    public List<FlashDriveDto> getAllFlashDrives() {
+    public List<FlashDriveDto> getAll() {
         List<FlashDrive> allEntities = (List<FlashDrive>) flashDriveRepository.findAll();
         List<FlashDriveDto> allDtos = new ArrayList<>();
 
@@ -35,12 +35,12 @@ public class FlashDriveService {
         return allDtos;
     }
 
-    public Optional<FlashDriveDto> getFlashDriveById(Long id) {
+    public Optional<FlashDriveDto> getById(Long id) {
         return flashDriveRepository.findById(id)
                 .map(this::mapToDto);
     }
 
-    public FlashDriveDto deleteFlashDrive(Long id) {
+    public FlashDriveDto delete(Long id) {
         FlashDrive entity = flashDriveRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
@@ -48,6 +48,15 @@ public class FlashDriveService {
         flashDriveRepository.deleteById(id);
 
         return dto;
+    }
+
+    public FlashDriveDto update(Long id, FlashDriveDto new_dto) {
+        FlashDrive old_entity = flashDriveRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
+        FlashDrive new_entity = mapToEntity(new_dto);
+        flashDriveRepository.save(new_entity);
+
+        return new_dto;
     }
 
     public Optional<FlashDriveDto> getFlashDriveByName(String name) {
