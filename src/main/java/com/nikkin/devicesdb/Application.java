@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 @RestController
-@PWA(name = "База данных запоминающих устройств", shortName = "MassStorageDevices")
+@PWA(name = "Mass Storage Devices Databases App", shortName = "MassStorageDevices")
 @Theme("my-theme")
 public class Application implements AppShellConfigurator {
 

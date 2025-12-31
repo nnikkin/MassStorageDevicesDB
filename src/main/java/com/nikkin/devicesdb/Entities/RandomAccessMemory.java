@@ -1,7 +1,10 @@
 package com.nikkin.devicesdb.Entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class RandomAccessMemory {
@@ -9,27 +12,31 @@ public class RandomAccessMemory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max=30)
     private String model;
 
+    @Size(max=30)
     private String manufacturer;
 
-    @Column(nullable = false)
+    @Size(max=10)
     private String type;            // DDR3, DDR4, DDR5...
 
-    @Column(nullable = false)
+    @Size(max=10)
     private String moduleType;      // DIMM/SO-DIMM
 
-    @Column(nullable = false)
-    @Positive(message = "Должен быть > 0")
-    private float capacity;
+    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
+    private Float capacity;
 
-    @Positive(message = "Должен быть > 0")
-    private float frequencyMhz;
+    @Nullable
+    @Positive(message = "Частота не может быть отрицательным либо равным нулю")
+    private Float frequencyMhz;
 
-    @Positive(message = "Должен быть > 0")
-    private float casLatency;
+    @Nullable
+    @Positive(message = "Задержка не может быть отрицательным либо равным нулю")
+    private Float casLatency;
 
-    private boolean supportsEcc;
+    @NotNull
+    private Boolean supportsEcc;
 
     public Long getId() {
         return id;
@@ -71,27 +78,27 @@ public class RandomAccessMemory {
         this.moduleType = moduleType;
     }
 
-    public float getCapacity() {
+    public Float getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(float capacity) {
+    public void setCapacity(Float capacity) {
         this.capacity = capacity;
     }
 
-    public float getFrequencyMhz() {
+    public Float getFrequencyMhz() {
         return frequencyMhz;
     }
 
-    public void setFrequencyMhz(float frequencyMhz) {
+    public void setFrequencyMhz(Float frequencyMhz) {
         this.frequencyMhz = frequencyMhz;
     }
 
-    public float getCasLatency() {
+    public Float getCasLatency() {
         return casLatency;
     }
 
-    public void setCasLatency(float casLatency) {
+    public void setCasLatency(Float casLatency) {
         this.casLatency = casLatency;
     }
 

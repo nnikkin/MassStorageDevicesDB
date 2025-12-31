@@ -3,6 +3,7 @@ package com.nikkin.devicesdb.Controllers;
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
 import com.nikkin.devicesdb.Services.HardDiskDriveService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class HardDiskDriveController {
     }
 
     @PostMapping
-    public ResponseEntity<HardDiskDriveDto> addHardDiskDrive(@RequestBody HardDiskDriveDto hddDto) {
+    public ResponseEntity<HardDiskDriveDto> addHardDiskDrive(@RequestBody @Valid HardDiskDriveDto hddDto) {
         HardDiskDriveDto createdHddDto = hddService.add(hddDto);
         return new ResponseEntity<HardDiskDriveDto>(createdHddDto, HttpStatus.OK);
     }
@@ -46,7 +47,7 @@ public class HardDiskDriveController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HardDiskDriveDto> replaceHardDiskDrive(@PathVariable Long id, @RequestBody HardDiskDriveDto hddDto) {
+    public ResponseEntity<HardDiskDriveDto> replaceHardDiskDrive(@PathVariable Long id, @RequestBody @Valid HardDiskDriveDto hddDto) {
         HardDiskDriveDto updatedHddDto = hddService.update(id, hddDto);
         return new ResponseEntity<HardDiskDriveDto>(updatedHddDto, HttpStatus.OK);
     }

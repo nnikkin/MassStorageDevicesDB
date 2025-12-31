@@ -5,6 +5,7 @@ import com.nikkin.devicesdb.Entities.FlashDrive;
 import com.nikkin.devicesdb.Repos.FlashDriveRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Validated
 public class FlashDriveService {
     private final FlashDriveRepository flashDriveRepository;
 
@@ -53,10 +55,16 @@ public class FlashDriveService {
     public FlashDriveDto update(Long id, FlashDriveDto new_dto) {
         FlashDrive old_entity = flashDriveRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-        FlashDrive new_entity = mapToEntity(new_dto);
-        flashDriveRepository.save(new_entity);
 
-        return new_dto;
+        old_entity.setName(new_dto.name());
+        old_entity.setUsbInterface(new_dto.usbInterface());
+        old_entity.setUsbType(new_dto.usbType());
+        old_entity.setCapacity(new_dto.capacity());
+        old_entity.setWriteSpeed(new_dto.writeSpeed());
+        old_entity.setReadSpeed(new_dto.readSpeed());
+
+        FlashDrive updated = flashDriveRepository.save(old_entity);
+        return mapToDto(updated);
     }
 
     public Optional<FlashDriveDto> getFlashDriveByName(String name) {

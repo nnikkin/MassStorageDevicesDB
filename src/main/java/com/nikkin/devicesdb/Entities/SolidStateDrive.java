@@ -1,7 +1,9 @@
 package com.nikkin.devicesdb.Entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class SolidStateDrive {
@@ -9,28 +11,33 @@ public class SolidStateDrive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max=30)
     private String name;
 
-    @Column(nullable = false)
+    @Size(min=1, max=10)
     private String driveInterface;       // SATA...
-
-    @Column(nullable = false)
-    @Positive
-    private float capacity;
-
+    
+    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
+    private Float capacity;
+    
+    @Size(max=10)
     private String nandType;        // SLC, MLC, TLC...
 
-    @Positive
-    private int tbwTb;
+    @Nullable
+    @Positive(message = "tbw не может быть отрицательным либо равным нулю")
+    private Integer tbwTb;
 
-    @Positive
-    private float writeSpeed;       // Kb/s
+    @Nullable
+    @Positive(message = "Скорость чтения не может быть отрицательным либо равным нулю")
+    private Float writeSpeed;       // Kb/s
 
-    @Positive
-    private float readSpeed;
+    @Nullable
+    @Positive(message = "Скорость записи не может быть отрицательным либо равным нулю")
+    private Float readSpeed;
 
-    @Positive
-    private float powerConsumption;
+    @Nullable
+    @Positive(message = "Значение энергопотребления не может быть отрицательным либо равным нулю")
+    private Float powerConsumption;
 
     public Long getId() {
         return id;
@@ -56,11 +63,11 @@ public class SolidStateDrive {
         this.driveInterface = driveInterface;
     }
 
-    public float getCapacity() {
+    public Float getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(float capacity) {
+    public void setCapacity(Float capacity) {
         this.capacity = capacity;
     }
 
@@ -72,35 +79,35 @@ public class SolidStateDrive {
         this.nandType = nandType;
     }
 
-    public int getTbwTb() {
+    public Integer getTbwTb() {
         return tbwTb;
     }
 
-    public void setTbwTb(int tbwTb) {
+    public void setTbwTb(Integer tbwTb) {
         this.tbwTb = tbwTb;
     }
 
-    public float getWriteSpeed() {
+    public Float getWriteSpeed() {
         return writeSpeed;
     }
 
-    public void setWriteSpeed(float writeSpeed) {
+    public void setWriteSpeed(Float writeSpeed) {
         this.writeSpeed = writeSpeed;
     }
 
-    public float getReadSpeed() {
+    public Float getReadSpeed() {
         return readSpeed;
     }
 
-    public void setReadSpeed(float readSpeed) {
+    public void setReadSpeed(Float readSpeed) {
         this.readSpeed = readSpeed;
     }
 
-    public float getPowerConsumption() {
+    public Float getPowerConsumption() {
         return powerConsumption;
     }
 
-    public void setPowerConsumption(float powerConsumption) {
+    public void setPowerConsumption(Float powerConsumption) {
         this.powerConsumption = powerConsumption;
     }
 }

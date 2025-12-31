@@ -1,4 +1,5 @@
 package com.nikkin.devicesdb.Entities;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -8,22 +9,25 @@ public class FlashDrive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max = 30)
     private String name;
 
-    @Column(nullable = false)
+    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
+    private Float capacity;
+
+    @Size(max = 10)
     private String usbInterface;    // Type-A, Type-C...
 
+    @Size(max = 10)
     private String usbType;         // 1.0, 2.0, 3.0...
 
-    @Column(nullable = false)
-    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
-    private float capacity;
-
     @Positive(message = "Скорость записи не может быть отрицательной либо равной нулю")
-    private float writeSpeed;
+    @Nullable
+    private Float writeSpeed;
 
     @Positive(message = "Скорость чтения не может быть отрицательной либо равной нулю")
-    private float readSpeed;
+    @Nullable
+    private Float readSpeed;
 
     public Long getId() {
         return id;
@@ -57,27 +61,27 @@ public class FlashDrive {
         this.usbType = usbType;
     }
 
-    public float getCapacity() {
+    public Float getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(float capacity) {
+    public void setCapacity(Float capacity) {
         this.capacity = capacity;
     }
 
-    public float getWriteSpeed() {
+    public Float getWriteSpeed() {
         return writeSpeed;
     }
 
-    public void setWriteSpeed(float writeSpeed) {
+    public void setWriteSpeed(Float writeSpeed) {
         this.writeSpeed = writeSpeed;
     }
 
-    public float getReadSpeed() {
+    public Float getReadSpeed() {
         return readSpeed;
     }
 
-    public void setReadSpeed(float readSpeed) {
+    public void setReadSpeed(Float readSpeed) {
         this.readSpeed = readSpeed;
     }
 }

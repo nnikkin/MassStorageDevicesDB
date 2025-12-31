@@ -1,7 +1,10 @@
 package com.nikkin.devicesdb.Entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class HardDiskDrive {
@@ -9,27 +12,31 @@ public class HardDiskDrive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max=30)
     private String name;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(min=1,max=10)
     private String driveInterface;       // SATA...
 
-    @Column(nullable = false)
     @Positive(message = "Объём не может быть отрицательным либо равным нулю")
-    private float capacity;
+    private Float capacity;
 
-    @Column(nullable = false)
+    @Nullable
     @Positive(message = "Формат не может быть отрицательным либо равным нулю")
-    private float format;           // 3.5", 2.5"
+    private Float format;           // 3.5", 2.5"
 
+    @Nullable
     @Positive(message = "RPM не может быть отрицательным либо равным нулю")
-    private int rpm;                // 5400, 7200...
+    private Integer rpm;                // 5400, 7200...
 
+    @Nullable
     @Positive(message = "Объём кэша не может быть отрицательным либо равным нулю")
-    private int cache;
+    private Integer cache;
 
+    @Nullable
     @Positive(message = "Энергопотребление не может быть отрицательным либо равным нулю")
-    private float powerConsumption;
+    private Float powerConsumption;
 
     public Long getId() {
         return id;
@@ -55,43 +62,43 @@ public class HardDiskDrive {
         this.driveInterface = driveInterface;
     }
 
-    public float getCapacity() {
+    public Float getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(float capacity) {
+    public void setCapacity(Float capacity) {
         this.capacity = capacity;
     }
 
-    public float getFormat() {
+    public Float getFormat() {
         return format;
     }
 
-    public void setFormat(float format) {
+    public void setFormat(Float format) {
         this.format = format;
     }
 
-    public int getRpm() {
+    public Integer getRpm() {
         return rpm;
     }
 
-    public void setRpm(int rpm) {
+    public void setRpm(Integer rpm) {
         this.rpm = rpm;
     }
 
-    public int getCache() {
+    public Integer getCache() {
         return cache;
     }
 
-    public void setCache(int cache) {
+    public void setCache(Integer cache) {
         this.cache = cache;
     }
 
-    public float getPowerConsumption() {
+    public Float getPowerConsumption() {
         return powerConsumption;
     }
 
-    public void setPowerConsumption(float powerConsumption) {
+    public void setPowerConsumption(Float powerConsumption) {
         this.powerConsumption = powerConsumption;
     }
 }

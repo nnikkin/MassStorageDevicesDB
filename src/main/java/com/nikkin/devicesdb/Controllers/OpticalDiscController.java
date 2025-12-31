@@ -3,6 +3,7 @@ package com.nikkin.devicesdb.Controllers;
 import com.nikkin.devicesdb.Dto.OpticalDiscDto;
 import com.nikkin.devicesdb.Services.OpticalDiscService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class OpticalDiscController {
     }
 
     @PostMapping
-    public ResponseEntity<OpticalDiscDto> addOpticalDisc(@RequestBody OpticalDiscDto opticalDiscDto) {
+    public ResponseEntity<OpticalDiscDto> addOpticalDisc(@RequestBody @Valid OpticalDiscDto opticalDiscDto) {
         OpticalDiscDto createdOpticalDiscDto = opticalDiscService.add(opticalDiscDto);
         return new ResponseEntity<OpticalDiscDto>(createdOpticalDiscDto, HttpStatus.OK);
     }
@@ -46,7 +47,7 @@ public class OpticalDiscController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OpticalDiscDto> replaceOpticalDisc(@PathVariable Long id, @RequestBody OpticalDiscDto opticalDiscDto) {
+    public ResponseEntity<OpticalDiscDto> replaceOpticalDisc(@PathVariable Long id, @RequestBody @Valid OpticalDiscDto opticalDiscDto) {
         OpticalDiscDto updatedOpticalDiscDto = opticalDiscService.update(id, opticalDiscDto);
         return new ResponseEntity<OpticalDiscDto>(updatedOpticalDiscDto, HttpStatus.OK);
     }

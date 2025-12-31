@@ -1,7 +1,9 @@
 package com.nikkin.devicesdb.Entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class FloppyDisk {
@@ -9,15 +11,17 @@ public class FloppyDisk {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Size(max=30)
     private String name;
 
-    @Column(nullable = false)
     @Positive(message = "Объём не может быть отрицательным либо равным нулю")
-    private float capacity;
+    private Float capacity;
 
+    @Nullable
     @Positive(message = "Формат не может быть отрицательным либо равным нулю")
-    private float format;       // 8-inch, 5-inch, 3.5-inch...
+    private Float format;       // 8-inch, 5-inch, 3.5-inch...
 
+    @Size(max=1)
     private char diskDensity;   // SD, DD, QD, HD...
 
     public Long getId() {
@@ -36,19 +40,19 @@ public class FloppyDisk {
         this.name = name;
     }
 
-    public float getCapacity() {
+    public Float getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(float capacity) {
+    public void setCapacity(Float capacity) {
         this.capacity = capacity;
     }
 
-    public float getFormat() {
+    public Float getFormat() {
         return format;
     }
 
-    public void setFormat(float format) {
+    public void setFormat(Float format) {
         this.format = format;
     }
 

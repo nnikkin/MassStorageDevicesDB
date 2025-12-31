@@ -3,8 +3,10 @@ package com.nikkin.devicesdb.Controllers;
 import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Services.FlashDriveService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -12,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/flash")
+@Validated
 public class FlashDriveController {
     private final FlashDriveService flashDriveService;
 
@@ -20,23 +23,23 @@ public class FlashDriveController {
     }
 
     @PostMapping
-    public ResponseEntity<FlashDriveDto> addFlashDrive(@RequestBody FlashDriveDto flashDriveDto) {
+    public ResponseEntity<FlashDriveDto> addFlashDrive(@RequestBody @Valid FlashDriveDto flashDriveDto) {
         FlashDriveDto createdFlashDriveDto = flashDriveService.add(flashDriveDto);
-        return new ResponseEntity<FlashDriveDto>(createdFlashDriveDto, HttpStatus.OK);
+        return new ResponseEntity<FlashDriveDto>(createdFlashDriveDto, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<FlashDriveDto>> getAllFlashDrives() {
         List<FlashDriveDto> allFlashDriveDtos = flashDriveService.getAll();
-        return new ResponseEntity<List<FlashDriveDto>>(allFlashDriveDtos, HttpStatus.OK);
+        return ResponseEntity.ok(allFlashDriveDtos);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FlashDriveDto> getFlashDriveById(@PathVariable Long id) {
-        FlashDriveDto flashDriveDto = flashDriveService.getById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
-        );
-        return new ResponseEntity<FlashDriveDto>(flashDriveDto, HttpStatus.OK);
+        FlashDriveDto flashDriveDto = flashDriveService.getById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
+
+        return ResponseEntity.ok(flashDriveDto);
     }
 
     @DeleteMapping("/{id}")
@@ -46,14 +49,8 @@ public class FlashDriveController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FlashDriveDto> replaceFlashDrive(@PathVariable Long id, @RequestBody FlashDriveDto flashDriveDto) {
+    public ResponseEntity<FlashDriveDto> replaceFlashDrive(@PathVariable Long id, @RequestBody @Valid FlashDriveDto flashDriveDto) {
         FlashDriveDto updatedFlashDriveDto = flashDriveService.update(id, flashDriveDto);
-        return new ResponseEntity<FlashDriveDto>(updatedFlashDriveDto, HttpStatus.OK);
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(ResponseStatusException.class)
-    public String handleException(ResponseStatusException exception) {
-        return exception.getMessage();
+        return ResponseEntity.ok(updatedFlashDriveDto);
     }
 }

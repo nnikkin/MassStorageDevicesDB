@@ -3,6 +3,7 @@ package com.nikkin.devicesdb.Controllers;
 import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
 import com.nikkin.devicesdb.Services.SolidStateDriveService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class SolidStateDriveController {
     }
 
     @PostMapping
-    public ResponseEntity<SolidStateDriveDto> addSolidStateDrive(@RequestBody SolidStateDriveDto ssdDto) {
+    public ResponseEntity<SolidStateDriveDto> addSolidStateDrive(@RequestBody @Valid SolidStateDriveDto ssdDto) {
         SolidStateDriveDto createdSsdDto = ssdService.add(ssdDto);
         return new ResponseEntity<SolidStateDriveDto>(createdSsdDto, HttpStatus.OK);
     }
@@ -46,7 +47,7 @@ public class SolidStateDriveController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SolidStateDriveDto> replaceSolidStateDrive(@PathVariable Long id, @RequestBody SolidStateDriveDto ssdDto) {
+    public ResponseEntity<SolidStateDriveDto> replaceSolidStateDrive(@PathVariable Long id, @RequestBody @Valid SolidStateDriveDto ssdDto) {
         SolidStateDriveDto updatedSsdDto = ssdService.update(id, ssdDto);
         return new ResponseEntity<SolidStateDriveDto>(updatedSsdDto, HttpStatus.OK);
     }
