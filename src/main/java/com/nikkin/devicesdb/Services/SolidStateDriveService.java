@@ -60,12 +60,25 @@ public class SolidStateDriveService {
 
     // Мапперы
     private SolidStateDriveDto mapToDto(SolidStateDrive entity) {
+        /*
+            public SolidStateDriveDto(
+                String name,
+                @NotBlank String driveInterface,
+                @Positive Float capacity,
+                String nandType,
+                @Positive Integer tbw,
+                @Positive Float writeSpeed,
+                @Positive Float readSpeed,
+                @Positive Float powerConsumption
+            )
+        */
+
         return new SolidStateDriveDto(
             entity.getName(),
             entity.getDriveInterface(),
             entity.getCapacity(),
             entity.getNandType(),
-            entity.getTbwTb(),
+            entity.getTbw(),
             entity.getWriteSpeed(),
             entity.getReadSpeed(),
             entity.getPowerConsumption()
@@ -79,7 +92,7 @@ public class SolidStateDriveService {
         entity.setDriveInterface(entity.getDriveInterface());
         entity.setCapacity(entity.getCapacity());
         entity.setNandType(entity.getNandType());
-        entity.setTbwTb(entity.getTbwTb());
+        entity.setTbw(entity.getTbw());
         entity.setWriteSpeed(entity.getWriteSpeed());
         entity.setReadSpeed(entity.getReadSpeed());
         entity.setPowerConsumption(entity.getPowerConsumption());

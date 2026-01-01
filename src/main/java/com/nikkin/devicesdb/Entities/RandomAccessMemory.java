@@ -13,6 +13,9 @@ public class RandomAccessMemory {
     private Long id;
 
     @Size(max=30)
+    private String name;
+
+    @Size(max=30)
     private String model;
 
     @Size(max=30)
@@ -28,11 +31,11 @@ public class RandomAccessMemory {
     private Float capacity;
 
     @Nullable
-    @Positive(message = "Частота не может быть отрицательным либо равным нулю")
+    @Positive(message = "Тактовая частота не может быть отрицательным либо равным нулю")
     private Float frequencyMhz;
 
     @Nullable
-    @Positive(message = "Задержка не может быть отрицательным либо равным нулю")
+    @Positive(message = "CAS-латентность не может быть отрицательным либо равным нулю")
     private Float casLatency;
 
     @NotNull
@@ -44,6 +47,14 @@ public class RandomAccessMemory {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getModel() {
@@ -86,19 +97,21 @@ public class RandomAccessMemory {
         this.capacity = capacity;
     }
 
+    @Nullable
     public Float getFrequencyMhz() {
         return frequencyMhz;
     }
 
-    public void setFrequencyMhz(Float frequencyMhz) {
+    public void setFrequencyMhz(@Nullable Float frequencyMhz) {
         this.frequencyMhz = frequencyMhz;
     }
 
+    @Nullable
     public Float getCasLatency() {
         return casLatency;
     }
 
-    public void setCasLatency(Float casLatency) {
+    public void setCasLatency(@Nullable Float casLatency) {
         this.casLatency = casLatency;
     }
 

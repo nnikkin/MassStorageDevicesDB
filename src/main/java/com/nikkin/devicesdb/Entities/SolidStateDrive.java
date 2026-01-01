@@ -24,8 +24,8 @@ public class SolidStateDrive {
     private String nandType;        // SLC, MLC, TLC...
 
     @Nullable
-    @Positive(message = "tbw не может быть отрицательным либо равным нулю")
-    private Integer tbwTb;
+    @Positive(message = "Максимальный ресурс записи не может быть отрицательным либо равным нулю")
+    private Integer tbw;
 
     @Nullable
     @Positive(message = "Скорость чтения не может быть отрицательным либо равным нулю")
@@ -79,35 +79,39 @@ public class SolidStateDrive {
         this.nandType = nandType;
     }
 
-    public Integer getTbwTb() {
-        return tbwTb;
+    @Nullable
+    public Integer getTbw() {
+        return tbw;
     }
 
-    public void setTbwTb(Integer tbwTb) {
-        this.tbwTb = tbwTb;
+    public void setTbw(@Nullable Integer tbw) {
+        this.tbw = tbw;
     }
 
+    @Nullable
     public Float getWriteSpeed() {
         return writeSpeed;
     }
 
-    public void setWriteSpeed(Float writeSpeed) {
+    public void setWriteSpeed(@Nullable Float writeSpeed) {
         this.writeSpeed = writeSpeed;
     }
 
+    @Nullable
     public Float getReadSpeed() {
         return readSpeed;
     }
 
-    public void setReadSpeed(Float readSpeed) {
+    public void setReadSpeed(@Nullable Float readSpeed) {
         this.readSpeed = readSpeed;
     }
 
+    @Nullable
     public Float getPowerConsumption() {
         return powerConsumption;
     }
 
-    public void setPowerConsumption(Float powerConsumption) {
+    public void setPowerConsumption(@Nullable Float powerConsumption) {
         this.powerConsumption = powerConsumption;
     }
 }

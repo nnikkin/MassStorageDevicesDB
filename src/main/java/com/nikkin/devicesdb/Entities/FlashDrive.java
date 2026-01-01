@@ -69,19 +69,21 @@ public class FlashDrive {
         this.capacity = capacity;
     }
 
+    @Nullable
     public Float getWriteSpeed() {
         return writeSpeed;
     }
 
-    public void setWriteSpeed(Float writeSpeed) {
+    public void setWriteSpeed(@Nullable Float writeSpeed) {
         this.writeSpeed = writeSpeed;
     }
 
+    @Nullable
     public Float getReadSpeed() {
         return readSpeed;
     }
 
-    public void setReadSpeed(Float readSpeed) {
+    public void setReadSpeed(@Nullable Float readSpeed) {
         this.readSpeed = readSpeed;
     }
 }

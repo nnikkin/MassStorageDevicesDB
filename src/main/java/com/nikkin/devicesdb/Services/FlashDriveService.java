@@ -104,6 +104,16 @@ public class FlashDriveService {
 
     // Мапперы
     private FlashDriveDto mapToDto(FlashDrive entity) {
+        /*
+            public FlashDriveDto(
+                String name,
+                String usbInterface,
+                String usbType,
+                @Positive Float capacity,
+                @Positive Float writeSpeed,
+                @Positive Float readSpeed
+            )
+         */
         return new FlashDriveDto(
                 entity.getName(),
                 entity.getUsbInterface(),

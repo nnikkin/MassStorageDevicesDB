@@ -70,35 +70,39 @@ public class HardDiskDrive {
         this.capacity = capacity;
     }
 
+    @Nullable
     public Float getFormat() {
         return format;
     }
 
-    public void setFormat(Float format) {
+    public void setFormat(@Nullable Float format) {
         this.format = format;
     }
 
+    @Nullable
     public Integer getRpm() {
         return rpm;
     }
 
-    public void setRpm(Integer rpm) {
+    public void setRpm(@Nullable Integer rpm) {
         this.rpm = rpm;
     }
 
+    @Nullable
     public Integer getCache() {
         return cache;
     }
 
-    public void setCache(Integer cache) {
+    public void setCache(@Nullable Integer cache) {
         this.cache = cache;
     }
 
+    @Nullable
     public Float getPowerConsumption() {
         return powerConsumption;
     }
 
-    public void setPowerConsumption(Float powerConsumption) {
+    public void setPowerConsumption(@Nullable Float powerConsumption) {
         this.powerConsumption = powerConsumption;
     }
 }

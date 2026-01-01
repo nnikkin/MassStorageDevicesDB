@@ -61,6 +61,15 @@ public class FloppyDiskService {
 
     // Мапперы
     private FloppyDiskDto mapToDto(FloppyDisk entity) {
+        /*
+        public FloppyDiskDto(
+            String name,
+            @Positive Float capacity,
+            @Positive Float format,
+            String diskDensity
+        )
+        */
+
         return new FloppyDiskDto(
                 entity.getName(),
                 entity.getCapacity(),

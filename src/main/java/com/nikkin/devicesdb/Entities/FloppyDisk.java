@@ -22,7 +22,7 @@ public class FloppyDisk {
     private Float format;       // 8-inch, 5-inch, 3.5-inch...
 
     @Size(max=1)
-    private char diskDensity;   // SD, DD, QD, HD...
+    private String diskDensity;   // SD, DD, QD, HD...
 
     public Long getId() {
         return id;
@@ -48,19 +48,20 @@ public class FloppyDisk {
         this.capacity = capacity;
     }
 
+    @Nullable
     public Float getFormat() {
         return format;
     }
 
-    public void setFormat(Float format) {
+    public void setFormat(@Nullable Float format) {
         this.format = format;
     }
 
-    public char getDiskDensity() {
+    public String getDiskDensity() {
         return diskDensity;
     }
 
-    public void setDiskDensity(char diskDensity) {
+    public void setDiskDensity(String diskDensity) {
         this.diskDensity = diskDensity;
     }
 }

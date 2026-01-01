@@ -48,11 +48,12 @@ public class OpticalDisc {
         this.name = name;
     }
 
+    @Nullable
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(@Nullable String type) {
         this.type = type;
     }
 
@@ -64,11 +65,12 @@ public class OpticalDisc {
         this.capacity = capacity;
     }
 
+    @Nullable
     public Integer getSpeedMultiplier() {
         return speedMultiplier;
     }
 
-    public void setSpeedMultiplier(Integer speedMultiplier) {
+    public void setSpeedMultiplier(@Nullable Integer speedMultiplier) {
         this.speedMultiplier = speedMultiplier;
     }
 
@@ -80,11 +82,12 @@ public class OpticalDisc {
         this.rewriteType = rewriteType;
     }
 
+    @Nullable
     public Integer getLayers() {
         return layers;
     }
 
-    public void setLayers(Integer layers) {
+    public void setLayers(@Nullable Integer layers) {
         this.layers = layers;
     }
 }

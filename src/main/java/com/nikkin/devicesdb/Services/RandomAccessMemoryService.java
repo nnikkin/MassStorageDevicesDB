@@ -61,6 +61,7 @@ public class RandomAccessMemoryService {
     // Мапперы
     private RandomAccessMemoryDto mapToDto(RandomAccessMemory entity) {
         return new RandomAccessMemoryDto(
+                entity.getName(),
                 entity.getModel(),
                 entity.getManufacturer(),
                 entity.getType(),
@@ -74,6 +75,8 @@ public class RandomAccessMemoryService {
 
     private RandomAccessMemory mapToEntity(RandomAccessMemoryDto dto) {
         RandomAccessMemory entity = new RandomAccessMemory();
+
+        entity.setName(dto.name());
         entity.setModel(dto.model());
         entity.setManufacturer(dto.manufacturer());
         entity.setModuleType(dto.moduleType());

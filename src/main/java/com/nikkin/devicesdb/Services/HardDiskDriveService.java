@@ -60,10 +60,21 @@ public class HardDiskDriveService {
 
     // Мапперы
     private HardDiskDriveDto mapToDto(HardDiskDrive entity) {
+        /*
+            public HardDiskDriveDto(
+                @NotBlank String name,
+                @Positive Float capacity,
+                @NotBlank String driveInterface,
+                @Positive Float format,
+                @Positive Integer rpm,
+                @Positive Integer cache,
+                @Positive Float powerConsumption
+            )
+        */
         return new HardDiskDriveDto(
                 entity.getName(),
-                entity.getDriveInterface(),
                 entity.getCapacity(),
+                entity.getDriveInterface(),
                 entity.getFormat(),
                 entity.getRpm(),
                 entity.getCache(),
@@ -80,6 +91,7 @@ public class HardDiskDriveService {
         entity.setRpm(dto.rpm());
         entity.setCache(dto.cache());
         entity.setPowerConsumption(dto.powerConsumption());
+
         return entity;
     }
 }

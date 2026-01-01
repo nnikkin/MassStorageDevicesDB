@@ -60,6 +60,17 @@ public class OpticalDiscService {
 
     // Мапперы
     private OpticalDiscDto mapToDto(OpticalDisc entity) {
+        /*
+            public OpticalDiscDto(
+                @NotBlank String name,
+                @NotBlank String type,
+                @Positive Float capacity,
+                @Positive Integer speedMultiplier,
+                String rewriteType,
+                @Positive Integer layers
+            )
+        */
+
         return new OpticalDiscDto(
                 entity.getName(),
                 entity.getType(),

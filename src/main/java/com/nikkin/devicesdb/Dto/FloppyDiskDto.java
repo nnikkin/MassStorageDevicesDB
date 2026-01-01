@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 public record FloppyDiskDto(
         String name,
-        @Positive float capacity,
-        @Positive float format,
-        char diskDensity
+        @Positive Float capacity,
+        @Positive Float format,
+        String diskDensity
 ) {}

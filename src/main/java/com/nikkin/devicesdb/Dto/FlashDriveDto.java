@@ -6,7 +6,7 @@ public record FlashDriveDto(
         String name,
         String usbInterface,
         String usbType,
-        @Positive float capacity,
-        @Positive float writeSpeed,
-        @Positive float readSpeed
+        @Positive Float capacity,
+        @Positive Float writeSpeed,
+        @Positive Float readSpeed
 ) {}
