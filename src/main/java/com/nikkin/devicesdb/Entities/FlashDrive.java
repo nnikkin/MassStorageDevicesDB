@@ -22,11 +22,9 @@ public class FlashDrive {
     private String usbType;         // 1.0, 2.0, 3.0...
 
     @Positive(message = "Скорость записи не может быть отрицательной либо равной нулю")
-    @Nullable
     private Float writeSpeed;
 
     @Positive(message = "Скорость чтения не может быть отрицательной либо равной нулю")
-    @Nullable
     private Float readSpeed;
 
     public Long getId() {
@@ -69,21 +67,19 @@ public class FlashDrive {
         this.capacity = capacity;
     }
 
-    @Nullable
     public Float getWriteSpeed() {
         return writeSpeed;
     }
 
-    public void setWriteSpeed(@Nullable Float writeSpeed) {
+    public void setWriteSpeed(Float writeSpeed) {
         this.writeSpeed = writeSpeed;
     }
 
-    @Nullable
     public Float getReadSpeed() {
         return readSpeed;
     }
 
-    public void setReadSpeed(@Nullable Float readSpeed) {
+    public void setReadSpeed(Float readSpeed) {
         this.readSpeed = readSpeed;
     }
 }

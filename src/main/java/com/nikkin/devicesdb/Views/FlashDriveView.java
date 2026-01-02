@@ -85,6 +85,7 @@ public class FlashDriveView extends AppLayout {
 
     private void initTable() {
         flashDriveGrid = new Grid<>(FlashDriveDto.class, false);
+        flashDriveGrid.setItems(new ArrayList<>());
         flashDriveGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
         flashDriveGrid.setSelectionMode(Grid.SelectionMode.MULTI);
         flashDriveGrid.setColumnRendering(ColumnRendering.LAZY);
@@ -134,7 +135,7 @@ public class FlashDriveView extends AppLayout {
 
     private void fillTable() {
         List<FlashDriveDto> items = presenter.loadAllFlashDrives();
-        flashDriveGrid.setItems(items);
+        flashDriveGrid.getListDataView().setItems(items);
     }
 
     private void setupFilters() {
@@ -207,6 +208,8 @@ public class FlashDriveView extends AppLayout {
             refreshGrid();
         });
         dialog.setHeaderTitle("Добавление новой записи");
+        dialog.addOkClickListener(e -> dialog.save());
+
         dialog.open();
     }
 
@@ -216,9 +219,9 @@ public class FlashDriveView extends AppLayout {
             refreshGrid();
         }, oldDto);
         dialog.setHeaderTitle("Изменение записи");
-        dialog.open();
+        dialog.addOkClickListener(e -> dialog.save());
 
-        dialog.addOkClickListener(e -> dialog.close());
+        dialog.open();
     }
 
     private void showDelConfirmDialog() {
@@ -344,11 +347,12 @@ public class FlashDriveView extends AppLayout {
         private NumberField writeSpeedField;
 
         private Binder<FlashDriveDto> binder = new Binder<>(FlashDriveDto.class);
+        private Long currentId = null;
 
         public FlashDriveForm() {
             setupFields();
             setupBinder();
-            add(nameField, capacityField, capacityUnitBox, usbInterfaceBox,
+            add(nameField, capacityField, usbInterfaceBox,
                     usbTypeBox, writeSpeedField, readSpeedField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
@@ -373,7 +377,7 @@ public class FlashDriveView extends AppLayout {
 
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
-            capacityUnitBox.setValue(Bytes.GB);
+            capacityUnitBox.setValue(Bytes.MB);
             capacityField.setSuffixComponent(capacityUnitBox);
 
             usbInterfaceBox.setItems(UsbInterface.values());
@@ -411,7 +415,7 @@ public class FlashDriveView extends AppLayout {
 
             binder.forField(usbInterfaceBox)
                     .bind(
-                            dto -> dto.usbInterface() != null ? UsbInterface.valueOf(dto.usbInterface()) : null,
+                            dto -> dto.usbInterface() != null ? UsbInterface.valueOfLabel(dto.usbInterface()) : null,
                             (dto, value) -> {}
                     );
 
@@ -419,12 +423,14 @@ public class FlashDriveView extends AppLayout {
                     .bind(FlashDriveDto::usbType, (dto, value) -> {});
 
             binder.forField(writeSpeedField)
+                    .withValidator(writeSpd -> writeSpd == null || writeSpd > 0, "Скорость должна быть положительной")
                     .bind(
                             dto -> dto.writeSpeed() != null ? dto.writeSpeed().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
             binder.forField(readSpeedField)
+                    .withValidator(readSpd -> readSpd == null || readSpd > 0, "Скорость должна быть положительной")
                     .bind(
                             dto -> dto.readSpeed() != null ? dto.readSpeed().doubleValue() : null,
                             (dto, value) -> {}
@@ -432,6 +438,7 @@ public class FlashDriveView extends AppLayout {
         }
 
         public void setFlashDrive(FlashDriveDto flashDrive) {
+            this.currentId = flashDrive.id();
             binder.readBean(flashDrive);
         }
 
@@ -440,34 +447,33 @@ public class FlashDriveView extends AppLayout {
                 return value;
             else {
                 if (unit.getRank() > Bytes.MB.getRank())
-                    return (float) (value * Math.pow(1024, unit.getRank() - 1));
+                    return (float) (value * Math.pow(1024, unit.getRank() - Bytes.MB.getRank()));
 
                 else {
                     if (unit == Bytes.BIT)
-                        value /= 8;
+                        return (float) ((value / 8) / Math.pow(1024, Bytes.MB.getRank() - 1));
 
-                    return (float) (value / Math.pow(1024, unit.getRank() - 1));
+                    return (float) (value / Math.pow(1024, Bytes.MB.getRank() - unit.getRank()));
                 }
             }
         }
 
         public Optional<FlashDriveDto> getFormDataObject() {
-            try {
-                FlashDriveDto dto = new FlashDriveDto(
-                        null,
-                        nameField.getValue(),
-                        usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue().name() : null,
-                        usbTypeBox.getValue(),
-                        capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
-                        writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
-                        readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null
-                );
-
-                binder.writeBean(dto);
-                return Optional.of(dto);
-            } catch (ValidationException e) {
+            if (!isValid()) {
                 return Optional.empty();
             }
+
+            FlashDriveDto dto = new FlashDriveDto(
+                    currentId,
+                    nameField.getValue(),
+                    usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue().getLabel() : null,
+                    usbTypeBox.getValue(),
+                    capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
+                    writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
+                    readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null
+            );
+
+            return Optional.of(dto);
         }
 
         public boolean isValid() {
@@ -475,13 +481,14 @@ public class FlashDriveView extends AppLayout {
         }
 
         public void clear() {
-            binder.readBean(null);
+            currentId = null;
             nameField.clear();
             capacityField.clear();
             usbInterfaceBox.clear();
             usbTypeBox.clear();
             writeSpeedField.clear();
             readSpeedField.clear();
+            binder.validate();
         }
     }
 
