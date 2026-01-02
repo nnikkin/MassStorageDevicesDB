@@ -1,8 +1,9 @@
 package com.nikkin.devicesdb.Dto;
-import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.*;
 
 public record FlashDriveDto(
+        @Id Long id,
         String name,
         String usbInterface,
         String usbType,

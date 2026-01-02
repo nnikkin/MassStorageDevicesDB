@@ -115,6 +115,7 @@ public class FlashDriveService {
             )
          */
         return new FlashDriveDto(
+                entity.getId(),
                 entity.getName(),
                 entity.getUsbInterface(),
                 entity.getUsbType(),
@@ -126,6 +127,7 @@ public class FlashDriveService {
 
     private FlashDrive mapToEntity(FlashDriveDto dto) {
         FlashDrive entity = new FlashDrive();
+        entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setUsbInterface(dto.usbInterface());
         entity.setUsbType(dto.usbType());

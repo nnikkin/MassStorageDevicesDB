@@ -1,13 +1,16 @@
 package com.nikkin.devicesdb.Views;
 
-import com.nikkin.devicesdb.Entities.FlashDrive;
+import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Domain.UsbInterface;
+import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Presenters.FlashDrivePresenter;
-import com.nikkin.devicesdb.Repos.FlashDriveRepository;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -15,14 +18,22 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import java.util.Optional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +41,13 @@ import java.util.function.Consumer;
 
 @Route("flash")
 public class FlashDriveView extends AppLayout {
-    private final FlashDriveRepository flashDriveRepository;
-    private Grid<FlashDrive> flashDriveGrid;
-    private CustomDialog dialog;
+    private final FlashDrivePresenter presenter;
+    private Grid<FlashDriveDto> flashDriveGrid;
     private List<Component> buttons;
 
-    public FlashDriveView(FlashDriveRepository flashDriveRepository) {
-        this.flashDriveRepository = flashDriveRepository;
+    public FlashDriveView(FlashDrivePresenter presenter) {
+        this.presenter = presenter;
+
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
 
@@ -70,42 +81,36 @@ public class FlashDriveView extends AppLayout {
         setupFilters();
 
         layout.add(tableMenu, flashDriveGrid);
-
-        dialog = new DeviceDialogBuilder("")
-                .withStartingFields()
-                .withFlashDriveFields()
-                .withSpeedFields()
-                .build();
     }
 
     private void initTable() {
-        flashDriveGrid = new Grid<>(FlashDrive.class, false);
+        flashDriveGrid = new Grid<>(FlashDriveDto.class, false);
         flashDriveGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
         flashDriveGrid.setSelectionMode(Grid.SelectionMode.MULTI);
         flashDriveGrid.setColumnRendering(ColumnRendering.LAZY);
         flashDriveGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        flashDriveGrid.addColumn(FlashDrive::getName)
+        flashDriveGrid.addColumn(FlashDriveDto::name)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDrive::getCapacity)
+        flashDriveGrid.addColumn(FlashDriveDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDrive::getUsbInterface)
+        flashDriveGrid.addColumn(FlashDriveDto::usbInterface)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDrive::getUsbType)
+        flashDriveGrid.addColumn(FlashDriveDto::usbType)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDrive::getReadSpeed)
+        flashDriveGrid.addColumn(FlashDriveDto::readSpeed)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDrive::getWriteSpeed)
+        flashDriveGrid.addColumn(FlashDriveDto::writeSpeed)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -122,11 +127,13 @@ public class FlashDriveView extends AppLayout {
         );
     }
 
-    private void fillTable() {
-        var flashDriveIterable = flashDriveRepository.findAll().iterator();
-        List<FlashDrive> items = new ArrayList<>();
-        flashDriveIterable.forEachRemaining(items::add);
+    private void refreshGrid() {
+        fillTable();
+        flashDriveGrid.deselectAll();
+    }
 
+    private void fillTable() {
+        List<FlashDriveDto> items = presenter.loadAllFlashDrives();
         flashDriveGrid.setItems(items);
     }
 
@@ -156,10 +163,12 @@ public class FlashDriveView extends AppLayout {
         editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         editBtn.setEnabled(false);
         editBtn.addClickListener(e -> {
-            if (flashDriveGrid.getSelectedItems().size() > 1)
-                showErrorDialog("Выберите одну запись.");
-            else
-                showEditEntryDialog();
+            var selected = flashDriveGrid.getSelectedItems();
+            if (selected.size() != 1) {
+                showErrorDialog("Выберите одну запись для редактирования");
+            } else {
+                showEditDialog(selected.iterator().next());
+            }
         });
 
         Button delBtn = new Button("Удалить", VaadinIcon.TRASH.create());
@@ -193,34 +202,64 @@ public class FlashDriveView extends AppLayout {
     }
 
     private void showNewEntryDialog() {
+        var dialog = new FlashDriveDialog(flashDrive -> {
+            presenter.addFlashDrive(flashDrive);
+            refreshGrid();
+        });
         dialog.setHeaderTitle("Добавление новой записи");
         dialog.open();
     }
 
-    private void showEditEntryDialog() {
+    private void showEditDialog(FlashDriveDto oldDto) {
+        var dialog = new FlashDriveDialog(newDto -> {
+            presenter.updateFlashDrive(oldDto.id(), newDto);
+            refreshGrid();
+        }, oldDto);
         dialog.setHeaderTitle("Изменение записи");
         dialog.open();
+
+        dialog.addOkClickListener(e -> dialog.close());
     }
 
     private void showDelConfirmDialog() {
-        CustomDialog confirmDialog = new CustomDialog("Удаление записи");
+        var selectedItems = flashDriveGrid.getSelectedItems();
+        String message = selectedItems.size() == 1
+                ? "Вы действительно хотите удалить запись?"
+                : "Вы действительно хотите удалить несколько записей?";
 
-        Div textDiv = new Div("Вы действительно хотите произвести удаление записей?\nДанное действие необратимо.");
+        Div textDiv = new Div(message);
+        textDiv.getStyle().set("padding", "var(--lumo-space-m)");
 
-        confirmDialog.addToDialogBody(textDiv);
-
+        CustomDialog confirmDialog = new CustomDialog("Удаление записи", textDiv);
         confirmDialog.setOkButtonText("Да, удалить");
-        confirmDialog.setCloseButtonText("Нет, оставить");
+        confirmDialog.setCancelDialogButtonText("Нет");
+
+        confirmDialog.open();
+
+        confirmDialog.addOkClickListener(e -> {
+            List<Long> ids = selectedItems.stream()
+                    .map(FlashDriveDto::id)
+                    .toList();
+
+            presenter.deleteFlashDrives(ids);
+            refreshGrid();
+            confirmDialog.close();
+
+            Notification.show(
+                    "Удалено записей: " + ids.size(),
+                    3000,
+                    Notification.Position.BOTTOM_END
+            ).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        });
 
         confirmDialog.open();
     }
 
     private void showErrorDialog(String message) {
-        CustomDialog errorDialog = new CustomDialog("Ошибка");
-
         Div textDiv = new Div(message);
-        errorDialog.addToDialogBody(textDiv);
-        errorDialog.setCloseButtonEnabled(false);
+
+        CustomDialog errorDialog = new CustomDialog("Ошибка", textDiv);
+        errorDialog.setCancelButtonVisible(false);
 
         errorDialog.open();
 
@@ -228,7 +267,7 @@ public class FlashDriveView extends AppLayout {
     }
 
     private static class FlashDriveFilter {
-        private final GridListDataView<FlashDrive> dataView;
+        private final GridListDataView<FlashDriveDto> dataView;
 
         private String name;
         private String usbInterface;
@@ -237,7 +276,7 @@ public class FlashDriveView extends AppLayout {
         private String writeSpeed;
         private String readSpeed;
 
-        public FlashDriveFilter(GridListDataView<FlashDrive> dataView) {
+        public FlashDriveFilter(GridListDataView<FlashDriveDto> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
         }
@@ -272,13 +311,13 @@ public class FlashDriveView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        private boolean test(FlashDrive flashDrive) {
-            return matches(flashDrive.getName(), name)
-                    && matches(flashDrive.getUsbInterface(), usbInterface)
-                    && matches(flashDrive.getUsbType(), usbType)
-                    && matchesNumeric(flashDrive.getCapacity(), capacity)
-                    && matchesNumeric(flashDrive.getWriteSpeed(), writeSpeed)
-                    && matchesNumeric(flashDrive.getReadSpeed(), readSpeed);
+        private boolean test(FlashDriveDto dto) {
+            return matches(dto.name(), name)
+                    && matches(dto.usbInterface(), usbInterface)
+                    && matches(dto.usbType(), usbType)
+                    && matchesNumeric(dto.capacity(), capacity)
+                    && matchesNumeric(dto.writeSpeed(), writeSpeed)
+                    && matchesNumeric(dto.readSpeed(), readSpeed);
         }
 
         private boolean matches(String value, String searchTerm) {
@@ -292,6 +331,214 @@ public class FlashDriveView extends AppLayout {
             }
 
             return String.valueOf(value).startsWith(searchTerm);
+        }
+    }
+
+    static class FlashDriveForm extends FormLayout {
+        private TextArea nameField;
+        private NumberField capacityField;
+        private ComboBox<Bytes> capacityUnitBox;
+        private ComboBox<UsbInterface> usbInterfaceBox;
+        private ComboBox<String> usbTypeBox;
+        private NumberField readSpeedField;
+        private NumberField writeSpeedField;
+
+        private Binder<FlashDriveDto> binder = new Binder<>(FlashDriveDto.class);
+
+        public FlashDriveForm() {
+            setupFields();
+            setupBinder();
+            add(nameField, capacityField, capacityUnitBox, usbInterfaceBox,
+                    usbTypeBox, writeSpeedField, readSpeedField);
+            setResponsiveSteps(new ResponsiveStep("0", 1));
+        }
+
+        private void setupFields() {
+            nameField = new TextArea("Название:");
+            capacityField = new NumberField("Объём:");
+            capacityUnitBox = new ComboBox<>();
+            usbInterfaceBox = new ComboBox<>("Интерфейс:");
+            usbTypeBox = new ComboBox<>("Версия USB:");
+            readSpeedField = new NumberField("Скорость записи:");
+            writeSpeedField = new NumberField("Скорость чтения:");
+
+            nameField.setMinRows(1);
+            nameField.setMaxRows(1);
+            nameField.setMinLength(1);
+            nameField.setMaxLength(30);
+            nameField.setClearButtonVisible(true);
+
+            capacityField.setClearButtonVisible(true);
+            capacityField.setRequiredIndicatorVisible(true);
+
+            capacityUnitBox.setItems(Bytes.values());
+            capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
+            capacityUnitBox.setValue(Bytes.GB);
+            capacityField.setSuffixComponent(capacityUnitBox);
+
+            usbInterfaceBox.setItems(UsbInterface.values());
+            usbInterfaceBox.setItemLabelGenerator(UsbInterface::getLabel);
+            usbInterfaceBox.setClearButtonVisible(true);
+            usbInterfaceBox.addValueChangeListener(e -> System.out.println(e.getValue()));
+
+            usbTypeBox.setItems("1.0", "2.0", "3.0", "3.1", "3.2");
+            usbTypeBox.setClearButtonVisible(true);
+
+            readSpeedField.setSuffixComponent(new Div("МБ/с"));
+            readSpeedField.setClearButtonVisible(true);
+
+            writeSpeedField.setSuffixComponent(new Div("МБ/с"));
+            writeSpeedField.setClearButtonVisible(true);
+        }
+
+        private void setupBinder() {
+            // Bind fields to DTO
+            binder.forField(nameField)
+                    .asRequired("Название обязательно")
+                    .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
+                    .bind(
+                            FlashDriveDto::name,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(capacityField)
+                    .asRequired("Объём обязателен")
+                    .withValidator(capacity -> capacity > 0, "Объём должен быть положительным")
+                    .bind(
+                            dto -> dto.capacity() != null ? dto.capacity().doubleValue() : null,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(usbInterfaceBox)
+                    .bind(
+                            dto -> dto.usbInterface() != null ? UsbInterface.valueOf(dto.usbInterface()) : null,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(usbTypeBox)
+                    .bind(FlashDriveDto::usbType, (dto, value) -> {});
+
+            binder.forField(writeSpeedField)
+                    .bind(
+                            dto -> dto.writeSpeed() != null ? dto.writeSpeed().doubleValue() : null,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(readSpeedField)
+                    .bind(
+                            dto -> dto.readSpeed() != null ? dto.readSpeed().doubleValue() : null,
+                            (dto, value) -> {}
+                    );
+        }
+
+        public void setFlashDrive(FlashDriveDto flashDrive) {
+            binder.readBean(flashDrive);
+        }
+
+        private float toMegabytes(float value, Bytes unit) {
+            if (unit == Bytes.MB)
+                return value;
+            else {
+                if (unit.getRank() > Bytes.MB.getRank())
+                    return (float) (value * Math.pow(1024, unit.getRank() - 1));
+
+                else {
+                    if (unit == Bytes.BIT)
+                        value /= 8;
+
+                    return (float) (value / Math.pow(1024, unit.getRank() - 1));
+                }
+            }
+        }
+
+        public Optional<FlashDriveDto> getFormDataObject() {
+            try {
+                FlashDriveDto dto = new FlashDriveDto(
+                        null,
+                        nameField.getValue(),
+                        usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue().name() : null,
+                        usbTypeBox.getValue(),
+                        capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
+                        writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
+                        readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null
+                );
+
+                binder.writeBean(dto);
+                return Optional.of(dto);
+            } catch (ValidationException e) {
+                return Optional.empty();
+            }
+        }
+
+        public boolean isValid() {
+            return binder.validate().isOk();
+        }
+
+        public void clear() {
+            binder.readBean(null);
+            nameField.clear();
+            capacityField.clear();
+            usbInterfaceBox.clear();
+            usbTypeBox.clear();
+            writeSpeedField.clear();
+            readSpeedField.clear();
+        }
+    }
+
+    static class FlashDriveDialog extends CustomDialog {
+        private final FlashDriveForm form;
+        private final SerializableConsumer<FlashDriveDto> onSaveCallback;
+        private boolean isEditMode;
+
+        public FlashDriveDialog(SerializableConsumer<FlashDriveDto> onSaveCallback) {
+            this(onSaveCallback, null);
+        }
+
+        public FlashDriveDialog(SerializableConsumer<FlashDriveDto> onSaveCallback, FlashDriveDto dto) {
+            this.onSaveCallback = onSaveCallback;
+
+            form = new FlashDriveForm();
+            isEditMode = false;
+
+            if (dto != null) {
+                isEditMode = true;
+                form.setFlashDrive(dto);
+            }
+
+            addToDialogBody(form);
+        }
+
+        private void save() {
+            if (!form.isValid()) {
+                Notification notification = Notification.show(
+                        "Пожалуйста, исправьте ошибки в форме",
+                        3000,
+                        Notification.Position.MIDDLE
+                );
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                return;
+            }
+
+            form.getFormDataObject().ifPresent(flashDrive -> {
+                try {
+                    onSaveCallback.accept(flashDrive);
+                    close();
+
+                    Notification notification = Notification.show(
+                            isEditMode ? "Запись обновлена" : "Запись создана",
+                            3000,
+                            Notification.Position.MIDDLE
+                    );
+                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                } catch (Exception e) {
+                    Notification notification = Notification.show(
+                            "Ошибка при сохранении: " + e.getMessage(),
+                            5000,
+                            Notification.Position.MIDDLE
+                    );
+                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
+            });
         }
     }
 }

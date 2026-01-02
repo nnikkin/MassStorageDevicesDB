@@ -8,7 +8,7 @@ import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 
-public class DeviceDialogBuilder {
+public class DeviceDialogBuilder<T> {
     private final CustomDialog dialog;
 
     public DeviceDialogBuilder() {
@@ -19,14 +19,14 @@ public class DeviceDialogBuilder {
         this.dialog = new CustomDialog(title);
     }
 
-    public DeviceDialogBuilder withStartingFields() {
+    public DeviceDialogBuilder<T> withStartingFields() {
         TextArea nameField = new TextArea("Название:");
         nameField.setMinRows(1);
         nameField.setMaxRows(1);
         nameField.setMinLength(1);
         nameField.setMaxLength(30);
         nameField.setClearButtonVisible(true);
-        dialog.addToDialogBody(nameField);
+        dialog.add(nameField);
 
         NumberField capacityField = new NumberField("Объём:");
         capacityField.setClearButtonVisible(true);
@@ -34,7 +34,7 @@ public class DeviceDialogBuilder {
 
         ComboBox<Bytes> suffixBox = createBytesSuffixBox();
         capacityField.setSuffixComponent(suffixBox);
-        dialog.addToDialogBody(capacityField);
+        dialog.add(capacityField);
 
         return this;
     }
@@ -48,7 +48,7 @@ public class DeviceDialogBuilder {
         return suffixBox;
     }
 
-    public DeviceDialogBuilder withFlashDriveFields() {
+    public DeviceDialogBuilder<T> withFlashDriveFields() {
         ComboBox<UsbInterface> usbInterfaceBox = new ComboBox<>("Интерфейс:");
         usbInterfaceBox.setItems(UsbInterface.values());
         usbInterfaceBox.setItemLabelGenerator(UsbInterface::getLabel);
@@ -58,12 +58,12 @@ public class DeviceDialogBuilder {
         usbTypeBox.setItems("1.0", "2.0", "3.0", "3.1", "3.2");
         usbTypeBox.setClearButtonVisible(true);
 
-        dialog.addToDialogBody(usbTypeBox, usbInterfaceBox);
+        dialog.add(usbTypeBox, usbInterfaceBox);
 
         return this;
     }
 
-    public DeviceDialogBuilder withRamFields() {
+    public DeviceDialogBuilder<T> withRamFields() {
         TextArea ramModelField = new TextArea("Модель:");
         ramModelField.setMinRows(1);
         ramModelField.setMaxRows(1);
@@ -92,7 +92,7 @@ public class DeviceDialogBuilder {
         Checkbox ramEccSupportCheck = new Checkbox("ECC-память");
         ramCasLatencyField.setClearButtonVisible(true);
 
-        dialog.addToDialogBody(
+        dialog.add(
                 ramModelField, ramManufacturerField, ramModuleTypeRadio,
                 ramMemoryTypeBox, ramFrequencyField, ramCasLatencyField, ramEccSupportCheck
         );
@@ -100,7 +100,7 @@ public class DeviceDialogBuilder {
         return this;
     }
 
-    public DeviceDialogBuilder withOpticalFields() {
+    public DeviceDialogBuilder<T> withOpticalFields() {
         ComboBox<String> opticalRewriteTypeBox = new ComboBox<>("Тип записи:");
         opticalRewriteTypeBox.setItems("R", "-R","+R","RW", "-RW","+RW");
         opticalRewriteTypeBox.setClearButtonVisible(true);
@@ -112,12 +112,12 @@ public class DeviceDialogBuilder {
         NumberField opticalLayersField = new NumberField("Количество слоёв:");
         opticalLayersField.setClearButtonVisible(true);
 
-        dialog.addToDialogBody(opticalRewriteTypeBox, opticalSpeedMultiplierField, opticalLayersField);
+        dialog.add(opticalRewriteTypeBox, opticalSpeedMultiplierField, opticalLayersField);
 
         return this;
     }
 
-    public DeviceDialogBuilder withFloppyFields() {
+    public DeviceDialogBuilder<T> withFloppyFields() {
         ComboBox<String> floppyFormatBox = new ComboBox<>("Формат:");
         floppyFormatBox.setItems("2\"", "2.5\"", "3\"", "3.5\"", "4\"", "5.25\"", "8\"");
         floppyFormatBox.setClearButtonVisible(true);
@@ -126,12 +126,12 @@ public class DeviceDialogBuilder {
         floppyDensityBox.setItems(FloppyDensity.values());
         floppyDensityBox.setClearButtonVisible(true);
 
-        dialog.addToDialogBody(floppyFormatBox, floppyDensityBox);
+        dialog.add(floppyFormatBox, floppyDensityBox);
 
         return this;
     }
 
-    public DeviceDialogBuilder withHddFields() {
+    public DeviceDialogBuilder<T> withHddFields() {
         ComboBox<HddInterface> hddInterfaceComboBox = new ComboBox<>("Интерфейс:");
         hddInterfaceComboBox.setItems(HddInterface.values());
         hddInterfaceComboBox.setRequiredIndicatorVisible(true);
@@ -148,12 +148,12 @@ public class DeviceDialogBuilder {
         hddCacheField.setSuffixComponent(new Div("МБ"));
         hddCacheField.setClearButtonVisible(true);
 
-        dialog.addToDialogBody(hddFormatRadio, hddRpmField, hddCacheField);
+        dialog.add(hddFormatRadio, hddRpmField, hddCacheField);
 
         return this;
     }
 
-    public DeviceDialogBuilder withSsdFields() {
+    public DeviceDialogBuilder<T> withSsdFields() {
         ComboBox<SsdInterface> ssdInterfaceComboBox = new ComboBox<>("Интерфейс:");
         ssdInterfaceComboBox.setItems(SsdInterface.values());
         ssdInterfaceComboBox.setRequiredIndicatorVisible(true);
@@ -170,22 +170,22 @@ public class DeviceDialogBuilder {
         ssdTbwField.setSuffixComponent(new Div("ТБ"));
         ssdTbwField.setClearButtonVisible(true);
 
-        dialog.addToDialogBody(ssdNandTypeBox, ssdTbwField);
+        dialog.add(ssdNandTypeBox, ssdTbwField);
 
         return this;
     }
 
-    public DeviceDialogBuilder withPowerField() {
+    public DeviceDialogBuilder<T> withPowerField() {
         NumberField powerConsumptionField = new NumberField("Энергопотребление (Вт):");
         powerConsumptionField.setSuffixComponent(new Div("Вт"));
         powerConsumptionField.setClearButtonVisible(true);
 
-        dialog.addToDialogBody(powerConsumptionField);
+        dialog.add(powerConsumptionField);
 
         return this;
     }
 
-    public DeviceDialogBuilder withSpeedFields() {
+    public DeviceDialogBuilder<T> withSpeedFields() {
         NumberField readSpeedField = new NumberField("Скорость записи:");
         readSpeedField.setSuffixComponent(new Div("МБ/с"));
         readSpeedField.setClearButtonVisible(true);
@@ -194,7 +194,7 @@ public class DeviceDialogBuilder {
         writeSpeedField.setSuffixComponent(new Div("МБ/с"));
         writeSpeedField.setClearButtonVisible(true);
 
-        dialog.addToDialogBody(readSpeedField, writeSpeedField);
+        dialog.add(readSpeedField, writeSpeedField);
 
         return this;
     }
