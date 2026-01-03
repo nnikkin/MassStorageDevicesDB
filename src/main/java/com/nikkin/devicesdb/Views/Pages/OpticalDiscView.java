@@ -1,9 +1,8 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Domain.FloppyDensity;
-import com.nikkin.devicesdb.Dto.FloppyDiskDto;
-import com.nikkin.devicesdb.Presenters.FloppyDiskPresenter;
+import com.nikkin.devicesdb.Dto.OpticalDiscDto;
+import com.nikkin.devicesdb.Presenters.OpticalDiscPresenter;
 import com.nikkin.devicesdb.Views.CustomDialog;
 import com.nikkin.devicesdb.Views.NavBar;
 import com.vaadin.flow.component.Component;
@@ -11,7 +10,6 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnRendering;
@@ -41,19 +39,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Route("floppy")
+@Route("optical")
 public class OpticalDiscView extends AppLayout {
-    private final FloppyDiskPresenter presenter;
-    private Grid<FloppyDiskDto> floppyDiskGrid;
+    private final OpticalDiscPresenter presenter;
+    private Grid<OpticalDiscDto> opticalDiscGrid;
     private List<Component> buttons;
 
-    public OpticalDiscView(FloppyDiskPresenter presenter) {
+    public OpticalDiscView(OpticalDiscPresenter presenter) {
         this.presenter = presenter;
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
 
-        H1 pageTitle = new H1("Запоминающие устройства - Гибкие диски");
+        H1 pageTitle = new H1("Запоминающие устройства - Оптические диски");
         pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
 
@@ -82,42 +80,44 @@ public class OpticalDiscView extends AppLayout {
         fillTable();
         setupFilters();
 
-        layout.add(tableMenu, floppyDiskGrid);
+        layout.add(tableMenu, opticalDiscGrid);
     }
 
     private void initTable() {
-        floppyDiskGrid = new Grid<>(FloppyDiskDto.class, false);
-        floppyDiskGrid.setItems(new ArrayList<>());
-        floppyDiskGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        floppyDiskGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        floppyDiskGrid.setColumnRendering(ColumnRendering.LAZY);
-        floppyDiskGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        opticalDiscGrid = new Grid<>(OpticalDiscDto.class, false);
+        opticalDiscGrid.setItems(new ArrayList<>());
+        opticalDiscGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        opticalDiscGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+        opticalDiscGrid.setColumnRendering(ColumnRendering.LAZY);
+        opticalDiscGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        floppyDiskGrid.addColumn(FloppyDiskDto::name)
+        opticalDiscGrid.addColumn(OpticalDiscDto::name)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        floppyDiskGrid.addColumn(FloppyDiskDto::capacity)
+        opticalDiscGrid.addColumn(OpticalDiscDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        floppyDiskGrid.addColumn(FloppyDiskDto::format)
+        opticalDiscGrid.addColumn(OpticalDiscDto::type)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        floppyDiskGrid.addColumn(FloppyDiskDto::diskDensity)
+        opticalDiscGrid.addColumn(OpticalDiscDto::rewriteType)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        floppyDiskGrid.addColumn(dto ->
-                        dto.isDoubleSided() ? "Да" : "Нет"
-                )
+        opticalDiscGrid.addColumn(OpticalDiscDto::speedMultiplier)
                 .setHeader("")
                 .setAutoWidth(true)
-                .setSortable(true)
-                .setComparator(FloppyDiskDto::isDoubleSided);
+                .setSortable(true);
+        opticalDiscGrid.addColumn(OpticalDiscDto::layers)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
 
-        floppyDiskGrid.addSelectionListener(
+
+        opticalDiscGrid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
                         buttons.forEach(button -> ((Button) button).setEnabled(false));
@@ -131,27 +131,28 @@ public class OpticalDiscView extends AppLayout {
     }
 
     private void refreshGrid() {
-        floppyDiskGrid.deselectAll();
+        opticalDiscGrid.deselectAll();
         fillTable();
     }
 
     private void fillTable() {
-        List<FloppyDiskDto> items = presenter.loadAllFloppyDisks();
-        floppyDiskGrid.getListDataView().setItems(items);
+        List<OpticalDiscDto> items = presenter.loadAllOpticalDiscs();
+        opticalDiscGrid.getListDataView().setItems(items);
     }
 
     private void setupFilters() {
-        var headerCells = floppyDiskGrid.getHeaderRows()
+        var headerCells = opticalDiscGrid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
 
-        FloppyDiskFilter filter = new FloppyDiskFilter(floppyDiskGrid.getListDataView());
+        OpticalDiscFilter filter = new OpticalDiscFilter(opticalDiscGrid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
-        headerCells.get(2).setComponent(createFilterHeader("Формат", filter::setFormat));
-        headerCells.get(3).setComponent(createFilterHeader("Плотность", filter::setDiskDensity));
-        headerCells.get(4).setComponent(createFilterHeader("Двусторонняя?", filter::setIsDoubleSided));
+        headerCells.get(2).setComponent(createFilterHeader("Вид диска", filter::setType));
+        headerCells.get(3).setComponent(createFilterHeader("Тип перезаписи", filter::setRewriteType));
+        headerCells.get(4).setComponent(createFilterHeader("Множитель скорости", filter::setSpeedMultiplier));
+        headerCells.getLast().setComponent(createFilterHeader("Количество слоёв", filter::setLayers));
     }
 
     private void setupButtons() {
@@ -165,7 +166,7 @@ public class OpticalDiscView extends AppLayout {
         editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         editBtn.setEnabled(false);
         editBtn.addClickListener(e -> {
-            var selected = floppyDiskGrid.getSelectedItems();
+            var selected = opticalDiscGrid.getSelectedItems();
             if (selected.size() != 1) {
                 showErrorDialog("Выберите одну запись для редактирования");
             } else {
@@ -209,8 +210,8 @@ public class OpticalDiscView extends AppLayout {
     }
 
     private void showNewEntryDialog() {
-        var dialog = new FloppyDiskDialog(floppyDisk -> {
-            presenter.addFloppyDisk(floppyDisk);
+        var dialog = new OpticalDiscDialog(opticalDisc -> {
+            presenter.addOpticalDisc(opticalDisc);
             refreshGrid();
         });
         dialog.setHeaderTitle("Добавление новой записи");
@@ -219,9 +220,9 @@ public class OpticalDiscView extends AppLayout {
         dialog.open();
     }
 
-    private void showEditDialog(FloppyDiskDto oldDto) {
-        var dialog = new FloppyDiskDialog(newDto -> {
-            presenter.updateFloppyDisk(oldDto.id(), newDto);
+    private void showEditDialog(OpticalDiscDto oldDto) {
+        var dialog = new OpticalDiscDialog(newDto -> {
+            presenter.updateOpticalDisc(oldDto.id(), newDto);
             refreshGrid();
         }, oldDto);
         dialog.setHeaderTitle("Изменение записи");
@@ -231,7 +232,7 @@ public class OpticalDiscView extends AppLayout {
     }
 
     private void showDelConfirmDialog() {
-        var selectedItems = floppyDiskGrid.getSelectedItems();
+        var selectedItems = opticalDiscGrid.getSelectedItems();
         String message = selectedItems.size() == 1
                 ? "Вы действительно хотите удалить запись?"
                 : "Вы действительно хотите удалить несколько записей?";
@@ -247,10 +248,10 @@ public class OpticalDiscView extends AppLayout {
 
         confirmDialog.addOkClickListener(e -> {
             List<Long> ids = selectedItems.stream()
-                    .map(FloppyDiskDto::id)
+                    .map(OpticalDiscDto::id)
                     .toList();
 
-            presenter.deleteFloppyDisks(ids);
+            presenter.deleteOpticalDiscs(ids);
             refreshGrid();
             confirmDialog.close();
 
@@ -275,16 +276,17 @@ public class OpticalDiscView extends AppLayout {
         errorDialog.addOkClickListener(e -> errorDialog.close());
     }
 
-    private static class FloppyDiskFilter {
-        private final GridListDataView<FloppyDiskDto> dataView;
+    private static class OpticalDiscFilter {
+        private final GridListDataView<OpticalDiscDto> dataView;
 
         private String name;
         private String capacity;
-        private String format;
-        private String diskDensity;
-        private Boolean isDoubleSided;
+        private String type;
+        private String rewriteType;
+        private String layers;
+        private String speedMultiplier;
 
-        public FloppyDiskFilter(GridListDataView<FloppyDiskDto> dataView) {
+        public OpticalDiscFilter(GridListDataView<OpticalDiscDto> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
         }
@@ -294,39 +296,38 @@ public class OpticalDiscView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        public void setFormat(String format) {
-            this.format = format;
-            this.dataView.refreshAll();
-        }
-
-        public void setDiskDensity(String diskDensity) {
-            this.diskDensity = diskDensity;
-            this.dataView.refreshAll();
-        }
-
         public void setCapacity(String capacity) {
             this.capacity = capacity;
             this.dataView.refreshAll();
         }
 
-        public void setIsDoubleSided(String value) {
-            if (value == null || value.isEmpty()) {
-                this.isDoubleSided = null;
-            } else if ("да".contains(value.toLowerCase())) {
-                this.isDoubleSided = true;
-            } else if ("нет".contains(value.toLowerCase())) {
-                this.isDoubleSided = false;
-            }
+        public void setType(String type) {
+            this.type = type;
             this.dataView.refreshAll();
         }
 
-        private boolean test(FloppyDiskDto dto) {
+        public void setRewriteType(String rewriteType) {
+            this.rewriteType = rewriteType;
+            this.dataView.refreshAll();
+        }
+
+        public void setLayers(String layers) {
+            this.layers = layers;
+            this.dataView.refreshAll();
+        }
+
+        public void setSpeedMultiplier(String speedMultiplier) {
+            this.speedMultiplier = speedMultiplier;
+            this.dataView.refreshAll();
+        }
+
+        private boolean test(OpticalDiscDto dto) {
             return matches(dto.name(), name)
-                    && matches(dto.diskDensity(), diskDensity)
+                    && matches(dto.type(), type)
+                    && matches(dto.rewriteType(), rewriteType)
                     && matchesNumeric(dto.capacity(), capacity)
-                    && matchesNumeric(dto.format(), format)
-                    && matches(dto.diskDensity(), diskDensity)
-                    && isDoubleSided == null || dto.isDoubleSided() == isDoubleSided;
+                    && matchesNumeric(dto.speedMultiplier(), speedMultiplier)
+                    && matchesNumeric(dto.layers(), layers);
         }
 
         private boolean matches(String value, String searchTerm) {
@@ -341,23 +342,32 @@ public class OpticalDiscView extends AppLayout {
 
             return String.valueOf(value).startsWith(searchTerm);
         }
+
+        private boolean matchesNumeric(Integer value, String searchTerm) {
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                return true;
+            }
+
+            return String.valueOf(value).startsWith(searchTerm);
+        }
     }
 
-    static class FloppyDiskForm extends FormLayout {
+    static class OpticalDiscForm extends FormLayout {
         private TextArea nameField;
         private NumberField capacityField;
         private ComboBox<Bytes> capacityUnitBox;
-        private NumberField floppyFormatField;
-        private ComboBox<FloppyDensity> floppyDensityBox;
-        private Checkbox floppyDoubleSidedCheckbox;
+        private ComboBox<String> opticalDiscTypeBox;
+        private ComboBox<String> opticalRewriteTypeBox;
+        private NumberField opticalSpeedMultiplierField;
+        private NumberField opticalLayersField;
 
-        private Binder<FloppyDiskDto> binder = new Binder<>(FloppyDiskDto.class);
+        private Binder<OpticalDiscDto> binder = new Binder<>(OpticalDiscDto.class);
         private Long currentId = null;
 
-        public FloppyDiskForm() {
+        public OpticalDiscForm() {
             setupFields();
             setupBinder();
-            add(nameField, capacityField, floppyFormatField, floppyDensityBox, floppyDoubleSidedCheckbox);
+            add(nameField, capacityField, opticalDiscTypeBox, opticalRewriteTypeBox, opticalSpeedMultiplierField, opticalLayersField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -371,7 +381,6 @@ public class OpticalDiscView extends AppLayout {
 
             capacityField = new NumberField("Объём:");
             capacityField.setClearButtonVisible(true);
-            capacityField.setRequiredIndicatorVisible(true);
 
             capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
@@ -379,19 +388,20 @@ public class OpticalDiscView extends AppLayout {
             capacityUnitBox.setValue(Bytes.MB);
             capacityField.setSuffixComponent(capacityUnitBox);
 
-            floppyFormatField = new NumberField("Размер (в дюймах):");
-            floppyFormatField.setSuffixComponent(new Div("\""));
-            floppyFormatField.setStepButtonsVisible(true);
-            floppyFormatField.setStep(.25);
-            floppyFormatField.setClearButtonVisible(true);
+            opticalDiscTypeBox = new ComboBox<>("Вид диска:");
+            opticalDiscTypeBox.setItems("Blu-ray", "CD", "DVD");
+            opticalDiscTypeBox.setClearButtonVisible(true);
 
-            floppyDensityBox = new ComboBox<>("Плотность записи:");
-            floppyDensityBox.setItems(FloppyDensity.values());
-            floppyDensityBox.setItemLabelGenerator(FloppyDensity::getLabel);
-            floppyDensityBox.setClearButtonVisible(true);
+            opticalRewriteTypeBox = new ComboBox<>("Тип записи:");
+            opticalRewriteTypeBox.setItems("R", "-R", "+R", "RW", "-RW", "+RW");
+            opticalRewriteTypeBox.setClearButtonVisible(true);
 
-            floppyDoubleSidedCheckbox = new Checkbox("Двусторонняя дискета");
-            floppyDoubleSidedCheckbox.setValue(false); // По умолчанию односторонняя
+            opticalSpeedMultiplierField = new NumberField("Множитель скорости:");
+            opticalSpeedMultiplierField.setSuffixComponent(new Div("x"));
+            opticalSpeedMultiplierField.setClearButtonVisible(true);
+
+            opticalLayersField = new NumberField("Количество слоёв:");
+            opticalLayersField.setClearButtonVisible(true);
         }
 
         private void setupBinder() {
@@ -400,42 +410,49 @@ public class OpticalDiscView extends AppLayout {
                     .asRequired("Название обязательно")
                     .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
                     .bind(
-                            FloppyDiskDto::name,
+                            OpticalDiscDto::name,
                             (dto, value) -> {}
                     );
 
             binder.forField(capacityField)
-                    .asRequired("Объём обязателен")
-                    .withValidator(capacity -> capacity > 0, "Объём должен быть положительным")
+                    .withValidator(capacity -> capacity == null || capacity > 0, "Объём должен быть положительным")
                     .bind(
                             dto -> dto.capacity() != null ? dto.capacity().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
-            binder.forField(floppyFormatField)
-                    .withValidator(formatInches -> formatInches == null || (formatInches >= 2 && formatInches <= 8),
-                            "Принимается размер дискеты от 2 до 8 дюймов")
+            binder.forField(opticalRewriteTypeBox)
                     .bind(
-                            dto -> dto.format() != null ? dto.format().doubleValue() : null,
+                            OpticalDiscDto::rewriteType,
                             (dto, value) -> {}
                     );
 
-            binder.forField(floppyDensityBox)
+            binder.forField(opticalDiscTypeBox)
                     .bind(
-                            dto -> dto.diskDensity() != null ? FloppyDensity.valueOfLabel(dto.diskDensity()) : null,
+                            OpticalDiscDto::type,
                             (dto, value) -> {}
                     );
 
-            binder.forField(floppyDoubleSidedCheckbox)
+            binder.forField(opticalSpeedMultiplierField)
+                    .withValidator(multiplier -> multiplier == null || multiplier > 0,
+                            "Скорость должна быть положительной")
                     .bind(
-                            FloppyDiskDto::isDoubleSided,
+                            dto -> dto.speedMultiplier() != null ? dto.speedMultiplier().doubleValue() : null,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(opticalLayersField)
+                    .withValidator(layers -> layers == null || layers > 0,
+                            "Количество слоёв должно быть положительным")
+                    .bind(
+                            dto -> dto.layers() != null ? dto.layers().doubleValue() : null,
                             (dto, value) -> {}
                     );
         }
 
-        public void setFloppyDisk(FloppyDiskDto floppyDisk) {
-            this.currentId = floppyDisk.id();
-            binder.readBean(floppyDisk);
+        public void setOpticalDisc(OpticalDiscDto opticalDisc) {
+            this.currentId = opticalDisc.id();
+            binder.readBean(opticalDisc);
         }
 
         private float toMegabytes(float value, Bytes unit) {
@@ -454,28 +471,22 @@ public class OpticalDiscView extends AppLayout {
             }
         }
 
-        public Optional<FloppyDiskDto> getFormDataObject() {
+        public Optional<OpticalDiscDto> getFormDataObject() {
             if (!isValid()) {
                 return Optional.empty();
             }
 
-            FloppyDiskDto dto = new FloppyDiskDto(
+            OpticalDiscDto dto = new OpticalDiscDto(
                     currentId,
                     nameField.getValue(),
+                    opticalDiscTypeBox.getValue(),
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
-                    floppyFormatField.getValue() != null ? floppyFormatField.getValue().floatValue() : null,
-                    floppyDensityBox.getValue() != null ? floppyDensityBox.getValue().name() : null,
-                    floppyDoubleSidedCheckbox.getValue()
+                    opticalSpeedMultiplierField.getValue() != null ? opticalSpeedMultiplierField.getValue().intValue() : null,
+                    opticalRewriteTypeBox.getValue(),
+                    opticalLayersField.getValue() != null ? opticalLayersField.getValue().intValue() : null
             );
 
             return Optional.of(dto);
-        }
-
-        private Boolean isFloppyDoubleSided(String value) {
-            if (value == null)
-                return null;
-
-            return value.equals("Двусторонняя");
         }
 
         public boolean isValid() {
@@ -486,31 +497,32 @@ public class OpticalDiscView extends AppLayout {
             currentId = null;
             nameField.clear();
             capacityField.clear();
-            floppyFormatField.clear();
-            floppyDensityBox.clear();
-            floppyDoubleSidedCheckbox.setValue(false);
+            opticalLayersField.clear();
+            opticalSpeedMultiplierField.clear();
+            opticalDiscTypeBox.clear();
+            opticalRewriteTypeBox.clear();
             binder.validate();
         }
     }
 
-    static class FloppyDiskDialog extends CustomDialog {
-        private final FloppyDiskForm form;
-        private final SerializableConsumer<FloppyDiskDto> onSaveCallback;
+    static class OpticalDiscDialog extends CustomDialog {
+        private final OpticalDiscForm form;
+        private final SerializableConsumer<OpticalDiscDto> onSaveCallback;
         private boolean isEditMode;
 
-        public FloppyDiskDialog(SerializableConsumer<FloppyDiskDto> onSaveCallback) {
+        public OpticalDiscDialog(SerializableConsumer<OpticalDiscDto> onSaveCallback) {
             this(onSaveCallback, null);
         }
 
-        public FloppyDiskDialog(SerializableConsumer<FloppyDiskDto> onSaveCallback, FloppyDiskDto dto) {
+        public OpticalDiscDialog(SerializableConsumer<OpticalDiscDto> onSaveCallback, OpticalDiscDto dto) {
             this.onSaveCallback = onSaveCallback;
 
-            form = new FloppyDiskForm();
+            form = new OpticalDiscForm();
             isEditMode = false;
 
             if (dto != null) {
                 isEditMode = true;
-                form.setFloppyDisk(dto);
+                form.setOpticalDisc(dto);
             }
 
             addToDialogBody(form);
@@ -527,9 +539,9 @@ public class OpticalDiscView extends AppLayout {
                 return;
             }
 
-            form.getFormDataObject().ifPresent(floppyDisk -> {
+            form.getFormDataObject().ifPresent(opticalDisc -> {
                 try {
-                    onSaveCallback.accept(floppyDisk);
+                    onSaveCallback.accept(opticalDisc);
                     close();
 
                     Notification notification = Notification.show(

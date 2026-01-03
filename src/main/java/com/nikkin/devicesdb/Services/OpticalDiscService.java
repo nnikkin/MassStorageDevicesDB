@@ -5,12 +5,14 @@ import com.nikkin.devicesdb.Entities.OpticalDisc;
 import com.nikkin.devicesdb.Repos.OpticalDiscRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Validated
 public class OpticalDiscService {
     private final OpticalDiscRepository opticalDiscRepository;
 
@@ -50,28 +52,25 @@ public class OpticalDiscService {
     }
 
     public OpticalDiscDto update(Long id, OpticalDiscDto new_dto) {
-        OpticalDisc old_entity = opticalDiscRepository.findById(id)
+        OpticalDisc entity = opticalDiscRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-        OpticalDisc new_entity = mapToEntity(new_dto);
-        opticalDiscRepository.save(new_entity);
 
-        return new_dto;
+        entity.setName(new_dto.name());
+        entity.setType(new_dto.type());
+        entity.setRewriteType(new_dto.rewriteType());
+        entity.setLayers(new_dto.layers());
+        entity.setSpeedMultiplier(new_dto.speedMultiplier());
+        entity.setCapacity(new_dto.capacity());
+
+        OpticalDisc updated = opticalDiscRepository.save(entity);
+
+        return mapToDto(updated);
     }
 
     // Мапперы
     private OpticalDiscDto mapToDto(OpticalDisc entity) {
-        /*
-            public OpticalDiscDto(
-                @NotBlank String name,
-                @NotBlank String type,
-                @Positive Float capacity,
-                @Positive Integer speedMultiplier,
-                String rewriteType,
-                @Positive Integer layers
-            )
-        */
-
         return new OpticalDiscDto(
+                entity.getId(),
                 entity.getName(),
                 entity.getType(),
                 entity.getCapacity(),

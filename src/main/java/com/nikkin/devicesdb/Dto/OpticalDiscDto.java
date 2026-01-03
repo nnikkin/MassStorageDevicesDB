@@ -1,12 +1,12 @@
 package com.nikkin.devicesdb.Dto;
 
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Positive;
 
-public record OpticalDiscDto(
-        @NotBlank String name,
-        @NotBlank String type,
+public record OpticalDiscDto (
+        @Id Long id,
+        String name,
+        String type,
         @Positive Float capacity,
         @Positive Integer speedMultiplier,
         String rewriteType,
