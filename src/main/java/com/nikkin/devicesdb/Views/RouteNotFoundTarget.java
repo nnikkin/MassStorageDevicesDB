@@ -1,5 +1,6 @@
 package com.nikkin.devicesdb.Views;
 
+import com.nikkin.devicesdb.Views.Pages.ErrorPageView;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.NotFoundException;

@@ -1,5 +1,6 @@
 package com.nikkin.devicesdb.Views;
 
+import com.nikkin.devicesdb.Views.Pages.MainView;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;

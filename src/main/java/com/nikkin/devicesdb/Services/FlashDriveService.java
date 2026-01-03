@@ -53,67 +53,22 @@ public class FlashDriveService {
     }
 
     public FlashDriveDto update(Long id, FlashDriveDto new_dto) {
-        FlashDrive old_entity = flashDriveRepository.findById(id)
+        FlashDrive entity = flashDriveRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
-        old_entity.setName(new_dto.name());
-        old_entity.setUsbInterface(new_dto.usbInterface());
-        old_entity.setUsbType(new_dto.usbType());
-        old_entity.setCapacity(new_dto.capacity());
-        old_entity.setWriteSpeed(new_dto.writeSpeed());
-        old_entity.setReadSpeed(new_dto.readSpeed());
+        entity.setName(new_dto.name());
+        entity.setUsbInterface(new_dto.usbInterface());
+        entity.setUsbType(new_dto.usbType());
+        entity.setCapacity(new_dto.capacity());
+        entity.setWriteSpeed(new_dto.writeSpeed());
+        entity.setReadSpeed(new_dto.readSpeed());
 
-        FlashDrive updated = flashDriveRepository.save(old_entity);
+        FlashDrive updated = flashDriveRepository.save(entity);
         return mapToDto(updated);
-    }
-
-    public Optional<FlashDriveDto> getFlashDriveByName(String name) {
-        return flashDriveRepository.findFirstByName(name)
-                .map(this::mapToDto);
-    }
-
-    public List<FlashDriveDto> getByUsbInterface(String usbInterface) {
-        return flashDriveRepository.getByUsbInterface(usbInterface).stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlashDriveDto> getByUsbType(String usbType) {
-        return flashDriveRepository.getByUsbType(usbType).stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlashDriveDto> getByCapacity(float capacity) {
-        return flashDriveRepository.getByCapacity(capacity).stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlashDriveDto> getByWriteSpeed(float writeSpeed) {
-        return flashDriveRepository.getByWriteSpeed(writeSpeed).stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlashDriveDto> getByReadSpeed(float readSpeed) {
-        return flashDriveRepository.getByReadSpeed(readSpeed).stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
     }
 
     // Мапперы
     private FlashDriveDto mapToDto(FlashDrive entity) {
-        /*
-            public FlashDriveDto(
-                String name,
-                String usbInterface,
-                String usbType,
-                @Positive Float capacity,
-                @Positive Float writeSpeed,
-                @Positive Float readSpeed
-            )
-         */
         return new FlashDriveDto(
                 entity.getId(),
                 entity.getName(),

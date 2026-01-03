@@ -1,14 +1,17 @@
-package com.nikkin.devicesdb.Views;
+package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Domain.UsbInterface;
-import com.nikkin.devicesdb.Dto.FlashDriveDto;
-import com.nikkin.devicesdb.Presenters.FlashDrivePresenter;
+import com.nikkin.devicesdb.Domain.FloppyDensity;
+import com.nikkin.devicesdb.Dto.FloppyDiskDto;
+import com.nikkin.devicesdb.Presenters.FloppyDiskPresenter;
+import com.nikkin.devicesdb.Views.CustomDialog;
+import com.nikkin.devicesdb.Views.NavBar;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnRendering;
@@ -28,30 +31,29 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import java.util.Optional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-@Route("flash")
-public class FlashDriveView extends AppLayout {
-    private final FlashDrivePresenter presenter;
-    private Grid<FlashDriveDto> flashDriveGrid;
+@Route("floppy")
+public class OpticalDiscView extends AppLayout {
+    private final FloppyDiskPresenter presenter;
+    private Grid<FloppyDiskDto> floppyDiskGrid;
     private List<Component> buttons;
 
-    public FlashDriveView(FlashDrivePresenter presenter) {
+    public OpticalDiscView(FloppyDiskPresenter presenter) {
         this.presenter = presenter;
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
 
-        H1 pageTitle = new H1("Запоминающие устройства - Флеш-память");
+        H1 pageTitle = new H1("Запоминающие устройства - Гибкие диски");
         pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
 
@@ -80,43 +82,42 @@ public class FlashDriveView extends AppLayout {
         fillTable();
         setupFilters();
 
-        layout.add(tableMenu, flashDriveGrid);
+        layout.add(tableMenu, floppyDiskGrid);
     }
 
     private void initTable() {
-        flashDriveGrid = new Grid<>(FlashDriveDto.class, false);
-        flashDriveGrid.setItems(new ArrayList<>());
-        flashDriveGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        flashDriveGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        flashDriveGrid.setColumnRendering(ColumnRendering.LAZY);
-        flashDriveGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        floppyDiskGrid = new Grid<>(FloppyDiskDto.class, false);
+        floppyDiskGrid.setItems(new ArrayList<>());
+        floppyDiskGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        floppyDiskGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+        floppyDiskGrid.setColumnRendering(ColumnRendering.LAZY);
+        floppyDiskGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        flashDriveGrid.addColumn(FlashDriveDto::name)
+        floppyDiskGrid.addColumn(FloppyDiskDto::name)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::capacity)
+        floppyDiskGrid.addColumn(FloppyDiskDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::usbInterface)
+        floppyDiskGrid.addColumn(FloppyDiskDto::format)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::usbType)
+        floppyDiskGrid.addColumn(FloppyDiskDto::diskDensity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::readSpeed)
+        floppyDiskGrid.addColumn(dto ->
+                        dto.isDoubleSided() ? "Да" : "Нет"
+                )
                 .setHeader("")
                 .setAutoWidth(true)
-                .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::writeSpeed)
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
+                .setSortable(true)
+                .setComparator(FloppyDiskDto::isDoubleSided);
 
-        flashDriveGrid.addSelectionListener(
+        floppyDiskGrid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
                         buttons.forEach(button -> ((Button) button).setEnabled(false));
@@ -124,33 +125,33 @@ public class FlashDriveView extends AppLayout {
                         buttons.forEach(button -> ((Button) button).setEnabled(true));
 
                     ((Button) buttons.getFirst()).setEnabled(true);
+                    ((Button) buttons.getLast()).setEnabled(true);
                 }
         );
     }
 
     private void refreshGrid() {
+        floppyDiskGrid.deselectAll();
         fillTable();
-        flashDriveGrid.deselectAll();
     }
 
     private void fillTable() {
-        List<FlashDriveDto> items = presenter.loadAllFlashDrives();
-        flashDriveGrid.getListDataView().setItems(items);
+        List<FloppyDiskDto> items = presenter.loadAllFloppyDisks();
+        floppyDiskGrid.getListDataView().setItems(items);
     }
 
     private void setupFilters() {
-        var headerCells = flashDriveGrid.getHeaderRows()
+        var headerCells = floppyDiskGrid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
 
-        FlashDriveFilter filter = new FlashDriveFilter(flashDriveGrid.getListDataView());
+        FloppyDiskFilter filter = new FloppyDiskFilter(floppyDiskGrid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
-        headerCells.get(2).setComponent(createFilterHeader("Интерфейс USB", filter::setUsbInterface));
-        headerCells.get(3).setComponent(createFilterHeader("Тип USB", filter::setUsbType));
-        headerCells.get(4).setComponent(createFilterHeader("Скорость чтения (МБ/сек)", filter::setReadSpeed));
-        headerCells.getLast().setComponent(createFilterHeader("Скорость записи (МБ/сек)", filter::setWriteSpeed));
+        headerCells.get(2).setComponent(createFilterHeader("Формат", filter::setFormat));
+        headerCells.get(3).setComponent(createFilterHeader("Плотность", filter::setDiskDensity));
+        headerCells.get(4).setComponent(createFilterHeader("Двусторонняя?", filter::setIsDoubleSided));
     }
 
     private void setupButtons() {
@@ -164,7 +165,7 @@ public class FlashDriveView extends AppLayout {
         editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         editBtn.setEnabled(false);
         editBtn.addClickListener(e -> {
-            var selected = flashDriveGrid.getSelectedItems();
+            var selected = floppyDiskGrid.getSelectedItems();
             if (selected.size() != 1) {
                 showErrorDialog("Выберите одну запись для редактирования");
             } else {
@@ -177,9 +178,14 @@ public class FlashDriveView extends AppLayout {
         delBtn.setEnabled(false);
         delBtn.addClickListener(e -> showDelConfirmDialog());
 
+        Button refreshBtn = new Button("Обновить", VaadinIcon.REFRESH.create());
+        refreshBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        refreshBtn.addClickListener(e -> refreshGrid());
+
         buttons.add(addBtn);
         buttons.add(editBtn);
         buttons.add(delBtn);
+        buttons.add(refreshBtn);
     }
 
     private static Component createFilterHeader(String labelText,
@@ -203,8 +209,8 @@ public class FlashDriveView extends AppLayout {
     }
 
     private void showNewEntryDialog() {
-        var dialog = new FlashDriveDialog(flashDrive -> {
-            presenter.addFlashDrive(flashDrive);
+        var dialog = new FloppyDiskDialog(floppyDisk -> {
+            presenter.addFloppyDisk(floppyDisk);
             refreshGrid();
         });
         dialog.setHeaderTitle("Добавление новой записи");
@@ -213,9 +219,9 @@ public class FlashDriveView extends AppLayout {
         dialog.open();
     }
 
-    private void showEditDialog(FlashDriveDto oldDto) {
-        var dialog = new FlashDriveDialog(newDto -> {
-            presenter.updateFlashDrive(oldDto.id(), newDto);
+    private void showEditDialog(FloppyDiskDto oldDto) {
+        var dialog = new FloppyDiskDialog(newDto -> {
+            presenter.updateFloppyDisk(oldDto.id(), newDto);
             refreshGrid();
         }, oldDto);
         dialog.setHeaderTitle("Изменение записи");
@@ -225,7 +231,7 @@ public class FlashDriveView extends AppLayout {
     }
 
     private void showDelConfirmDialog() {
-        var selectedItems = flashDriveGrid.getSelectedItems();
+        var selectedItems = floppyDiskGrid.getSelectedItems();
         String message = selectedItems.size() == 1
                 ? "Вы действительно хотите удалить запись?"
                 : "Вы действительно хотите удалить несколько записей?";
@@ -241,10 +247,10 @@ public class FlashDriveView extends AppLayout {
 
         confirmDialog.addOkClickListener(e -> {
             List<Long> ids = selectedItems.stream()
-                    .map(FlashDriveDto::id)
+                    .map(FloppyDiskDto::id)
                     .toList();
 
-            presenter.deleteFlashDrives(ids);
+            presenter.deleteFloppyDisks(ids);
             refreshGrid();
             confirmDialog.close();
 
@@ -269,17 +275,16 @@ public class FlashDriveView extends AppLayout {
         errorDialog.addOkClickListener(e -> errorDialog.close());
     }
 
-    private static class FlashDriveFilter {
-        private final GridListDataView<FlashDriveDto> dataView;
+    private static class FloppyDiskFilter {
+        private final GridListDataView<FloppyDiskDto> dataView;
 
         private String name;
-        private String usbInterface;
-        private String usbType;
         private String capacity;
-        private String writeSpeed;
-        private String readSpeed;
+        private String format;
+        private String diskDensity;
+        private Boolean isDoubleSided;
 
-        public FlashDriveFilter(GridListDataView<FlashDriveDto> dataView) {
+        public FloppyDiskFilter(GridListDataView<FloppyDiskDto> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
         }
@@ -289,13 +294,13 @@ public class FlashDriveView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        public void setUsbInterface(String usbInterface) {
-            this.usbInterface = usbInterface;
+        public void setFormat(String format) {
+            this.format = format;
             this.dataView.refreshAll();
         }
 
-        public void setUsbType(String usbType) {
-            this.usbType = usbType;
+        public void setDiskDensity(String diskDensity) {
+            this.diskDensity = diskDensity;
             this.dataView.refreshAll();
         }
 
@@ -304,23 +309,24 @@ public class FlashDriveView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        public void setWriteSpeed(String writeSpeed) {
-            this.writeSpeed = writeSpeed;
+        public void setIsDoubleSided(String value) {
+            if (value == null || value.isEmpty()) {
+                this.isDoubleSided = null;
+            } else if ("да".contains(value.toLowerCase())) {
+                this.isDoubleSided = true;
+            } else if ("нет".contains(value.toLowerCase())) {
+                this.isDoubleSided = false;
+            }
             this.dataView.refreshAll();
         }
 
-        public void setReadSpeed(String readSpeed) {
-            this.readSpeed = readSpeed;
-            this.dataView.refreshAll();
-        }
-
-        private boolean test(FlashDriveDto dto) {
+        private boolean test(FloppyDiskDto dto) {
             return matches(dto.name(), name)
-                    && matches(dto.usbInterface(), usbInterface)
-                    && matches(dto.usbType(), usbType)
+                    && matches(dto.diskDensity(), diskDensity)
                     && matchesNumeric(dto.capacity(), capacity)
-                    && matchesNumeric(dto.writeSpeed(), writeSpeed)
-                    && matchesNumeric(dto.readSpeed(), readSpeed);
+                    && matchesNumeric(dto.format(), format)
+                    && matches(dto.diskDensity(), diskDensity)
+                    && isDoubleSided == null || dto.isDoubleSided() == isDoubleSided;
         }
 
         private boolean matches(String value, String searchTerm) {
@@ -337,62 +343,55 @@ public class FlashDriveView extends AppLayout {
         }
     }
 
-    static class FlashDriveForm extends FormLayout {
+    static class FloppyDiskForm extends FormLayout {
         private TextArea nameField;
         private NumberField capacityField;
         private ComboBox<Bytes> capacityUnitBox;
-        private ComboBox<UsbInterface> usbInterfaceBox;
-        private ComboBox<String> usbTypeBox;
-        private NumberField readSpeedField;
-        private NumberField writeSpeedField;
+        private NumberField floppyFormatField;
+        private ComboBox<FloppyDensity> floppyDensityBox;
+        private Checkbox floppyDoubleSidedCheckbox;
 
-        private Binder<FlashDriveDto> binder = new Binder<>(FlashDriveDto.class);
+        private Binder<FloppyDiskDto> binder = new Binder<>(FloppyDiskDto.class);
         private Long currentId = null;
 
-        public FlashDriveForm() {
+        public FloppyDiskForm() {
             setupFields();
             setupBinder();
-            add(nameField, capacityField, usbInterfaceBox,
-                    usbTypeBox, writeSpeedField, readSpeedField);
+            add(nameField, capacityField, floppyFormatField, floppyDensityBox, floppyDoubleSidedCheckbox);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
         private void setupFields() {
             nameField = new TextArea("Название:");
-            capacityField = new NumberField("Объём:");
-            capacityUnitBox = new ComboBox<>();
-            usbInterfaceBox = new ComboBox<>("Интерфейс:");
-            usbTypeBox = new ComboBox<>("Версия USB:");
-            readSpeedField = new NumberField("Скорость записи:");
-            writeSpeedField = new NumberField("Скорость чтения:");
-
             nameField.setMinRows(1);
             nameField.setMaxRows(1);
             nameField.setMinLength(1);
             nameField.setMaxLength(30);
             nameField.setClearButtonVisible(true);
 
+            capacityField = new NumberField("Объём:");
             capacityField.setClearButtonVisible(true);
             capacityField.setRequiredIndicatorVisible(true);
 
+            capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
             capacityUnitBox.setValue(Bytes.MB);
             capacityField.setSuffixComponent(capacityUnitBox);
 
-            usbInterfaceBox.setItems(UsbInterface.values());
-            usbInterfaceBox.setItemLabelGenerator(UsbInterface::getLabel);
-            usbInterfaceBox.setClearButtonVisible(true);
-            usbInterfaceBox.addValueChangeListener(e -> System.out.println(e.getValue()));
+            floppyFormatField = new NumberField("Размер (в дюймах):");
+            floppyFormatField.setSuffixComponent(new Div("\""));
+            floppyFormatField.setStepButtonsVisible(true);
+            floppyFormatField.setStep(.25);
+            floppyFormatField.setClearButtonVisible(true);
 
-            usbTypeBox.setItems("1.0", "2.0", "3.0", "3.1", "3.2");
-            usbTypeBox.setClearButtonVisible(true);
+            floppyDensityBox = new ComboBox<>("Плотность записи:");
+            floppyDensityBox.setItems(FloppyDensity.values());
+            floppyDensityBox.setItemLabelGenerator(FloppyDensity::getLabel);
+            floppyDensityBox.setClearButtonVisible(true);
 
-            readSpeedField.setSuffixComponent(new Div("МБ/с"));
-            readSpeedField.setClearButtonVisible(true);
-
-            writeSpeedField.setSuffixComponent(new Div("МБ/с"));
-            writeSpeedField.setClearButtonVisible(true);
+            floppyDoubleSidedCheckbox = new Checkbox("Двусторонняя дискета");
+            floppyDoubleSidedCheckbox.setValue(false); // По умолчанию односторонняя
         }
 
         private void setupBinder() {
@@ -401,7 +400,7 @@ public class FlashDriveView extends AppLayout {
                     .asRequired("Название обязательно")
                     .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
                     .bind(
-                            FlashDriveDto::name,
+                            FloppyDiskDto::name,
                             (dto, value) -> {}
                     );
 
@@ -413,33 +412,30 @@ public class FlashDriveView extends AppLayout {
                             (dto, value) -> {}
                     );
 
-            binder.forField(usbInterfaceBox)
+            binder.forField(floppyFormatField)
+                    .withValidator(formatInches -> formatInches == null || (formatInches >= 2 && formatInches <= 8),
+                            "Принимается размер дискеты от 2 до 8 дюймов")
                     .bind(
-                            dto -> dto.usbInterface() != null ? UsbInterface.valueOfLabel(dto.usbInterface()) : null,
+                            dto -> dto.format() != null ? dto.format().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
-            binder.forField(usbTypeBox)
-                    .bind(FlashDriveDto::usbType, (dto, value) -> {});
-
-            binder.forField(writeSpeedField)
-                    .withValidator(writeSpd -> writeSpd == null || writeSpd > 0, "Скорость должна быть положительной")
+            binder.forField(floppyDensityBox)
                     .bind(
-                            dto -> dto.writeSpeed() != null ? dto.writeSpeed().doubleValue() : null,
+                            dto -> dto.diskDensity() != null ? FloppyDensity.valueOfLabel(dto.diskDensity()) : null,
                             (dto, value) -> {}
                     );
 
-            binder.forField(readSpeedField)
-                    .withValidator(readSpd -> readSpd == null || readSpd > 0, "Скорость должна быть положительной")
+            binder.forField(floppyDoubleSidedCheckbox)
                     .bind(
-                            dto -> dto.readSpeed() != null ? dto.readSpeed().doubleValue() : null,
+                            FloppyDiskDto::isDoubleSided,
                             (dto, value) -> {}
                     );
         }
 
-        public void setFlashDrive(FlashDriveDto flashDrive) {
-            this.currentId = flashDrive.id();
-            binder.readBean(flashDrive);
+        public void setFloppyDisk(FloppyDiskDto floppyDisk) {
+            this.currentId = floppyDisk.id();
+            binder.readBean(floppyDisk);
         }
 
         private float toMegabytes(float value, Bytes unit) {
@@ -458,22 +454,28 @@ public class FlashDriveView extends AppLayout {
             }
         }
 
-        public Optional<FlashDriveDto> getFormDataObject() {
+        public Optional<FloppyDiskDto> getFormDataObject() {
             if (!isValid()) {
                 return Optional.empty();
             }
 
-            FlashDriveDto dto = new FlashDriveDto(
+            FloppyDiskDto dto = new FloppyDiskDto(
                     currentId,
                     nameField.getValue(),
-                    usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue().getLabel() : null,
-                    usbTypeBox.getValue(),
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
-                    writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
-                    readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null
+                    floppyFormatField.getValue() != null ? floppyFormatField.getValue().floatValue() : null,
+                    floppyDensityBox.getValue() != null ? floppyDensityBox.getValue().name() : null,
+                    floppyDoubleSidedCheckbox.getValue()
             );
 
             return Optional.of(dto);
+        }
+
+        private Boolean isFloppyDoubleSided(String value) {
+            if (value == null)
+                return null;
+
+            return value.equals("Двусторонняя");
         }
 
         public boolean isValid() {
@@ -484,32 +486,31 @@ public class FlashDriveView extends AppLayout {
             currentId = null;
             nameField.clear();
             capacityField.clear();
-            usbInterfaceBox.clear();
-            usbTypeBox.clear();
-            writeSpeedField.clear();
-            readSpeedField.clear();
+            floppyFormatField.clear();
+            floppyDensityBox.clear();
+            floppyDoubleSidedCheckbox.setValue(false);
             binder.validate();
         }
     }
 
-    static class FlashDriveDialog extends CustomDialog {
-        private final FlashDriveForm form;
-        private final SerializableConsumer<FlashDriveDto> onSaveCallback;
+    static class FloppyDiskDialog extends CustomDialog {
+        private final FloppyDiskForm form;
+        private final SerializableConsumer<FloppyDiskDto> onSaveCallback;
         private boolean isEditMode;
 
-        public FlashDriveDialog(SerializableConsumer<FlashDriveDto> onSaveCallback) {
+        public FloppyDiskDialog(SerializableConsumer<FloppyDiskDto> onSaveCallback) {
             this(onSaveCallback, null);
         }
 
-        public FlashDriveDialog(SerializableConsumer<FlashDriveDto> onSaveCallback, FlashDriveDto dto) {
+        public FloppyDiskDialog(SerializableConsumer<FloppyDiskDto> onSaveCallback, FloppyDiskDto dto) {
             this.onSaveCallback = onSaveCallback;
 
-            form = new FlashDriveForm();
+            form = new FloppyDiskForm();
             isEditMode = false;
 
             if (dto != null) {
                 isEditMode = true;
-                form.setFlashDrive(dto);
+                form.setFloppyDisk(dto);
             }
 
             addToDialogBody(form);
@@ -526,9 +527,9 @@ public class FlashDriveView extends AppLayout {
                 return;
             }
 
-            form.getFormDataObject().ifPresent(flashDrive -> {
+            form.getFormDataObject().ifPresent(floppyDisk -> {
                 try {
-                    onSaveCallback.accept(flashDrive);
+                    onSaveCallback.accept(floppyDisk);
                     close();
 
                     Notification notification = Notification.show(
