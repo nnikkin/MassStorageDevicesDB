@@ -1,13 +1,14 @@
 package com.nikkin.devicesdb.Dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Positive;
 
 public record HardDiskDriveDto(
-        @NotBlank String name,
+        @Id Long id,
+        String name,
         @Positive Float capacity,
-        @NotBlank String driveInterface,
-        @Positive Float format,
+        String driveInterface,
+        String format,
         @Positive Integer rpm,
         @Positive Integer cache,
         @Positive Float powerConsumption

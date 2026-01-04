@@ -49,31 +49,28 @@ public class SolidStateDriveService {
         return dto;
     }
 
-    public SolidStateDriveDto update(Long id, SolidStateDriveDto new_dto) {
-        SolidStateDrive old_entity = solidStateDriveRepository.findById(id)
+    public SolidStateDriveDto update(Long id, SolidStateDriveDto dto) {
+        SolidStateDrive entity = solidStateDriveRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-        SolidStateDrive new_entity = mapToEntity(new_dto);
-        solidStateDriveRepository.save(new_entity);
 
-        return new_dto;
+        entity.setId(dto.id());
+        entity.setName(dto.name());
+        entity.setDriveInterface(dto.driveInterface());
+        entity.setCapacity(dto.capacity());
+        entity.setNandType(dto.nandType());
+        entity.setTbw(dto.tbw());
+        entity.setWriteSpeed(dto.writeSpeed());
+        entity.setReadSpeed(dto.readSpeed());
+        entity.setPowerConsumption(dto.powerConsumption());
+
+        SolidStateDrive updated = solidStateDriveRepository.save(entity);
+        return mapToDto(updated);
     }
 
     // Мапперы
     private SolidStateDriveDto mapToDto(SolidStateDrive entity) {
-        /*
-            public SolidStateDriveDto(
-                String name,
-                @NotBlank String driveInterface,
-                @Positive Float capacity,
-                String nandType,
-                @Positive Integer tbw,
-                @Positive Float writeSpeed,
-                @Positive Float readSpeed,
-                @Positive Float powerConsumption
-            )
-        */
-
         return new SolidStateDriveDto(
+            entity.getId(),
             entity.getName(),
             entity.getDriveInterface(),
             entity.getCapacity(),
@@ -88,14 +85,15 @@ public class SolidStateDriveService {
     private SolidStateDrive mapToEntity(SolidStateDriveDto dto) {
         SolidStateDrive entity = new SolidStateDrive();
 
-        entity.setName(entity.getName());
-        entity.setDriveInterface(entity.getDriveInterface());
-        entity.setCapacity(entity.getCapacity());
-        entity.setNandType(entity.getNandType());
-        entity.setTbw(entity.getTbw());
-        entity.setWriteSpeed(entity.getWriteSpeed());
-        entity.setReadSpeed(entity.getReadSpeed());
-        entity.setPowerConsumption(entity.getPowerConsumption());
+        entity.setId(dto.id());
+        entity.setName(dto.name());
+        entity.setDriveInterface(dto.driveInterface());
+        entity.setCapacity(dto.capacity());
+        entity.setNandType(dto.nandType());
+        entity.setTbw(dto.tbw());
+        entity.setWriteSpeed(dto.writeSpeed());
+        entity.setReadSpeed(dto.readSpeed());
+        entity.setPowerConsumption(dto.powerConsumption());
 
         return entity;
     }

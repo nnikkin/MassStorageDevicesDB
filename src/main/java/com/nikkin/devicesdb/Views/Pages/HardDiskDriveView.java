@@ -1,9 +1,9 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Domain.UsbInterface;
-import com.nikkin.devicesdb.Dto.FlashDriveDto;
-import com.nikkin.devicesdb.Presenters.FlashDrivePresenter;
+import com.nikkin.devicesdb.Domain.HddInterface;
+import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
+import com.nikkin.devicesdb.Presenters.HardDiskDrivePresenter;
 import com.nikkin.devicesdb.Views.CustomDialog;
 import com.nikkin.devicesdb.Views.NavBar;
 import com.vaadin.flow.component.Component;
@@ -11,7 +11,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.charts.model.Buttons;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnRendering;
@@ -26,6 +26,7 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -35,25 +36,26 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import java.util.Optional;
+import jakarta.validation.constraints.Positive;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-@Route("flash")
-public class FlashDriveView extends AppLayout {
-    private final FlashDrivePresenter presenter;
-    private Grid<FlashDriveDto> flashDriveGrid;
+@Route("hdd")
+public class HardDiskDriveView extends AppLayout {
+    private final HardDiskDrivePresenter presenter;
+    private Grid<HardDiskDriveDto> hddGrid;
     private List<Component> buttons;
 
-    public FlashDriveView(FlashDrivePresenter presenter) {
+    public HardDiskDriveView(HardDiskDrivePresenter presenter) {
         this.presenter = presenter;
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
 
-        H1 pageTitle = new H1("Запоминающие устройства - Флеш-память");
+        H1 pageTitle = new H1("Запоминающие устройства - Накопители на жёстких дисках");
         pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
 
@@ -82,81 +84,83 @@ public class FlashDriveView extends AppLayout {
         fillTable();
         setupFilters();
 
-        layout.add(tableMenu, flashDriveGrid);
+        layout.add(tableMenu, hddGrid);
     }
 
     private void initTable() {
-        flashDriveGrid = new Grid<>(FlashDriveDto.class, false);
-        flashDriveGrid.setItems(new ArrayList<>());
-        flashDriveGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        flashDriveGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        flashDriveGrid.setColumnRendering(ColumnRendering.LAZY);
-        flashDriveGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        hddGrid = new Grid<>(HardDiskDriveDto.class, false);
+        hddGrid.setItems(new ArrayList<>());
+        hddGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        hddGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+        hddGrid.setColumnRendering(ColumnRendering.LAZY);
+        hddGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        flashDriveGrid.addColumn(FlashDriveDto::name)
+        hddGrid.addColumn(HardDiskDriveDto::name)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::capacity)
+        hddGrid.addColumn(HardDiskDriveDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::usbInterface)
+        hddGrid.addColumn(HardDiskDriveDto::driveInterface)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::usbType)
+        hddGrid.addColumn(HardDiskDriveDto::format)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::readSpeed)
+        hddGrid.addColumn(HardDiskDriveDto::cache)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::writeSpeed)
+        hddGrid.addColumn(HardDiskDriveDto::rpm)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
+        hddGrid.addColumn(HardDiskDriveDto::powerConsumption)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
 
-        flashDriveGrid.addSelectionListener(
+        hddGrid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
-                    {
-                        ((Button) buttons.get(1)).setEnabled(false);
-                        ((Button) buttons.get(2)).setEnabled(false);
-                    }
+                        buttons.forEach(button -> ((Button) button).setEnabled(false));
                     else
-                    {
-                        ((Button) buttons.get(1)).setEnabled(true);
-                        ((Button) buttons.get(2)).setEnabled(true);
-                    }
+                        buttons.forEach(button -> ((Button) button).setEnabled(true));
+
+                    ((Button) buttons.getFirst()).setEnabled(true);
+                    ((Button) buttons.getLast()).setEnabled(true);
                 }
         );
     }
 
     private void refreshGrid() {
+        hddGrid.deselectAll();
         fillTable();
-        flashDriveGrid.deselectAll();
     }
 
     private void fillTable() {
-        List<FlashDriveDto> items = presenter.loadAllFlashDrives();
-        flashDriveGrid.getListDataView().setItems(items);
+        List<HardDiskDriveDto> items = presenter.loadAllHdd();
+        hddGrid.getListDataView().setItems(items);
     }
 
     private void setupFilters() {
-        var headerCells = flashDriveGrid.getHeaderRows()
+        var headerCells = hddGrid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
 
-        FlashDriveFilter filter = new FlashDriveFilter(flashDriveGrid.getListDataView());
+        HardDiskDriveFilter filter = new HardDiskDriveFilter(hddGrid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
-        headerCells.get(2).setComponent(createFilterHeader("Интерфейс USB", filter::setUsbInterface));
-        headerCells.get(3).setComponent(createFilterHeader("Тип USB", filter::setUsbType));
-        headerCells.get(4).setComponent(createFilterHeader("Скорость чтения (МБ/сек)", filter::setReadSpeed));
-        headerCells.getLast().setComponent(createFilterHeader("Скорость записи (МБ/сек)", filter::setWriteSpeed));
+        headerCells.get(2).setComponent(createFilterHeader("Интерфейс:", filter::setDriveInterface));
+        headerCells.get(3).setComponent(createFilterHeader("Формат:", filter::setFormat));
+        headerCells.get(4).setComponent(createFilterHeader("Размер кэша (МБ):", filter::setCache));
+        headerCells.get(4).setComponent(createFilterHeader("RPM (об/мин):", filter::setRpm));
+        headerCells.get(4).setComponent(createFilterHeader("Энергопотребление (Ватт):", filter::setPowerConsumption));
     }
 
     private void setupButtons() {
@@ -170,7 +174,7 @@ public class FlashDriveView extends AppLayout {
         editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         editBtn.setEnabled(false);
         editBtn.addClickListener(e -> {
-            var selected = flashDriveGrid.getSelectedItems();
+            var selected = hddGrid.getSelectedItems();
             if (selected.size() != 1) {
                 showErrorDialog("Выберите одну запись для редактирования");
             } else {
@@ -214,8 +218,8 @@ public class FlashDriveView extends AppLayout {
     }
 
     private void showNewEntryDialog() {
-        var dialog = new FlashDriveDialog(flashDrive -> {
-            presenter.addFlashDrive(flashDrive);
+        var dialog = new HardDiskDriveDialog(hdd -> {
+            presenter.addHdd(hdd);
             refreshGrid();
         });
         dialog.setHeaderTitle("Добавление новой записи");
@@ -224,9 +228,9 @@ public class FlashDriveView extends AppLayout {
         dialog.open();
     }
 
-    private void showEditDialog(FlashDriveDto oldDto) {
-        var dialog = new FlashDriveDialog(newDto -> {
-            presenter.updateFlashDrive(oldDto.id(), newDto);
+    private void showEditDialog(HardDiskDriveDto oldDto) {
+        var dialog = new HardDiskDriveDialog(newDto -> {
+            presenter.updateHdd(oldDto.id(), newDto);
             refreshGrid();
         }, oldDto);
         dialog.setHeaderTitle("Изменение записи");
@@ -236,7 +240,7 @@ public class FlashDriveView extends AppLayout {
     }
 
     private void showDelConfirmDialog() {
-        var selectedItems = flashDriveGrid.getSelectedItems();
+        var selectedItems = hddGrid.getSelectedItems();
         String message = selectedItems.size() == 1
                 ? "Вы действительно хотите удалить запись?"
                 : "Вы действительно хотите удалить несколько записей?";
@@ -252,10 +256,10 @@ public class FlashDriveView extends AppLayout {
 
         confirmDialog.addOkClickListener(e -> {
             List<Long> ids = selectedItems.stream()
-                    .map(FlashDriveDto::id)
+                    .map(HardDiskDriveDto::id)
                     .toList();
 
-            presenter.deleteFlashDrives(ids);
+            presenter.deleteHdd(ids);
             refreshGrid();
             confirmDialog.close();
 
@@ -280,17 +284,18 @@ public class FlashDriveView extends AppLayout {
         errorDialog.addOkClickListener(e -> errorDialog.close());
     }
 
-    private static class FlashDriveFilter {
-        private final GridListDataView<FlashDriveDto> dataView;
+    private static class HardDiskDriveFilter {
+        private final GridListDataView<HardDiskDriveDto> dataView;
 
         private String name;
-        private String usbInterface;
-        private String usbType;
         private String capacity;
-        private String writeSpeed;
-        private String readSpeed;
+        private String format;
+        private String driveInterface;
+        private String rpm;
+        private String cache;
+        private String powerConsumption;
 
-        public FlashDriveFilter(GridListDataView<FlashDriveDto> dataView) {
+        public HardDiskDriveFilter(GridListDataView<HardDiskDriveDto> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
         }
@@ -300,13 +305,8 @@ public class FlashDriveView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        public void setUsbInterface(String usbInterface) {
-            this.usbInterface = usbInterface;
-            this.dataView.refreshAll();
-        }
-
-        public void setUsbType(String usbType) {
-            this.usbType = usbType;
+        public void setFormat(String format) {
+            this.format = format;
             this.dataView.refreshAll();
         }
 
@@ -315,23 +315,34 @@ public class FlashDriveView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        public void setWriteSpeed(String writeSpeed) {
-            this.writeSpeed = writeSpeed;
+        public void setDriveInterface(String driveInterface) {
+            this.driveInterface = driveInterface;
             this.dataView.refreshAll();
         }
 
-        public void setReadSpeed(String readSpeed) {
-            this.readSpeed = readSpeed;
+        public void setRpm(String rpm) {
+            this.rpm = rpm;
             this.dataView.refreshAll();
         }
 
-        private boolean test(FlashDriveDto dto) {
+        public void setCache(String cache) {
+            this.cache = cache;
+            this.dataView.refreshAll();
+        }
+
+        public void setPowerConsumption(String powerConsumption) {
+            this.powerConsumption = powerConsumption;
+            this.dataView.refreshAll();
+        }
+
+        private boolean test(HardDiskDriveDto dto) {
             return matches(dto.name(), name)
-                    && matches(dto.usbInterface(), usbInterface)
-                    && matches(dto.usbType(), usbType)
                     && matchesNumeric(dto.capacity(), capacity)
-                    && matchesNumeric(dto.writeSpeed(), writeSpeed)
-                    && matchesNumeric(dto.readSpeed(), readSpeed);
+                    && matches(dto.format(), format)
+                    && matchesNumeric(dto.powerConsumption(), powerConsumption)
+                    && matchesNumeric(dto.rpm(), rpm)
+                    && matchesNumeric(dto.cache(), cache)
+                    && matches(dto.driveInterface(), driveInterface);
         }
 
         private boolean matches(String value, String searchTerm) {
@@ -346,63 +357,74 @@ public class FlashDriveView extends AppLayout {
 
             return String.valueOf(value).startsWith(searchTerm);
         }
+
+        private boolean matchesNumeric(Integer value, String searchTerm) {
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                return true;
+            }
+
+            return String.valueOf(value).startsWith(searchTerm);
+        }
     }
 
-    static class FlashDriveForm extends FormLayout {
+    static class HardDiskDriveForm extends FormLayout {
         private TextArea nameField;
         private NumberField capacityField;
         private ComboBox<Bytes> capacityUnitBox;
-        private ComboBox<UsbInterface> usbInterfaceBox;
-        private ComboBox<String> usbTypeBox;
-        private NumberField readSpeedField;
-        private NumberField writeSpeedField;
+        private ComboBox<String> hddInterfaceComboBox;
+        private RadioButtonGroup<String> hddFormatRadio;
+        private NumberField hddRpmField;
+        private NumberField hddCacheField;
+        private NumberField powerConsumptionField;
 
-        private Binder<FlashDriveDto> binder = new Binder<>(FlashDriveDto.class);
+        private Binder<HardDiskDriveDto> binder = new Binder<>(HardDiskDriveDto.class);
         private Long currentId = null;
 
-        public FlashDriveForm() {
+        public HardDiskDriveForm() {
             setupFields();
             setupBinder();
-            add(nameField, capacityField, usbInterfaceBox,
-                    usbTypeBox, writeSpeedField, readSpeedField);
+            add(nameField, capacityField, hddInterfaceComboBox, hddFormatRadio, hddRpmField,
+                    hddCacheField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
         private void setupFields() {
             nameField = new TextArea("Название:");
-            capacityField = new NumberField("Объём:");
-            capacityUnitBox = new ComboBox<>();
-            usbInterfaceBox = new ComboBox<>("Интерфейс:");
-            usbTypeBox = new ComboBox<>("Версия USB:");
-            readSpeedField = new NumberField("Скорость записи:");
-            writeSpeedField = new NumberField("Скорость чтения:");
-
             nameField.setMinRows(1);
             nameField.setMaxRows(1);
             nameField.setMinLength(1);
             nameField.setMaxLength(30);
             nameField.setClearButtonVisible(true);
 
+            capacityField = new NumberField("Объём:");
             capacityField.setClearButtonVisible(true);
             capacityField.setRequiredIndicatorVisible(true);
 
+            capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
             capacityUnitBox.setValue(Bytes.MB);
             capacityField.setSuffixComponent(capacityUnitBox);
 
-            usbInterfaceBox.setItems(UsbInterface.values());
-            usbInterfaceBox.setItemLabelGenerator(UsbInterface::getLabel);
-            usbInterfaceBox.setClearButtonVisible(true);
+            hddInterfaceComboBox = new ComboBox<>("Интерфейс:");
+            hddInterfaceComboBox.setItems("SATA","SCSI", "SAS", "IDE", "ESDI");
+            hddInterfaceComboBox.setRequiredIndicatorVisible(true);
+            hddInterfaceComboBox.setClearButtonVisible(true);
 
-            usbTypeBox.setItems("1.0", "2.0", "3.0", "3.1", "3.2");
-            usbTypeBox.setClearButtonVisible(true);
+            hddFormatRadio = new RadioButtonGroup<>("Формат:");
+            hddFormatRadio.setItems("2.5\"", "3.5\"");
 
-            readSpeedField.setSuffixComponent(new Div("МБ/с"));
-            readSpeedField.setClearButtonVisible(true);
+            hddRpmField = new NumberField("RPM (оборотов в минуту):");
+            hddRpmField.setSuffixComponent(new Div("об/мин"));
+            hddRpmField.setClearButtonVisible(true);
 
-            writeSpeedField.setSuffixComponent(new Div("МБ/с"));
-            writeSpeedField.setClearButtonVisible(true);
+            hddCacheField = new NumberField("Размер кэша (МБ):");
+            hddCacheField.setSuffixComponent(new Div("МБ"));
+            hddCacheField.setClearButtonVisible(true);
+
+            powerConsumptionField = new NumberField("Энергопотребление (Вт):");
+            powerConsumptionField.setSuffixComponent(new Div("Вт"));
+            powerConsumptionField.setClearButtonVisible(true);
         }
 
         private void setupBinder() {
@@ -411,7 +433,7 @@ public class FlashDriveView extends AppLayout {
                     .asRequired("Название обязательно")
                     .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
                     .bind(
-                            FlashDriveDto::name,
+                            HardDiskDriveDto::name,
                             (dto, value) -> {}
                     );
 
@@ -423,33 +445,48 @@ public class FlashDriveView extends AppLayout {
                             (dto, value) -> {}
                     );
 
-            binder.forField(usbInterfaceBox)
+            binder.forField(hddCacheField)
+                    .withValidator(cache -> cache == null || cache > 0,
+                            "Размер кэша должен быть положительным")
                     .bind(
-                            dto -> dto.usbInterface() != null ? UsbInterface.valueOfLabel(dto.usbInterface()) : null,
+                            dto -> dto.cache() != null ? dto.cache().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
-            binder.forField(usbTypeBox)
-                    .bind(FlashDriveDto::usbType, (dto, value) -> {});
-
-            binder.forField(writeSpeedField)
-                    .withValidator(writeSpd -> writeSpd == null || writeSpd > 0, "Скорость должна быть положительной")
+            binder.forField(hddRpmField)
+                    .withValidator(rpm -> rpm == null || rpm > 0,
+                            "Значение RPM должно быть положительным")
                     .bind(
-                            dto -> dto.writeSpeed() != null ? dto.writeSpeed().doubleValue() : null,
+                            dto -> dto.rpm() != null ? dto.rpm().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
-            binder.forField(readSpeedField)
-                    .withValidator(readSpd -> readSpd == null || readSpd > 0, "Скорость должна быть положительной")
+            binder.forField(powerConsumptionField)
+                    .withValidator(power -> power == null || power > 0,
+                            "Значение энергопотребления должно быть положительным")
                     .bind(
-                            dto -> dto.readSpeed() != null ? dto.readSpeed().doubleValue() : null,
+                            dto -> dto.powerConsumption() != null ? dto.powerConsumption().doubleValue() : null,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(hddInterfaceComboBox)
+                    .asRequired("Интерфейс обязателен")
+                    .bind(
+                            HardDiskDriveDto::driveInterface,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(hddFormatRadio)
+                    .asRequired("Формат обязателен")
+                    .bind(
+                            HardDiskDriveDto::format,
                             (dto, value) -> {}
                     );
         }
 
-        public void setFlashDrive(FlashDriveDto flashDrive) {
-            this.currentId = flashDrive.id();
-            binder.readBean(flashDrive);
+        public void setHardDiskDrive(HardDiskDriveDto hdd) {
+            this.currentId = hdd.id();
+            binder.readBean(hdd);
         }
 
         private float toMegabytes(float value, Bytes unit) {
@@ -468,19 +505,20 @@ public class FlashDriveView extends AppLayout {
             }
         }
 
-        public Optional<FlashDriveDto> getFormDataObject() {
+        public Optional<HardDiskDriveDto> getFormDataObject() {
             if (!isValid()) {
                 return Optional.empty();
             }
 
-            FlashDriveDto dto = new FlashDriveDto(
+            HardDiskDriveDto dto = new HardDiskDriveDto(
                     currentId,
                     nameField.getValue(),
-                    usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue().getLabel() : null,
-                    usbTypeBox.getValue(),
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
-                    writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
-                    readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null
+                    hddInterfaceComboBox.getValue(),
+                    hddFormatRadio.getValue(),
+                    hddRpmField.getValue() != null ? hddRpmField.getValue().intValue() : null,
+                    hddCacheField.getValue() != null ? hddCacheField.getValue().intValue() : null,
+                    powerConsumptionField.getValue() != null ? powerConsumptionField.getValue().floatValue() : null
             );
 
             return Optional.of(dto);
@@ -494,32 +532,33 @@ public class FlashDriveView extends AppLayout {
             currentId = null;
             nameField.clear();
             capacityField.clear();
-            usbInterfaceBox.clear();
-            usbTypeBox.clear();
-            writeSpeedField.clear();
-            readSpeedField.clear();
+            hddRpmField.clear();
+            hddCacheField.clear();
+            hddInterfaceComboBox.clear();
+            hddFormatRadio.setValue("3.5\"");
+            powerConsumptionField.clear();
             binder.validate();
         }
     }
 
-    static class FlashDriveDialog extends CustomDialog {
-        private final FlashDriveForm form;
-        private final SerializableConsumer<FlashDriveDto> onSaveCallback;
+    static class HardDiskDriveDialog extends CustomDialog {
+        private final HardDiskDriveForm form;
+        private final SerializableConsumer<HardDiskDriveDto> onSaveCallback;
         private boolean isEditMode;
 
-        public FlashDriveDialog(SerializableConsumer<FlashDriveDto> onSaveCallback) {
+        public HardDiskDriveDialog(SerializableConsumer<HardDiskDriveDto> onSaveCallback) {
             this(onSaveCallback, null);
         }
 
-        public FlashDriveDialog(SerializableConsumer<FlashDriveDto> onSaveCallback, FlashDriveDto dto) {
+        public HardDiskDriveDialog(SerializableConsumer<HardDiskDriveDto> onSaveCallback, HardDiskDriveDto dto) {
             this.onSaveCallback = onSaveCallback;
 
-            form = new FlashDriveForm();
+            form = new HardDiskDriveForm();
             isEditMode = false;
 
             if (dto != null) {
                 isEditMode = true;
-                form.setFlashDrive(dto);
+                form.setHardDiskDrive(dto);
             }
 
             addToDialogBody(form);
@@ -536,9 +575,9 @@ public class FlashDriveView extends AppLayout {
                 return;
             }
 
-            form.getFormDataObject().ifPresent(flashDrive -> {
+            form.getFormDataObject().ifPresent(hdd -> {
                 try {
-                    onSaveCallback.accept(flashDrive);
+                    onSaveCallback.accept(hdd);
                     close();
 
                     Notification notification = Notification.show(

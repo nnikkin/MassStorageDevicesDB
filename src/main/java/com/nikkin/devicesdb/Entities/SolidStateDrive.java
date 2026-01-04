@@ -1,6 +1,5 @@
 package com.nikkin.devicesdb.Entities;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -22,20 +21,16 @@ public class SolidStateDrive {
     
     @Size(max=10)
     private String nandType;        // SLC, MLC, TLC...
-
-    @Nullable
+    
     @Positive(message = "Максимальный ресурс записи не может быть отрицательным либо равным нулю")
     private Integer tbw;
-
-    @Nullable
+    
     @Positive(message = "Скорость чтения не может быть отрицательным либо равным нулю")
     private Float writeSpeed;       // Kb/s
-
-    @Nullable
+    
     @Positive(message = "Скорость записи не может быть отрицательным либо равным нулю")
     private Float readSpeed;
-
-    @Nullable
+    
     @Positive(message = "Значение энергопотребления не может быть отрицательным либо равным нулю")
     private Float powerConsumption;
 
@@ -79,39 +74,36 @@ public class SolidStateDrive {
         this.nandType = nandType;
     }
 
-    @Nullable
+
     public Integer getTbw() {
         return tbw;
     }
 
-    public void setTbw(@Nullable Integer tbw) {
+    public void setTbw(Integer tbw) {
         this.tbw = tbw;
     }
 
-    @Nullable
     public Float getWriteSpeed() {
         return writeSpeed;
     }
 
-    public void setWriteSpeed(@Nullable Float writeSpeed) {
+    public void setWriteSpeed(Float writeSpeed) {
         this.writeSpeed = writeSpeed;
     }
 
-    @Nullable
     public Float getReadSpeed() {
         return readSpeed;
     }
 
-    public void setReadSpeed(@Nullable Float readSpeed) {
+    public void setReadSpeed(Float readSpeed) {
         this.readSpeed = readSpeed;
     }
 
-    @Nullable
     public Float getPowerConsumption() {
         return powerConsumption;
     }
 
-    public void setPowerConsumption(@Nullable Float powerConsumption) {
+    public void setPowerConsumption(Float powerConsumption) {
         this.powerConsumption = powerConsumption;
     }
 }

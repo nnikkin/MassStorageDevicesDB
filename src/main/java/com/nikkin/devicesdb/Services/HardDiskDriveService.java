@@ -49,29 +49,27 @@ public class HardDiskDriveService {
         return dto;
     }
 
-    public HardDiskDriveDto update(Long id, HardDiskDriveDto new_dto) {
-        HardDiskDrive old_entity = hardDiskDriveRepository.findById(id)
+    public HardDiskDriveDto update(Long id, HardDiskDriveDto dto) {
+        HardDiskDrive entity = hardDiskDriveRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-        HardDiskDrive new_entity = mapToEntity(new_dto);
-        hardDiskDriveRepository.save(new_entity);
 
-        return new_dto;
+        entity.setId(dto.id());
+        entity.setName(dto.name());
+        entity.setDriveInterface(dto.driveInterface());
+        entity.setCapacity(dto.capacity());
+        entity.setFormat(dto.format());
+        entity.setRpm(dto.rpm());
+        entity.setCache(dto.cache());
+        entity.setPowerConsumption(dto.powerConsumption());
+
+        HardDiskDrive updated = hardDiskDriveRepository.save(entity);
+        return mapToDto(updated);
     }
 
     // Мапперы
     private HardDiskDriveDto mapToDto(HardDiskDrive entity) {
-        /*
-            public HardDiskDriveDto(
-                @NotBlank String name,
-                @Positive Float capacity,
-                @NotBlank String driveInterface,
-                @Positive Float format,
-                @Positive Integer rpm,
-                @Positive Integer cache,
-                @Positive Float powerConsumption
-            )
-        */
         return new HardDiskDriveDto(
+                entity.getId(),
                 entity.getName(),
                 entity.getCapacity(),
                 entity.getDriveInterface(),
@@ -84,6 +82,8 @@ public class HardDiskDriveService {
 
     private HardDiskDrive mapToEntity(HardDiskDriveDto dto) {
         HardDiskDrive entity = new HardDiskDrive();
+
+        entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setDriveInterface(dto.driveInterface());
         entity.setCapacity(dto.capacity());

@@ -1,11 +1,12 @@
 package com.nikkin.devicesdb.Dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Positive;
 
 public record SolidStateDriveDto(
+        @Id Long id,
         String name,
-        @NotBlank String driveInterface,
+        String driveInterface,
         @Positive Float capacity,
         String nandType,
         @Positive Integer tbw,

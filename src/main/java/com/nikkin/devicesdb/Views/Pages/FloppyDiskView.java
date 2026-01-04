@@ -54,7 +54,7 @@ public class FloppyDiskView extends AppLayout {
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
 
-        H1 pageTitle = new H1("Запоминающие устройства - Гибкие диски");
+        H1 pageTitle = new H1("Запоминающие устройства - Накопители на гибких дисках");
         pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
 
