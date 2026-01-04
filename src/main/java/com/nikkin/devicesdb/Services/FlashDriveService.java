@@ -82,6 +82,7 @@ public class FlashDriveService {
 
     private FlashDrive mapToEntity(FlashDriveDto dto) {
         FlashDrive entity = new FlashDrive();
+
         entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setUsbInterface(dto.usbInterface());
@@ -89,6 +90,7 @@ public class FlashDriveService {
         entity.setCapacity(dto.capacity());
         entity.setWriteSpeed(dto.writeSpeed());
         entity.setReadSpeed(dto.readSpeed());
+
         return entity;
     }
 }

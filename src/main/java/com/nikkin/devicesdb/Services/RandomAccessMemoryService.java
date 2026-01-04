@@ -5,12 +5,14 @@ import com.nikkin.devicesdb.Entities.RandomAccessMemory;
 import com.nikkin.devicesdb.Repos.RandomAccessMemoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Validated
 public class RandomAccessMemoryService {
     private final RandomAccessMemoryRepository randomAccessMemoryRepository;
 
@@ -50,21 +52,32 @@ public class RandomAccessMemoryService {
     }
 
     public RandomAccessMemoryDto update(Long id, RandomAccessMemoryDto new_dto) {
-        RandomAccessMemory old_entity = randomAccessMemoryRepository.findById(id)
+        RandomAccessMemory entity = randomAccessMemoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-        RandomAccessMemory new_entity = mapToEntity(new_dto);
-        randomAccessMemoryRepository.save(new_entity);
 
-        return new_dto;
+        entity.setName(new_dto.name());
+        entity.setModel(new_dto.model());
+        entity.setManufacturer(new_dto.manufacturer());
+        entity.setModuleType(new_dto.moduleType());
+        entity.setMemoryType(new_dto.memoryType());
+        entity.setCapacity(new_dto.capacity());
+        entity.setFrequencyMhz(new_dto.frequencyMhz());
+        entity.setCasLatency(new_dto.casLatency());
+        entity.setSupportsEcc(new_dto.supportsEcc());
+
+        RandomAccessMemory updated = randomAccessMemoryRepository.save(entity);
+
+        return mapToDto(updated);
     }
 
     // Мапперы
     private RandomAccessMemoryDto mapToDto(RandomAccessMemory entity) {
         return new RandomAccessMemoryDto(
+                entity.getId(),
                 entity.getName(),
                 entity.getModel(),
                 entity.getManufacturer(),
-                entity.getType(),
+                entity.getMemoryType(),
                 entity.getModuleType(),
                 entity.getCapacity(),
                 entity.getFrequencyMhz(),
@@ -76,12 +89,13 @@ public class RandomAccessMemoryService {
     private RandomAccessMemory mapToEntity(RandomAccessMemoryDto dto) {
         RandomAccessMemory entity = new RandomAccessMemory();
 
+        entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setModel(dto.model());
         entity.setManufacturer(dto.manufacturer());
         entity.setModuleType(dto.moduleType());
         entity.setCapacity(dto.capacity());
-        entity.setType(dto.type());
+        entity.setMemoryType(dto.memoryType());
         entity.setFrequencyMhz(dto.frequencyMhz());
         entity.setCasLatency(dto.casLatency());
         entity.setSupportsEcc(dto.supportsEcc());

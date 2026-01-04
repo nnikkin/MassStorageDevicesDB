@@ -63,7 +63,6 @@ public class FloppyDiskService {
         entity.setCapacity(new_dto.capacity());
 
         FloppyDisk updated = floppyDiskRepository.save(entity);
-
         return mapToDto(updated);
     }
 
@@ -81,11 +80,14 @@ public class FloppyDiskService {
 
     private FloppyDisk mapToEntity(FloppyDiskDto dto) {
         FloppyDisk entity = new FloppyDisk();
+
+        entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setCapacity(dto.capacity());
         entity.setFormat(dto.format());
         entity.setDiskDensity(dto.diskDensity());
         entity.setDoubleSided(dto.isDoubleSided());
+
         return entity;
     }
 }

@@ -22,7 +22,7 @@ public class RandomAccessMemory {
     private String manufacturer;
 
     @Size(max=10)
-    private String type;            // DDR3, DDR4, DDR5...
+    private String memoryType;            // DDR3, DDR4, DDR5...
 
     @Size(max=10)
     private String moduleType;      // DIMM/SO-DIMM
@@ -35,8 +35,8 @@ public class RandomAccessMemory {
     private Float frequencyMhz;
 
     @Nullable
-    @Positive(message = "CAS-латентность не может быть отрицательным либо равным нулю")
-    private Float casLatency;
+    @Positive(message = "CAS-латентность не может быть отрицательной либо равной нулю")
+    private Integer casLatency;
 
     @NotNull
     private Boolean supportsEcc;
@@ -73,12 +73,12 @@ public class RandomAccessMemory {
         this.manufacturer = manufacturer;
     }
 
-    public String getType() {
-        return type;
+    public String getMemoryType() {
+        return memoryType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setMemoryType(String memoryType) {
+        this.memoryType = memoryType;
     }
 
     public String getModuleType() {
@@ -107,11 +107,11 @@ public class RandomAccessMemory {
     }
 
     @Nullable
-    public Float getCasLatency() {
+    public Integer getCasLatency() {
         return casLatency;
     }
 
-    public void setCasLatency(@Nullable Float casLatency) {
+    public void setCasLatency(@Nullable Integer casLatency) {
         this.casLatency = casLatency;
     }
 

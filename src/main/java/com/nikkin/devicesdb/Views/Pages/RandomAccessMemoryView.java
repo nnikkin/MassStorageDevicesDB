@@ -1,9 +1,8 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Domain.FloppyDensity;
-import com.nikkin.devicesdb.Dto.FloppyDiskDto;
-import com.nikkin.devicesdb.Presenters.FloppyDiskPresenter;
+import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
+import com.nikkin.devicesdb.Presenters.RandomAccessMemoryPresenter;
 import com.nikkin.devicesdb.Views.CustomDialog;
 import com.nikkin.devicesdb.Views.NavBar;
 import com.vaadin.flow.component.Component;
@@ -42,19 +41,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Route("floppy")
-public class FloppyDiskView extends AppLayout {
-    private final FloppyDiskPresenter presenter;
-    private Grid<FloppyDiskDto> floppyDiskGrid;
+@Route("ram")
+public class RandomAccessMemoryView extends AppLayout {
+    private final RandomAccessMemoryPresenter presenter;
+    private Grid<RandomAccessMemoryDto> ramGrid;
     private List<Component> buttons;
 
-    public FloppyDiskView(FloppyDiskPresenter presenter) {
+    public RandomAccessMemoryView(RandomAccessMemoryPresenter presenter) {
         this.presenter = presenter;
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
 
-        H1 pageTitle = new H1("Запоминающие устройства - Гибкие диски");
+        H1 pageTitle = new H1("Запоминающие устройства - ОЗУ");
         pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
 
@@ -83,42 +82,57 @@ public class FloppyDiskView extends AppLayout {
         fillTable();
         setupFilters();
 
-        layout.add(tableMenu, floppyDiskGrid);
+        layout.add(tableMenu, ramGrid);
     }
 
     private void initTable() {
-        floppyDiskGrid = new Grid<>(FloppyDiskDto.class, false);
-        floppyDiskGrid.setItems(new ArrayList<>());
-        floppyDiskGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        floppyDiskGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        floppyDiskGrid.setColumnRendering(ColumnRendering.LAZY);
-        floppyDiskGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        ramGrid = new Grid<>(RandomAccessMemoryDto.class, false);
+        ramGrid.setItems(new ArrayList<>());
+        ramGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        ramGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+        ramGrid.setColumnRendering(ColumnRendering.LAZY);
+        ramGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        floppyDiskGrid.addColumn(FloppyDiskDto::name)
+        ramGrid.addColumn(RandomAccessMemoryDto::name)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        floppyDiskGrid.addColumn(FloppyDiskDto::capacity)
+        ramGrid.addColumn(RandomAccessMemoryDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        floppyDiskGrid.addColumn(FloppyDiskDto::format)
+        ramGrid.addColumn(RandomAccessMemoryDto::manufacturer)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        floppyDiskGrid.addColumn(FloppyDiskDto::diskDensity)
+        ramGrid.addColumn(RandomAccessMemoryDto::model)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        floppyDiskGrid.addColumn(dto ->
-                        dto.isDoubleSided() ? "Да" : "Нет"
-                )
+        ramGrid.addColumn(RandomAccessMemoryDto::memoryType)
                 .setHeader("")
                 .setAutoWidth(true)
-                .setSortable(true)
-                .setComparator(FloppyDiskDto::isDoubleSided);
+                .setSortable(true);
+        ramGrid.addColumn(RandomAccessMemoryDto::moduleType)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
+        ramGrid.addColumn(RandomAccessMemoryDto::casLatency)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
+        ramGrid.addColumn(RandomAccessMemoryDto::frequencyMhz)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
+        ramGrid.addColumn(dto ->
+                        dto.supportsEcc() ? "Да" : "Нет")
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
 
-        floppyDiskGrid.addSelectionListener(
+
+        ramGrid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
                         buttons.forEach(button -> ((Button) button).setEnabled(false));
@@ -132,27 +146,31 @@ public class FloppyDiskView extends AppLayout {
     }
 
     private void refreshGrid() {
-        floppyDiskGrid.deselectAll();
+        ramGrid.deselectAll();
         fillTable();
     }
 
     private void fillTable() {
-        List<FloppyDiskDto> items = presenter.loadAllFloppyDisks();
-        floppyDiskGrid.getListDataView().setItems(items);
+        List<RandomAccessMemoryDto> items = presenter.loadAllRam();
+        ramGrid.getListDataView().setItems(items);
     }
 
     private void setupFilters() {
-        var headerCells = floppyDiskGrid.getHeaderRows()
+        var headerCells = ramGrid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
 
-        FloppyDiskFilter filter = new FloppyDiskFilter(floppyDiskGrid.getListDataView());
+        RandomAccessMemoryFilter filter = new RandomAccessMemoryFilter(ramGrid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
-        headerCells.get(2).setComponent(createFilterHeader("Формат", filter::setFormat));
-        headerCells.get(3).setComponent(createFilterHeader("Плотность", filter::setDiskDensity));
-        headerCells.get(4).setComponent(createFilterHeader("Двусторонняя?", filter::setIsDoubleSided));
+        headerCells.get(2).setComponent(createFilterHeader("Производитель", filter::setManufacturer));
+        headerCells.get(3).setComponent(createFilterHeader("Модель", filter::setModel));
+        headerCells.get(4).setComponent(createFilterHeader("Вид памяти", filter::setMemoryType));
+        headerCells.get(5).setComponent(createFilterHeader("Вид модуля", filter::setModuleType));
+        headerCells.get(6).setComponent(createFilterHeader("CAS-латентность", filter::setCasLatency));
+        headerCells.get(7).setComponent(createFilterHeader("Тактовая частота (МГц)", filter::setFrequencyMhz));
+        headerCells.getLast().setComponent(createFilterHeader("Поддержка ECC", filter::setSupportsEcc));
     }
 
     private void setupButtons() {
@@ -166,7 +184,7 @@ public class FloppyDiskView extends AppLayout {
         editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         editBtn.setEnabled(false);
         editBtn.addClickListener(e -> {
-            var selected = floppyDiskGrid.getSelectedItems();
+            var selected = ramGrid.getSelectedItems();
             if (selected.size() != 1) {
                 showErrorDialog("Выберите одну запись для редактирования");
             } else {
@@ -210,8 +228,8 @@ public class FloppyDiskView extends AppLayout {
     }
 
     private void showNewEntryDialog() {
-        var dialog = new FloppyDiskDialog(floppyDisk -> {
-            presenter.addFloppyDisk(floppyDisk);
+        var dialog = new RandomAccessMemoryDialog(ram -> {
+            presenter.addRam(ram);
             refreshGrid();
         });
         dialog.setHeaderTitle("Добавление новой записи");
@@ -220,9 +238,9 @@ public class FloppyDiskView extends AppLayout {
         dialog.open();
     }
 
-    private void showEditDialog(FloppyDiskDto oldDto) {
-        var dialog = new FloppyDiskDialog(newDto -> {
-            presenter.updateFloppyDisk(oldDto.id(), newDto);
+    private void showEditDialog(RandomAccessMemoryDto oldDto) {
+        var dialog = new RandomAccessMemoryDialog(newDto -> {
+            presenter.updateRam(oldDto.id(), newDto);
             refreshGrid();
         }, oldDto);
         dialog.setHeaderTitle("Изменение записи");
@@ -232,7 +250,7 @@ public class FloppyDiskView extends AppLayout {
     }
 
     private void showDelConfirmDialog() {
-        var selectedItems = floppyDiskGrid.getSelectedItems();
+        var selectedItems = ramGrid.getSelectedItems();
         String message = selectedItems.size() == 1
                 ? "Вы действительно хотите удалить запись?"
                 : "Вы действительно хотите удалить несколько записей?";
@@ -248,10 +266,10 @@ public class FloppyDiskView extends AppLayout {
 
         confirmDialog.addOkClickListener(e -> {
             List<Long> ids = selectedItems.stream()
-                    .map(FloppyDiskDto::id)
+                    .map(RandomAccessMemoryDto::id)
                     .toList();
 
-            presenter.deleteFloppyDisks(ids);
+            presenter.deleteRam(ids);
             refreshGrid();
             confirmDialog.close();
 
@@ -276,16 +294,20 @@ public class FloppyDiskView extends AppLayout {
         errorDialog.addOkClickListener(e -> errorDialog.close());
     }
 
-    private static class FloppyDiskFilter {
-        private final GridListDataView<FloppyDiskDto> dataView;
+    private static class RandomAccessMemoryFilter {
+        private final GridListDataView<RandomAccessMemoryDto> dataView;
 
         private String name;
+        private String model;
+        private String manufacturer;
         private String capacity;
-        private String format;
-        private String diskDensity;
-        private Boolean isDoubleSided;
+        private String memoryType;
+        private String moduleType;
+        private String casLatency;
+        private String frequencyMhz;
+        private Boolean supportsEcc;
 
-        public FloppyDiskFilter(GridListDataView<FloppyDiskDto> dataView) {
+        public RandomAccessMemoryFilter(GridListDataView<RandomAccessMemoryDto> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
         }
@@ -295,39 +317,62 @@ public class FloppyDiskView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        public void setFormat(String format) {
-            this.format = format;
-            this.dataView.refreshAll();
-        }
-
-        public void setDiskDensity(String diskDensity) {
-            this.diskDensity = diskDensity;
-            this.dataView.refreshAll();
-        }
-
         public void setCapacity(String capacity) {
             this.capacity = capacity;
             this.dataView.refreshAll();
         }
 
-        public void setIsDoubleSided(String value) {
+        public void setModel(String model) {
+            this.model = model;
+            this.dataView.refreshAll();
+        }
+
+        public void setManufacturer(String manufacturer) {
+            this.manufacturer = manufacturer;
+            this.dataView.refreshAll();
+        }
+
+        public void setMemoryType(String memoryType) {
+            this.memoryType = memoryType;
+            this.dataView.refreshAll();
+        }
+
+        public void setModuleType(String moduleType) {
+            this.moduleType = moduleType;
+            this.dataView.refreshAll();
+        }
+
+        public void setCasLatency(String casLatency) {
+            this.casLatency = casLatency;
+            this.dataView.refreshAll();
+        }
+
+        public void setFrequencyMhz(String frequencyMhz) {
+            this.frequencyMhz = frequencyMhz;
+            this.dataView.refreshAll();
+        }
+
+        public void setSupportsEcc(String value) {
             if (value == null || value.isEmpty()) {
-                this.isDoubleSided = null;
+                this.supportsEcc = null;
             } else if ("да".contains(value.toLowerCase())) {
-                this.isDoubleSided = true;
+                this.supportsEcc = true;
             } else if ("нет".contains(value.toLowerCase())) {
-                this.isDoubleSided = false;
+                this.supportsEcc = false;
             }
             this.dataView.refreshAll();
         }
 
-        private boolean test(FloppyDiskDto dto) {
+        private boolean test(RandomAccessMemoryDto dto) {
             return matches(dto.name(), name)
-                    && matches(dto.diskDensity(), diskDensity)
                     && matchesNumeric(dto.capacity(), capacity)
-                    && matchesNumeric(dto.format(), format)
-                    && matches(dto.diskDensity(), diskDensity)
-                    && (isDoubleSided == null || dto.isDoubleSided() == isDoubleSided);
+                    && matches(dto.memoryType(), memoryType)
+                    && matches(dto.moduleType(), moduleType)
+                    && matches(dto.model(), model)
+                    && matches(dto.manufacturer(), manufacturer)
+                    && matchesNumeric(dto.casLatency(), casLatency)
+                    && matchesNumeric(dto.frequencyMhz(), frequencyMhz)
+                    && (supportsEcc == null || dto.supportsEcc() == supportsEcc);
         }
 
         private boolean matches(String value, String searchTerm) {
@@ -342,23 +387,36 @@ public class FloppyDiskView extends AppLayout {
 
             return String.valueOf(value).startsWith(searchTerm);
         }
+
+        private boolean matchesNumeric(Integer value, String searchTerm) {
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                return true;
+            }
+
+            return String.valueOf(value).startsWith(searchTerm);
+        }
     }
 
-    static class FloppyDiskForm extends FormLayout {
+    static class RandomAccessMemoryForm extends FormLayout {
         private TextArea nameField;
+        private TextArea modelField;
+        private TextArea manufacturerField;
         private NumberField capacityField;
         private ComboBox<Bytes> capacityUnitBox;
-        private NumberField floppyFormatField;
-        private ComboBox<FloppyDensity> floppyDensityBox;
-        private Checkbox floppyDoubleSidedCheckbox;
+        private ComboBox<String> ramMemoryTypeBox;
+        private RadioButtonGroup<String> ramTypeRadio;
+        private NumberField ramFrequencyField;
+        private NumberField ramLatencyField;
+        private Checkbox ramEccSupportCheckbox;
 
-        private Binder<FloppyDiskDto> binder = new Binder<>(FloppyDiskDto.class);
+        private Binder<RandomAccessMemoryDto> binder = new Binder<>(RandomAccessMemoryDto.class);
         private Long currentId = null;
 
-        public FloppyDiskForm() {
+        public RandomAccessMemoryForm() {
             setupFields();
             setupBinder();
-            add(nameField, capacityField, floppyFormatField, floppyDensityBox, floppyDoubleSidedCheckbox);
+            add(nameField, manufacturerField, modelField, capacityField, ramMemoryTypeBox, ramTypeRadio,
+                    ramFrequencyField, ramLatencyField, ramEccSupportCheckbox);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -370,9 +428,22 @@ public class FloppyDiskView extends AppLayout {
             nameField.setMaxLength(30);
             nameField.setClearButtonVisible(true);
 
+            modelField = new TextArea("Модель:");
+            modelField.setMinRows(1);
+            modelField.setMaxRows(1);
+            modelField.setMinLength(1);
+            modelField.setMaxLength(30);
+            modelField.setClearButtonVisible(true);
+
+            manufacturerField = new TextArea("Производитель:");
+            manufacturerField.setMinRows(1);
+            manufacturerField.setMaxRows(1);
+            manufacturerField.setMinLength(1);
+            manufacturerField.setMaxLength(30);
+            manufacturerField.setClearButtonVisible(true);
+
             capacityField = new NumberField("Объём:");
             capacityField.setClearButtonVisible(true);
-            capacityField.setRequiredIndicatorVisible(true);
 
             capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
@@ -380,19 +451,21 @@ public class FloppyDiskView extends AppLayout {
             capacityUnitBox.setValue(Bytes.MB);
             capacityField.setSuffixComponent(capacityUnitBox);
 
-            floppyFormatField = new NumberField("Размер (в дюймах):");
-            floppyFormatField.setSuffixComponent(new Div("\""));
-            floppyFormatField.setStepButtonsVisible(true);
-            floppyFormatField.setStep(.25);
-            floppyFormatField.setClearButtonVisible(true);
+            ramMemoryTypeBox = new ComboBox<>("Вид памяти:");
+            ramMemoryTypeBox.setItems("DDR", "DDR2", "DDR3", "DDR3L", "DDR4", "DDR5");
 
-            floppyDensityBox = new ComboBox<>("Плотность записи:");
-            floppyDensityBox.setItems(FloppyDensity.values());
-            floppyDensityBox.setItemLabelGenerator(FloppyDensity::getLabel);
-            floppyDensityBox.setClearButtonVisible(true);
+            ramTypeRadio = new RadioButtonGroup<>("Вид модуля:");
+            ramTypeRadio.setItems("DIMM", "SO-DIMM");
 
-            floppyDoubleSidedCheckbox = new Checkbox("Двусторонняя дискета");
-            floppyDoubleSidedCheckbox.setValue(false); // По умолчанию односторонняя
+            ramFrequencyField = new NumberField("Тактовая частота (МГц):");
+            ramFrequencyField.setClearButtonVisible(true);
+
+            ramLatencyField = new NumberField("CAS-латентность:");
+            ramLatencyField.setPrefixComponent(new Div("CL"));
+            ramLatencyField.setClearButtonVisible(true);
+
+            ramEccSupportCheckbox = new Checkbox("Поддерживает ECC?");
+            ramEccSupportCheckbox.setValue(false); // По умолчанию нет
         }
 
         private void setupBinder() {
@@ -401,7 +474,37 @@ public class FloppyDiskView extends AppLayout {
                     .asRequired("Название обязательно")
                     .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
                     .bind(
-                            FloppyDiskDto::name,
+                            RandomAccessMemoryDto::name,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(modelField)
+                    .withValidator(model -> model.length() <= 30, "Название модели должно быть до 30 символов")
+                    .bind(
+                            RandomAccessMemoryDto::model,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(manufacturerField)
+                    .withValidator(manufacturer -> manufacturer.length() <= 30, "Название производителя должно быть до 30 символов")
+                    .bind(
+                            RandomAccessMemoryDto::manufacturer,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(ramMemoryTypeBox)
+                    .asRequired("Вид памяти обязателен")
+                    .withValidator(memoryType -> memoryType.length() <= 10, "Название вида памяти должно быть до 10 символов")
+                    .bind(
+                            RandomAccessMemoryDto::memoryType,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(ramTypeRadio)
+                    .asRequired("Вид модуля обязателен")
+                    .withValidator(manufacturer -> manufacturer.length() <= 10, "Название вида модуля должно быть до 10 символов")
+                    .bind(
+                            RandomAccessMemoryDto::moduleType,
                             (dto, value) -> {}
                     );
 
@@ -413,30 +516,30 @@ public class FloppyDiskView extends AppLayout {
                             (dto, value) -> {}
                     );
 
-            binder.forField(floppyFormatField)
-                    .withValidator(formatInches -> formatInches == null || (formatInches >= 2 && formatInches <= 8),
-                            "Принимается размер дискеты от 2 до 8 дюймов")
+            binder.forField(ramFrequencyField)
+                    .withValidator(frequency -> frequency == null || frequency > 0, "Частота должна быть положительной")
                     .bind(
-                            dto -> dto.format() != null ? dto.format().doubleValue() : null,
+                            dto -> dto.frequencyMhz() != null ? dto.frequencyMhz().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
-            binder.forField(floppyDensityBox)
+            binder.forField(ramLatencyField)
+                    .withValidator(latency -> latency == null || latency > 0, "Значение должно быть положительным")
                     .bind(
-                            dto -> dto.diskDensity() != null ? FloppyDensity.valueOfLabel(dto.diskDensity()) : null,
+                            dto -> dto.casLatency() != null ? dto.casLatency().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
-            binder.forField(floppyDoubleSidedCheckbox)
+            binder.forField(ramEccSupportCheckbox)
                     .bind(
-                            FloppyDiskDto::isDoubleSided,
+                            RandomAccessMemoryDto::supportsEcc,
                             (dto, value) -> {}
                     );
         }
 
-        public void setFloppyDisk(FloppyDiskDto floppyDisk) {
-            this.currentId = floppyDisk.id();
-            binder.readBean(floppyDisk);
+        public void setRandomAccessMemory(RandomAccessMemoryDto ram) {
+            this.currentId = ram.id();
+            binder.readBean(ram);
         }
 
         private float toMegabytes(float value, Bytes unit) {
@@ -455,28 +558,26 @@ public class FloppyDiskView extends AppLayout {
             }
         }
 
-        public Optional<FloppyDiskDto> getFormDataObject() {
+        public Optional<RandomAccessMemoryDto> getFormDataObject() {
             if (!isValid()) {
                 return Optional.empty();
             }
 
-            FloppyDiskDto dto = new FloppyDiskDto(
+            RandomAccessMemoryDto dto = new RandomAccessMemoryDto(
                     currentId,
                     nameField.getValue(),
-                    capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
-                    floppyFormatField.getValue() != null ? floppyFormatField.getValue().floatValue() : null,
-                    floppyDensityBox.getValue() != null ? floppyDensityBox.getValue().name() : null,
-                    floppyDoubleSidedCheckbox.getValue()
+                    modelField.getValue(),
+                    manufacturerField.getValue(),
+                    ramMemoryTypeBox.getValue(),
+                    ramTypeRadio.getValue(),
+                    capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(),
+                            capacityUnitBox.getValue()) : null,
+                    ramFrequencyField.getValue().floatValue(),
+                    ramLatencyField.getValue().intValue(),
+                    ramEccSupportCheckbox.getValue()
             );
 
             return Optional.of(dto);
-        }
-
-        private Boolean isFloppyDoubleSided(String value) {
-            if (value == null)
-                return null;
-
-            return value.equals("Двусторонняя");
         }
 
         public boolean isValid() {
@@ -487,31 +588,33 @@ public class FloppyDiskView extends AppLayout {
             currentId = null;
             nameField.clear();
             capacityField.clear();
-            floppyFormatField.clear();
-            floppyDensityBox.clear();
-            floppyDoubleSidedCheckbox.setValue(false);
+            manufacturerField.clear();
+            modelField.clear();
+            ramLatencyField.clear();
+            ramFrequencyField.clear();
+            ramEccSupportCheckbox.setValue(false);
             binder.validate();
         }
     }
 
-    static class FloppyDiskDialog extends CustomDialog {
-        private final FloppyDiskForm form;
-        private final SerializableConsumer<FloppyDiskDto> onSaveCallback;
+    static class RandomAccessMemoryDialog extends CustomDialog {
+        private final RandomAccessMemoryForm form;
+        private final SerializableConsumer<RandomAccessMemoryDto> onSaveCallback;
         private boolean isEditMode;
 
-        public FloppyDiskDialog(SerializableConsumer<FloppyDiskDto> onSaveCallback) {
+        public RandomAccessMemoryDialog(SerializableConsumer<RandomAccessMemoryDto> onSaveCallback) {
             this(onSaveCallback, null);
         }
 
-        public FloppyDiskDialog(SerializableConsumer<FloppyDiskDto> onSaveCallback, FloppyDiskDto dto) {
+        public RandomAccessMemoryDialog(SerializableConsumer<RandomAccessMemoryDto> onSaveCallback, RandomAccessMemoryDto dto) {
             this.onSaveCallback = onSaveCallback;
 
-            form = new FloppyDiskForm();
+            form = new RandomAccessMemoryForm();
             isEditMode = false;
 
             if (dto != null) {
                 isEditMode = true;
-                form.setFloppyDisk(dto);
+                form.setRandomAccessMemory(dto);
             }
 
             addToDialogBody(form);
@@ -528,9 +631,9 @@ public class FloppyDiskView extends AppLayout {
                 return;
             }
 
-            form.getFormDataObject().ifPresent(floppyDisk -> {
+            form.getFormDataObject().ifPresent(ram -> {
                 try {
-                    onSaveCallback.accept(floppyDisk);
+                    onSaveCallback.accept(ram);
                     close();
 
                     Notification notification = Notification.show(

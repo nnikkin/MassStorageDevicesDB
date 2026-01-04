@@ -63,7 +63,6 @@ public class OpticalDiscService {
         entity.setCapacity(new_dto.capacity());
 
         OpticalDisc updated = opticalDiscRepository.save(entity);
-
         return mapToDto(updated);
     }
 
@@ -82,12 +81,15 @@ public class OpticalDiscService {
 
     private OpticalDisc mapToEntity(OpticalDiscDto dto) {
         OpticalDisc entity = new OpticalDisc();
+
+        entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setCapacity(dto.capacity());
         entity.setType(dto.type());
         entity.setRewriteType(dto.rewriteType());
         entity.setSpeedMultiplier(dto.speedMultiplier());
         entity.setLayers(dto.layers());
+
         return entity;
     }
 }
