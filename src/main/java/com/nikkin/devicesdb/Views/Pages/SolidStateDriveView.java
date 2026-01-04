@@ -1,8 +1,9 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Dto.FlashDriveDto;
-import com.nikkin.devicesdb.Presenters.FlashDrivePresenter;
+import com.nikkin.devicesdb.Domain.SsdInterface;
+import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
+import com.nikkin.devicesdb.Presenters.SolidStateDrivePresenter;
 import com.nikkin.devicesdb.Views.CustomDialog;
 import com.nikkin.devicesdb.Views.NavBar;
 import com.vaadin.flow.component.Component;
@@ -33,25 +34,25 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import java.util.Optional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-@Route("flash")
-public class FlashDriveView extends AppLayout {
-    private final FlashDrivePresenter presenter;
-    private Grid<FlashDriveDto> flashDriveGrid;
+@Route("ssd")
+public class SolidStateDriveView extends AppLayout {
+    private final SolidStateDrivePresenter presenter;
+    private Grid<SolidStateDriveDto> ssdGrid;
     private List<Component> buttons;
 
-    public FlashDriveView(FlashDrivePresenter presenter) {
+    public SolidStateDriveView(SolidStateDrivePresenter presenter) {
         this.presenter = presenter;
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
 
-        H1 pageTitle = new H1("Запоминающие устройства - Флеш-память");
+        H1 pageTitle = new H1("Запоминающие устройства - Твердотельные накопители");
         pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
 
@@ -80,81 +81,88 @@ public class FlashDriveView extends AppLayout {
         fillTable();
         setupFilters();
 
-        layout.add(tableMenu, flashDriveGrid);
+        layout.add(tableMenu, ssdGrid);
     }
 
     private void initTable() {
-        flashDriveGrid = new Grid<>(FlashDriveDto.class, false);
-        flashDriveGrid.setItems(new ArrayList<>());
-        flashDriveGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        flashDriveGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        flashDriveGrid.setColumnRendering(ColumnRendering.LAZY);
-        flashDriveGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        ssdGrid = new Grid<>(SolidStateDriveDto.class, false);
+        ssdGrid.setItems(new ArrayList<>());
+        ssdGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        ssdGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+        ssdGrid.setColumnRendering(ColumnRendering.LAZY);
+        ssdGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        flashDriveGrid.addColumn(FlashDriveDto::name)
-                .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
-                .setAutoWidth(true)
-                .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::capacity)
+        ssdGrid.addColumn(SolidStateDriveDto::name)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::usbInterface)
+        ssdGrid.addColumn(SolidStateDriveDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::usbType)
+        ssdGrid.addColumn(SolidStateDriveDto::driveInterface)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::readSpeed)
+        ssdGrid.addColumn(SolidStateDriveDto::nandType)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::writeSpeed)
+        ssdGrid.addColumn(SolidStateDriveDto::tbw)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
+        ssdGrid.addColumn(SolidStateDriveDto::writeSpeed)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
+        ssdGrid.addColumn(SolidStateDriveDto::readSpeed)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
+        ssdGrid.addColumn(SolidStateDriveDto::powerConsumption)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
 
-        flashDriveGrid.addSelectionListener(
+        ssdGrid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
-                    {
-                        ((Button) buttons.get(1)).setEnabled(false);
-                        ((Button) buttons.get(2)).setEnabled(false);
-                    }
+                        buttons.forEach(button -> ((Button) button).setEnabled(false));
                     else
-                    {
-                        ((Button) buttons.get(1)).setEnabled(true);
-                        ((Button) buttons.get(2)).setEnabled(true);
-                    }
+                        buttons.forEach(button -> ((Button) button).setEnabled(true));
+
+                    ((Button) buttons.getFirst()).setEnabled(true);
+                    ((Button) buttons.getLast()).setEnabled(true);
                 }
         );
     }
 
     private void refreshGrid() {
+        ssdGrid.deselectAll();
         fillTable();
-        flashDriveGrid.deselectAll();
     }
 
     private void fillTable() {
-        List<FlashDriveDto> items = presenter.loadAllFlashDrives();
-        flashDriveGrid.getListDataView().setItems(items);
+        List<SolidStateDriveDto> items = presenter.loadAllSsd();
+        ssdGrid.getListDataView().setItems(items);
     }
 
     private void setupFilters() {
-        var headerCells = flashDriveGrid.getHeaderRows()
-                                        .getFirst()
-                                        .getCells();
+        var headerCells = ssdGrid.getHeaderRows()
+                .getFirst()
+                .getCells();
 
-        FlashDriveFilter filter = new FlashDriveFilter(flashDriveGrid.getListDataView());
+        SolidStateDriveFilter filter = new SolidStateDriveFilter(ssdGrid.getListDataView());
 
-        headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
+        headerCells.get(0).setComponent(createFilterHeader("Наименование", filter::setName));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
-        headerCells.get(2).setComponent(createFilterHeader("Интерфейс USB", filter::setUsbInterface));
-        headerCells.get(3).setComponent(createFilterHeader("Тип USB", filter::setUsbType));
-        headerCells.get(4).setComponent(createFilterHeader("Скорость чтения (МБ/сек)", filter::setReadSpeed));
-        headerCells.getLast().setComponent(createFilterHeader("Скорость записи (МБ/сек)", filter::setWriteSpeed));
+        headerCells.get(2).setComponent(createFilterHeader("Интерфейс", filter::setDriveInterface));
+        headerCells.get(3).setComponent(createFilterHeader("Тип NAND", filter::setNandType));
+        headerCells.get(4).setComponent(createFilterHeader("TBW (ТБ)", filter::setTbw));
+        headerCells.get(5).setComponent(createFilterHeader("Скорость записи (МБ/с)", filter::setWriteSpeed));
+        headerCells.get(6).setComponent(createFilterHeader("Скорость чтения (МБ/с)", filter::setReadSpeed));
+        headerCells.get(7).setComponent(createFilterHeader("Энергопотребление (Вт)", filter::setPowerConsumption));
     }
 
     private void setupButtons() {
@@ -168,7 +176,7 @@ public class FlashDriveView extends AppLayout {
         editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         editBtn.setEnabled(false);
         editBtn.addClickListener(e -> {
-            var selected = flashDriveGrid.getSelectedItems();
+            var selected = ssdGrid.getSelectedItems();
             if (selected.size() != 1) {
                 showErrorDialog("Выберите одну запись для редактирования");
             } else {
@@ -212,8 +220,8 @@ public class FlashDriveView extends AppLayout {
     }
 
     private void showNewEntryDialog() {
-        var dialog = new FlashDriveDialog(flashDrive -> {
-            presenter.addFlashDrive(flashDrive);
+        var dialog = new SolidStateDriveDialog(ssd -> {
+            presenter.addSsd(ssd);
             refreshGrid();
         });
         dialog.setHeaderTitle("Добавление новой записи");
@@ -222,9 +230,9 @@ public class FlashDriveView extends AppLayout {
         dialog.open();
     }
 
-    private void showEditDialog(FlashDriveDto oldDto) {
-        var dialog = new FlashDriveDialog(newDto -> {
-            presenter.updateFlashDrive(oldDto.id(), newDto);
+    private void showEditDialog(SolidStateDriveDto oldDto) {
+        var dialog = new SolidStateDriveDialog(newDto -> {
+            presenter.updateSsd(oldDto.id(), newDto);
             refreshGrid();
         }, oldDto);
         dialog.setHeaderTitle("Изменение записи");
@@ -234,7 +242,7 @@ public class FlashDriveView extends AppLayout {
     }
 
     private void showDelConfirmDialog() {
-        var selectedItems = flashDriveGrid.getSelectedItems();
+        var selectedItems = ssdGrid.getSelectedItems();
         String message = selectedItems.size() == 1
                 ? "Вы действительно хотите удалить запись?"
                 : "Вы действительно хотите удалить несколько записей?";
@@ -250,10 +258,10 @@ public class FlashDriveView extends AppLayout {
 
         confirmDialog.addOkClickListener(e -> {
             List<Long> ids = selectedItems.stream()
-                    .map(FlashDriveDto::id)
+                    .map(SolidStateDriveDto::id)
                     .toList();
 
-            presenter.deleteFlashDrives(ids);
+            presenter.deleteSsd(ids);
             refreshGrid();
             confirmDialog.close();
 
@@ -263,8 +271,6 @@ public class FlashDriveView extends AppLayout {
                     Notification.Position.BOTTOM_END
             ).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         });
-
-        confirmDialog.open();
     }
 
     private void showErrorDialog(String message) {
@@ -278,17 +284,19 @@ public class FlashDriveView extends AppLayout {
         errorDialog.addOkClickListener(e -> errorDialog.close());
     }
 
-    private static class FlashDriveFilter {
-        private final GridListDataView<FlashDriveDto> dataView;
+    private static class SolidStateDriveFilter {
+        private final GridListDataView<SolidStateDriveDto> dataView;
 
         private String name;
-        private String usbInterface;
-        private String usbType;
         private String capacity;
+        private String driveInterface;
+        private String nandType;
+        private String tbw;
         private String writeSpeed;
         private String readSpeed;
+        private String powerConsumption;
 
-        public FlashDriveFilter(GridListDataView<FlashDriveDto> dataView) {
+        public SolidStateDriveFilter(GridListDataView<SolidStateDriveDto> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
         }
@@ -298,18 +306,23 @@ public class FlashDriveView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        public void setUsbInterface(String usbInterface) {
-            this.usbInterface = usbInterface;
-            this.dataView.refreshAll();
-        }
-
-        public void setUsbType(String usbType) {
-            this.usbType = usbType;
-            this.dataView.refreshAll();
-        }
-
         public void setCapacity(String capacity) {
             this.capacity = capacity;
+            this.dataView.refreshAll();
+        }
+
+        public void setDriveInterface(String driveInterface) {
+            this.driveInterface = driveInterface;
+            this.dataView.refreshAll();
+        }
+
+        public void setNandType(String nandType) {
+            this.nandType = nandType;
+            this.dataView.refreshAll();
+        }
+
+        public void setTbw(String tbw) {
+            this.tbw = tbw;
             this.dataView.refreshAll();
         }
 
@@ -323,13 +336,20 @@ public class FlashDriveView extends AppLayout {
             this.dataView.refreshAll();
         }
 
-        private boolean test(FlashDriveDto dto) {
+        public void setPowerConsumption(String powerConsumption) {
+            this.powerConsumption = powerConsumption;
+            this.dataView.refreshAll();
+        }
+
+        private boolean test(SolidStateDriveDto dto) {
             return matches(dto.name(), name)
-                    && matches(dto.usbInterface(), usbInterface)
-                    && matches(dto.usbType(), usbType)
                     && matchesNumeric(dto.capacity(), capacity)
+                    && matches(dto.driveInterface(), driveInterface)
+                    && matches(dto.nandType(), nandType)
+                    && matchesNumeric(dto.tbw(), tbw)
                     && matchesNumeric(dto.writeSpeed(), writeSpeed)
-                    && matchesNumeric(dto.readSpeed(), readSpeed);
+                    && matchesNumeric(dto.readSpeed(), readSpeed)
+                    && matchesNumeric(dto.powerConsumption(), powerConsumption);
         }
 
         private boolean matches(String value, String searchTerm) {
@@ -341,74 +361,95 @@ public class FlashDriveView extends AppLayout {
             if (searchTerm == null || searchTerm.isEmpty()) {
                 return true;
             }
+            return value != null && String.valueOf(value).startsWith(searchTerm);
+        }
 
-            return String.valueOf(value).startsWith(searchTerm);
+        private boolean matchesNumeric(Integer value, String searchTerm) {
+            if (searchTerm == null || searchTerm.isEmpty()) {
+                return true;
+            }
+            return value != null && String.valueOf(value).startsWith(searchTerm);
         }
     }
 
-    static class FlashDriveForm extends FormLayout {
+    static class SolidStateDriveForm extends FormLayout {
         private TextArea nameField;
         private NumberField capacityField;
         private ComboBox<Bytes> capacityUnitBox;
-        private ComboBox<String> usbInterfaceBox;
-        private ComboBox<String> usbTypeBox;
-        private NumberField readSpeedField;
+        private ComboBox<String> ssdInterfaceComboBox;
+        private ComboBox<String> ssdNandTypeBox;
+        private NumberField ssdTbwField;
         private NumberField writeSpeedField;
+        private NumberField readSpeedField;
+        private NumberField powerConsumptionField;
 
-        private Binder<FlashDriveDto> binder = new Binder<>(FlashDriveDto.class);
+        private Binder<SolidStateDriveDto> binder = new Binder<>(SolidStateDriveDto.class);
         private Long currentId = null;
 
-        public FlashDriveForm() {
+        public SolidStateDriveForm() {
             setupFields();
             setupBinder();
-            add(nameField, capacityField, usbInterfaceBox,
-                    usbTypeBox, writeSpeedField, readSpeedField);
+            add(nameField, capacityField, ssdInterfaceComboBox, ssdNandTypeBox,
+                    ssdTbwField, writeSpeedField, readSpeedField, powerConsumptionField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
         private void setupFields() {
             nameField = new TextArea("Название:");
-            capacityField = new NumberField("Объём:");
-            capacityUnitBox = new ComboBox<>();
-            usbInterfaceBox = new ComboBox<>("Интерфейс:");
-            usbTypeBox = new ComboBox<>("Версия USB:");
-            readSpeedField = new NumberField("Скорость записи:");
-            writeSpeedField = new NumberField("Скорость чтения:");
-
             nameField.setMinRows(1);
             nameField.setMaxRows(1);
             nameField.setMinLength(1);
             nameField.setMaxLength(30);
             nameField.setClearButtonVisible(true);
 
+            capacityField = new NumberField("Объём:");
             capacityField.setClearButtonVisible(true);
             capacityField.setRequiredIndicatorVisible(true);
 
+            capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
-            capacityUnitBox.setValue(Bytes.MB);
+            capacityUnitBox.setValue(Bytes.GB);
             capacityField.setSuffixComponent(capacityUnitBox);
 
-            usbInterfaceBox.setItems("Type-A", "Type-C", "Micro-USB");
-            usbInterfaceBox.setClearButtonVisible(true);
+            ssdInterfaceComboBox = new ComboBox<>("Интерфейс:");
+            ssdInterfaceComboBox.setItems("SATA", "PCI Express", "SAS", "M.2",
+                    "NVMe", "AHCI");
+            ssdInterfaceComboBox.setRequiredIndicatorVisible(true);
+            ssdInterfaceComboBox.setClearButtonVisible(true);
 
-            usbTypeBox.setItems("1.0", "2.0", "3.0", "3.1", "3.2");
-            usbTypeBox.setClearButtonVisible(true);
+            ssdNandTypeBox = new ComboBox<>("Тип NAND:");
+            ssdNandTypeBox.setItems(
+                    "SLC (Single Level Cell / 1 бит)",
+                    "MLC (Multi Level Cell / 2 бита)",
+                    "TLC (Triple Level Cell / 3 бита)",
+                    "QLC (Quad Level Cell / 4 бита)"
+            );
+            ssdNandTypeBox.setClearButtonVisible(true);
 
+            ssdTbwField = new NumberField("Максимальный ресурс записи:");
+            ssdTbwField.setSuffixComponent(new Div("ТБ"));
+            ssdTbwField.setClearButtonVisible(true);
+
+            writeSpeedField = new NumberField("Скорость записи:");
+            writeSpeedField.setSuffixComponent(new Div("МБ/с"));
+            writeSpeedField.setClearButtonVisible(true);
+
+            readSpeedField = new NumberField("Скорость чтения:");
             readSpeedField.setSuffixComponent(new Div("МБ/с"));
             readSpeedField.setClearButtonVisible(true);
 
-            writeSpeedField.setSuffixComponent(new Div("МБ/с"));
-            writeSpeedField.setClearButtonVisible(true);
+            powerConsumptionField = new NumberField("Энергопотребление:");
+            powerConsumptionField.setSuffixComponent(new Div("Вт"));
+            powerConsumptionField.setClearButtonVisible(true);
         }
 
         private void setupBinder() {
-            // Bind fields to DTO
             binder.forField(nameField)
                     .asRequired("Название обязательно")
                     .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
                     .bind(
-                            FlashDriveDto::name,
+                            SolidStateDriveDto::name,
                             (dto, value) -> {}
                     );
 
@@ -420,64 +461,87 @@ public class FlashDriveView extends AppLayout {
                             (dto, value) -> {}
                     );
 
-            binder.forField(usbInterfaceBox)
+            binder.forField(ssdInterfaceComboBox)
+                    .asRequired("Интерфейс обязателен")
                     .bind(
-                            dto -> dto.usbInterface() != null ? dto.usbInterface() : null,
+                            dto -> dto.driveInterface() != null ? dto.driveInterface() : null,
                             (dto, value) -> {}
                     );
 
-            binder.forField(usbTypeBox)
-                    .bind(FlashDriveDto::usbType, (dto, value) -> {});
+            binder.forField(ssdNandTypeBox)
+                    .bind(
+                            SolidStateDriveDto::nandType,
+                            (dto, value) -> {}
+                    );
+
+            binder.forField(ssdTbwField)
+                    .withValidator(tbw -> tbw == null || tbw > 0, "TBW должен быть положительным")
+                    .bind(
+                            dto -> dto.tbw() != null ? dto.tbw().doubleValue() : null,
+                            (dto, value) -> {}
+                    );
 
             binder.forField(writeSpeedField)
-                    .withValidator(writeSpd -> writeSpd == null || writeSpd > 0, "Скорость должна быть положительной")
+                    .withValidator(speed -> speed == null || speed > 0, "Скорость должна быть положительной")
                     .bind(
                             dto -> dto.writeSpeed() != null ? dto.writeSpeed().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
             binder.forField(readSpeedField)
-                    .withValidator(readSpd -> readSpd == null || readSpd > 0, "Скорость должна быть положительной")
+                    .withValidator(speed -> speed == null || speed > 0, "Скорость должна быть положительной")
                     .bind(
                             dto -> dto.readSpeed() != null ? dto.readSpeed().doubleValue() : null,
                             (dto, value) -> {}
                     );
+
+            binder.forField(powerConsumptionField)
+                    .withValidator(power -> power == null || power > 0, "Энергопотребление должно быть положительным")
+                    .bind(
+                            dto -> dto.powerConsumption() != null ? dto.powerConsumption().doubleValue() : null,
+                            (dto, value) -> {}
+                    );
         }
 
-        public void setFlashDrive(FlashDriveDto flashDrive) {
-            this.currentId = flashDrive.id();
-            binder.readBean(flashDrive);
+        private SsdInterface findSsdInterface(String value) {
+            for (SsdInterface si : SsdInterface.values()) {
+                if (si.getLabel().equals(value) || si.name().equals(value)) {
+                    return si;
+                }
+            }
+            return null;
+        }
+
+        public void setSolidStateDrive(SolidStateDriveDto ssd) {
+            this.currentId = ssd.id();
+            binder.readBean(ssd);
         }
 
         private float toMegabytes(float value, Bytes unit) {
             if (unit == Bytes.MB)
                 return value;
-            else {
-                if (unit.getRank() > Bytes.MB.getRank())
-                    return (float) (value * Math.pow(1024, unit.getRank() - Bytes.MB.getRank()));
-
-                else {
-                    if (unit == Bytes.BIT)
-                        return (float) ((value / 8) / Math.pow(1024, Bytes.MB.getRank() - 1));
-
-                    return (float) (value / Math.pow(1024, Bytes.MB.getRank() - unit.getRank()));
-                }
-            }
+            if (unit.getRank() > Bytes.MB.getRank())
+                return (float) (value * Math.pow(1024, unit.getRank() - Bytes.MB.getRank()));
+            if (unit == Bytes.BIT)
+                return (float) ((value / 8) / Math.pow(1024, Bytes.MB.getRank() - 1));
+            return (float) (value / Math.pow(1024, Bytes.MB.getRank() - unit.getRank()));
         }
 
-        public Optional<FlashDriveDto> getFormDataObject() {
+        public Optional<SolidStateDriveDto> getFormDataObject() {
             if (!isValid()) {
                 return Optional.empty();
             }
 
-            FlashDriveDto dto = new FlashDriveDto(
+            SolidStateDriveDto dto = new SolidStateDriveDto(
                     currentId,
                     nameField.getValue(),
-                    usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue() : null,
-                    usbTypeBox.getValue(),
+                    ssdInterfaceComboBox.getValue() != null ? ssdInterfaceComboBox.getValue() : null,
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
+                    ssdNandTypeBox.getValue(),
+                    ssdTbwField.getValue() != null ? ssdTbwField.getValue().intValue() : null,
                     writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
-                    readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null
+                    readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null,
+                    powerConsumptionField.getValue() != null ? powerConsumptionField.getValue().floatValue() : null
             );
 
             return Optional.of(dto);
@@ -491,38 +555,40 @@ public class FlashDriveView extends AppLayout {
             currentId = null;
             nameField.clear();
             capacityField.clear();
-            usbInterfaceBox.clear();
-            usbTypeBox.clear();
+            ssdInterfaceComboBox.clear();
+            ssdNandTypeBox.clear();
+            ssdTbwField.clear();
             writeSpeedField.clear();
             readSpeedField.clear();
+            powerConsumptionField.clear();
             binder.validate();
         }
     }
 
-    static class FlashDriveDialog extends CustomDialog {
-        private final FlashDriveForm form;
-        private final SerializableConsumer<FlashDriveDto> onSaveCallback;
+    static class SolidStateDriveDialog extends CustomDialog {
+        private final SolidStateDriveForm form;
+        private final SerializableConsumer<SolidStateDriveDto> onSaveCallback;
         private boolean isEditMode;
 
-        public FlashDriveDialog(SerializableConsumer<FlashDriveDto> onSaveCallback) {
+        public SolidStateDriveDialog(SerializableConsumer<SolidStateDriveDto> onSaveCallback) {
             this(onSaveCallback, null);
         }
 
-        public FlashDriveDialog(SerializableConsumer<FlashDriveDto> onSaveCallback, FlashDriveDto dto) {
+        public SolidStateDriveDialog(SerializableConsumer<SolidStateDriveDto> onSaveCallback, SolidStateDriveDto dto) {
             this.onSaveCallback = onSaveCallback;
 
-            form = new FlashDriveForm();
+            form = new SolidStateDriveForm();
             isEditMode = false;
 
             if (dto != null) {
                 isEditMode = true;
-                form.setFlashDrive(dto);
+                form.setSolidStateDrive(dto);
             }
 
             addToDialogBody(form);
         }
 
-        private void save() {
+        public void save() {
             if (!form.isValid()) {
                 Notification notification = Notification.show(
                         "Пожалуйста, исправьте ошибки в форме",
@@ -533,9 +599,9 @@ public class FlashDriveView extends AppLayout {
                 return;
             }
 
-            form.getFormDataObject().ifPresent(flashDrive -> {
+            form.getFormDataObject().ifPresent(ssd -> {
                 try {
-                    onSaveCallback.accept(flashDrive);
+                    onSaveCallback.accept(ssd);
                     close();
 
                     Notification notification = Notification.show(
