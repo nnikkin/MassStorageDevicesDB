@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Route("ssd")
-public class SSDView extends BaseView<SolidStateDrive, SolidStateDriveDto> {
-    public SSDView(SSDService service) {
+public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDriveDto> {
+    public SSDTableView(SSDService service) {
         super("Твердотельные накопители", service);
     }
 
@@ -262,15 +262,14 @@ public class SSDView extends BaseView<SolidStateDrive, SolidStateDriveDto> {
             ssdInterfaceComboBox = new ComboBox<>("Интерфейс:");
             ssdInterfaceComboBox.setItems("SATA", "PCI Express", "SAS", "M.2",
                     "NVMe", "AHCI");
-            ssdInterfaceComboBox.setRequiredIndicatorVisible(true);
             ssdInterfaceComboBox.setClearButtonVisible(true);
 
             ssdNandTypeBox = new ComboBox<>("Тип NAND:");
             ssdNandTypeBox.setItems(
-                    "SLC (Single Level Cell / 1 бит)",
-                    "MLC (Multi Level Cell / 2 бита)",
-                    "TLC (Triple Level Cell / 3 бита)",
-                    "QLC (Quad Level Cell / 4 бита)"
+                    "SLC",
+                    "MLC",
+                    "TLC",
+                    "QLC"
             );
             ssdNandTypeBox.setClearButtonVisible(true);
 
@@ -310,7 +309,6 @@ public class SSDView extends BaseView<SolidStateDrive, SolidStateDriveDto> {
                     );
 
             binder.forField(ssdInterfaceComboBox)
-                    .asRequired("Интерфейс обязателен")
                     .bind(
                             dto -> dto.driveInterface() != null ? dto.driveInterface() : null,
                             (dto, value) -> {}

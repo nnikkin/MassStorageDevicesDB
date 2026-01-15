@@ -5,40 +5,25 @@ import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Entities.FlashDrive;
 import com.nikkin.devicesdb.Services.FlashDriveService;
 import com.nikkin.devicesdb.Views.BaseForm;
-import com.nikkin.devicesdb.Views.CustomDialog;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.Route;
 
 import java.util.Optional;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 @Route("flash")
-final public class FlashDriveView extends BaseView<FlashDrive, FlashDriveDto> {
-    public FlashDriveView(FlashDriveService service) {
+final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDriveDto> {
+    public FlashDriveTableView(FlashDriveService service) {
         super("Флеш-память", service);
     }
 

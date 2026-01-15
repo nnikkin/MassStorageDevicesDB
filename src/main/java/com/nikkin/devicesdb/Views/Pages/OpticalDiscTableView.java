@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Route("optical")
-public class OpticalDiscView extends BaseView<OpticalDisc, OpticalDiscDto> {
-    public OpticalDiscView(OpticalDiscService service) {
+public class OpticalDiscTableView extends BaseTableView<OpticalDisc, OpticalDiscDto> {
+    public OpticalDiscTableView(OpticalDiscService service) {
         super("Оптические диски", service);
     }
 

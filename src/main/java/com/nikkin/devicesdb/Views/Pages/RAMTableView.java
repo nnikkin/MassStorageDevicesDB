@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Route("ram")
-public class RAMView extends BaseView<RandomAccessMemory, RandomAccessMemoryDto> {
-    public RAMView(RAMService service) {
+public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccessMemoryDto> {
+    public RAMTableView(RAMService service) {
         super("ОЗУ", service);
     }
 

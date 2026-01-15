@@ -14,10 +14,10 @@ public record HardDiskDriveDto(
         @Positive(message = "Объём не может быть отрицательным либо равным нулю")
         Float capacity,
 
-        @Size(min=1,max=10)
+        @Size(max=10)
         String driveInterface,
 
-        @Size(min=1, max=4)
+        @Size(max=4)
         String format,
 
         @Positive(message = "RPM не может быть отрицательным либо равным нулю")

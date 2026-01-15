@@ -5,66 +5,42 @@ import com.nikkin.devicesdb.Services.BaseService;
 import com.nikkin.devicesdb.Views.BaseDialog;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.CustomDialog;
-import com.nikkin.devicesdb.Views.NavBar;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 // E - Entity, D - Dto
-public abstract class BaseView<E, D extends Identifiable> extends AppLayout {
-    private BaseService<E, D> service;
+public abstract class BaseTableView<E, D extends Identifiable> extends BaseAppView {
+    private final BaseService<E, D> service;
     private BaseForm<D> dialogForm;
     private Grid<D> grid;
     private List<Component> buttons;
     private Button addBtn, delBtn, refreshBtn, editBtn;
 
-    public BaseView(String title, BaseService<E, D> service) {
+    public BaseTableView(String title, BaseService<E, D> service) {
+        super(title);
+
         this.service = service;
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
 
-        H1 pageTitle = new H1("Запоминающие устройства - " + title);
-        pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
-                .set("margin", "0");
-
-        // Настройка навигационного меню
-        DrawerToggle toggle = new DrawerToggle();
-        NavBar nav = new NavBar();
-        Div navDrawer = new Div(nav);
-        navDrawer.setWidthFull();
-
-        Scroller scroller = new Scroller(navDrawer);
-        scroller.setClassName(LumoUtility.Padding.SMALL);
-
-        addToDrawer(scroller);
-        addToNavbar(toggle, pageTitle);
-
-        setPrimarySection(AppLayout.Section.DRAWER);
-
         HorizontalLayout tableMenu = new HorizontalLayout();
-
         setupButtons();
         tableMenu.add(buttons);
 
@@ -194,7 +170,7 @@ public abstract class BaseView<E, D extends Identifiable> extends AppLayout {
                     .map(D::id)
                     .toList();
 
-            itemsToDelete.forEach(id -> service.delete(id));
+            itemsToDelete.forEach(service::delete);
 
             refreshGrid();
 

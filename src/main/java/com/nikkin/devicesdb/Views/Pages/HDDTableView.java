@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Route("hdd")
-public final class HDDView extends BaseView<HardDiskDrive, HardDiskDriveDto> {
-    public HDDView(HDDService service) {
+public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDriveDto> {
+    public HDDTableView(HDDService service) {
         super("Накопители на жёстких дисках", service);
     }
 
@@ -251,7 +251,6 @@ public final class HDDView extends BaseView<HardDiskDrive, HardDiskDriveDto> {
 
             hddInterfaceComboBox = new ComboBox<>("Интерфейс:");
             hddInterfaceComboBox.setItems("SATA","SCSI", "SAS", "IDE", "ESDI");
-            hddInterfaceComboBox.setRequiredIndicatorVisible(true);
             hddInterfaceComboBox.setClearButtonVisible(true);
 
             hddFormatRadio = new RadioButtonGroup<>("Формат:");
@@ -314,14 +313,12 @@ public final class HDDView extends BaseView<HardDiskDrive, HardDiskDriveDto> {
                     );
 
             binder.forField(hddInterfaceComboBox)
-                    .asRequired("Интерфейс обязателен")
                     .bind(
                             HardDiskDriveDto::driveInterface,
                             (dto, value) -> {}
                     );
 
             binder.forField(hddFormatRadio)
-                    .asRequired("Формат обязателен")
                     .bind(
                             HardDiskDriveDto::format,
                             (dto, value) -> {}

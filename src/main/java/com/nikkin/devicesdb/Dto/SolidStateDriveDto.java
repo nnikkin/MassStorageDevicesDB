@@ -10,7 +10,7 @@ public record SolidStateDriveDto(
         @Size(max=30)
         String name,
 
-        @Size(min=1, max=10)
+        @Size(max=10)
         String driveInterface,
 
         @Positive(message = "Объём не может быть отрицательным либо равным нулю")

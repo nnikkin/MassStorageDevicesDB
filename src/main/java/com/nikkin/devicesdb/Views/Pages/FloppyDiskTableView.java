@@ -11,10 +11,8 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.Binder;
@@ -24,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Route("floppy")
-final public class FloppyDiskView extends BaseView<FloppyDisk, FloppyDiskDto> {
-    public FloppyDiskView(FloppyDiskService service) {
+final public class FloppyDiskTableView extends BaseTableView<FloppyDisk, FloppyDiskDto> {
+    public FloppyDiskTableView(FloppyDiskService service) {
         super("Накопители на гибких дисках", service);
     }
 
