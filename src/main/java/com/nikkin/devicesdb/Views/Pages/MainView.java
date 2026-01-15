@@ -3,10 +3,12 @@ package com.nikkin.devicesdb.Views.Pages;
 import com.nikkin.devicesdb.Views.NavBar;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.dashboard.Dashboard;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
@@ -22,6 +24,13 @@ public class MainView extends AppLayout {
         pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
 
+        VerticalLayout dashboardLayout = new VerticalLayout();
+        dashboardLayout.setWidthFull();
+        //Dashboard dashboard = new Dashboard();
+
+        //dashboardLayout.add(dashboard);
+        setContent(dashboardLayout);
+
         // Настройка навигационного меню
         DrawerToggle toggle = new DrawerToggle();
         NavBar nav = new NavBar();
@@ -30,9 +39,6 @@ public class MainView extends AppLayout {
 
         Scroller scroller = new Scroller(navDrawer);
         scroller.setClassName(LumoUtility.Padding.SMALL);
-
-//        MyView view = new MyView();
-//        setContent(view);
 
         addToDrawer(scroller);
         addToNavbar(toggle, pageTitle);

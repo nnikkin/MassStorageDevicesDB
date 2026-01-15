@@ -11,25 +11,16 @@ public class OpticalDisc {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Size(max=30)
     private String name;
 
-    @Nullable
-    @Size(max=10)
-    private String type;            // CD, DVD...
+    private String type;
 
-    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
     private Float capacity;
 
-    @Nullable
-    @Positive(message = "Множитель скорости не может быть отрицательным либо равным нулю")
-    private Integer speedMultiplier;    // 2x, 4x...
+    private Integer speedMultiplier;
 
-    @Size(max=4)
-    private String rewriteType;     // R, RW...
+    private String rewriteType;
 
-    @Nullable
-    @Positive(message = "Количество слоёв не может быть отрицательным либо равным нулю")
     private Integer layers;
 
     public Long getId() {

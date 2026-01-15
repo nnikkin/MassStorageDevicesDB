@@ -10,28 +10,20 @@ public class SolidStateDrive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Size(max=30)
     private String name;
 
-    @Size(min=1, max=10)
-    private String driveInterface;       // SATA...
+    private String driveInterface;
     
-    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
     private Float capacity;
     
-    @Size(max=10)
-    private String nandType;        // SLC, MLC, TLC...
+    private String nandType;
     
-    @Positive(message = "Максимальный ресурс записи не может быть отрицательным либо равным нулю")
     private Integer tbw;
     
-    @Positive(message = "Скорость чтения не может быть отрицательным либо равным нулю")
-    private Float writeSpeed;       // Kb/s
+    private Float writeSpeed;
     
-    @Positive(message = "Скорость записи не может быть отрицательным либо равным нулю")
     private Float readSpeed;
     
-    @Positive(message = "Значение энергопотребления не может быть отрицательным либо равным нулю")
     private Float powerConsumption;
 
     public Long getId() {

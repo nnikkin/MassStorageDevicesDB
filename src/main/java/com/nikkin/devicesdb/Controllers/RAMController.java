@@ -1,7 +1,7 @@
 package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
-import com.nikkin.devicesdb.Services.RandomAccessMemoryService;
+import com.nikkin.devicesdb.Services.RAMService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -13,23 +13,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/ram")
-public class RandomAccessMemoryController {
-    private final RandomAccessMemoryService ramService;
+public class RAMController {
+    private final RAMService ramService;
 
-    public RandomAccessMemoryController(RandomAccessMemoryService ramService) {
+    public RAMController(RAMService ramService) {
         this.ramService = ramService;
     }
 
     @PostMapping
     public ResponseEntity<RandomAccessMemoryDto> addRandomAccessMemory(@RequestBody @Valid RandomAccessMemoryDto ramDto) {
         RandomAccessMemoryDto createdRamDto = ramService.add(ramDto);
-        return new ResponseEntity<RandomAccessMemoryDto>(createdRamDto, HttpStatus.OK);
+        return new ResponseEntity<>(createdRamDto, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<RandomAccessMemoryDto>> getAllRandomAccessMemorys() {
         List<RandomAccessMemoryDto> allRamDtos = ramService.getAll();
-        return new ResponseEntity<List<RandomAccessMemoryDto>>(allRamDtos, HttpStatus.OK);
+        return new ResponseEntity<>(allRamDtos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -37,7 +37,7 @@ public class RandomAccessMemoryController {
         RandomAccessMemoryDto ramDto = ramService.getById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        return new ResponseEntity<RandomAccessMemoryDto>(ramDto, HttpStatus.OK);
+        return new ResponseEntity<>(ramDto, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -49,7 +49,7 @@ public class RandomAccessMemoryController {
     @PutMapping("/{id}")
     public ResponseEntity<RandomAccessMemoryDto> replaceRandomAccessMemory(@PathVariable Long id, @RequestBody @Valid RandomAccessMemoryDto ramDto) {
         RandomAccessMemoryDto updatedRamDto = ramService.update(id, ramDto);
-        return new ResponseEntity<RandomAccessMemoryDto>(updatedRamDto, HttpStatus.OK);
+        return new ResponseEntity<>(updatedRamDto, HttpStatus.OK);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

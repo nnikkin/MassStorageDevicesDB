@@ -1,94 +1,41 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Domain.HddInterface;
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
-import com.nikkin.devicesdb.Presenters.HardDiskDrivePresenter;
-import com.nikkin.devicesdb.Views.CustomDialog;
-import com.nikkin.devicesdb.Views.NavBar;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
+import com.nikkin.devicesdb.Entities.HardDiskDrive;
+import com.nikkin.devicesdb.Services.HDDService;
+import com.nikkin.devicesdb.Views.BaseForm;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.Scroller;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility;
-import jakarta.validation.constraints.Positive;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 @Route("hdd")
-public class HardDiskDriveView extends AppLayout {
-    private final HardDiskDrivePresenter presenter;
-    private Grid<HardDiskDriveDto> hddGrid;
-    private List<Component> buttons;
-
-    public HardDiskDriveView(HardDiskDrivePresenter presenter) {
-        this.presenter = presenter;
-
-        VerticalLayout layout = new VerticalLayout();
-        layout.setWidthFull();
-
-        H1 pageTitle = new H1("Запоминающие устройства - Накопители на жёстких дисках");
-        pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
-                .set("margin", "0");
-
-        // Настройка навигационного меню
-        DrawerToggle toggle = new DrawerToggle();
-        NavBar nav = new NavBar();
-        Div navDrawer = new Div(nav);
-        navDrawer.setWidthFull();
-
-        Scroller scroller = new Scroller(navDrawer);
-        scroller.setClassName(LumoUtility.Padding.SMALL);
-
-        addToDrawer(scroller);
-        addToNavbar(toggle, pageTitle);
-
-        setPrimarySection(Section.DRAWER);
-
-        HorizontalLayout tableMenu = new HorizontalLayout();
-
-        setupButtons();
-        tableMenu.add(buttons);
-
-        setContent(layout);
-
-        initTable();
-        fillTable();
-        setupFilters();
-
-        layout.add(tableMenu, hddGrid);
+public final class HDDView extends BaseView<HardDiskDrive, HardDiskDriveDto> {
+    public HDDView(HDDService service) {
+        super("Накопители на жёстких дисках", service);
     }
 
-    private void initTable() {
-        hddGrid = new Grid<>(HardDiskDriveDto.class, false);
+    @Override
+    protected BaseForm<HardDiskDriveDto> createForm() {
+        return new HardDiskDriveForm();
+    }
+
+    @Override
+    protected void initTable() {
+        var hddGrid = new Grid<>(HardDiskDriveDto.class, false);
+
         hddGrid.setItems(new ArrayList<>());
         hddGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
         hddGrid.setSelectionMode(Grid.SelectionMode.MULTI);
@@ -127,27 +74,24 @@ public class HardDiskDriveView extends AppLayout {
         hddGrid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
-                        buttons.forEach(button -> ((Button) button).setEnabled(false));
+                    {
+                        changeEditBtnState(false);
+                        changeDelBtnState(false);
+                    }
                     else
-                        buttons.forEach(button -> ((Button) button).setEnabled(true));
-
-                    ((Button) buttons.getFirst()).setEnabled(true);
-                    ((Button) buttons.getLast()).setEnabled(true);
+                    {
+                        changeDelBtnState(true);
+                        changeEditBtnState(true);
+                    }
                 }
         );
+
+        setGrid(hddGrid);
     }
 
-    private void refreshGrid() {
-        hddGrid.deselectAll();
-        fillTable();
-    }
-
-    private void fillTable() {
-        List<HardDiskDriveDto> items = presenter.loadAllHdd();
-        hddGrid.getListDataView().setItems(items);
-    }
-
-    private void setupFilters() {
+    @Override
+    protected void setupFilters() {
+        var hddGrid = getGrid();
         var headerCells = hddGrid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
@@ -161,127 +105,6 @@ public class HardDiskDriveView extends AppLayout {
         headerCells.get(4).setComponent(createFilterHeader("Размер кэша (МБ):", filter::setCache));
         headerCells.get(4).setComponent(createFilterHeader("RPM (об/мин):", filter::setRpm));
         headerCells.get(4).setComponent(createFilterHeader("Энергопотребление (Ватт):", filter::setPowerConsumption));
-    }
-
-    private void setupButtons() {
-        buttons = new ArrayList<>();
-
-        Button addBtn = new Button("Добавить", VaadinIcon.PLUS.create());
-        addBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        addBtn.addClickListener(e -> showNewEntryDialog());
-
-        Button editBtn = new Button("Изменить", VaadinIcon.PENCIL.create());
-        editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        editBtn.setEnabled(false);
-        editBtn.addClickListener(e -> {
-            var selected = hddGrid.getSelectedItems();
-            if (selected.size() != 1) {
-                showErrorDialog("Выберите одну запись для редактирования");
-            } else {
-                showEditDialog(selected.iterator().next());
-            }
-        });
-
-        Button delBtn = new Button("Удалить", VaadinIcon.TRASH.create());
-        delBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        delBtn.setEnabled(false);
-        delBtn.addClickListener(e -> showDelConfirmDialog());
-
-        Button refreshBtn = new Button("Обновить", VaadinIcon.REFRESH.create());
-        refreshBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        refreshBtn.addClickListener(e -> refreshGrid());
-
-        buttons.add(addBtn);
-        buttons.add(editBtn);
-        buttons.add(delBtn);
-        buttons.add(refreshBtn);
-    }
-
-    private static Component createFilterHeader(String labelText,
-                                                Consumer<String> filterChangeConsumer) {
-        NativeLabel label = new NativeLabel(labelText);
-        label.getStyle().set("padding-top", "var(--lumo-space-m)")
-                .set("font-size", "var(--lumo-font-size-xs)");
-        TextField textField = new TextField();
-        textField.setValueChangeMode(ValueChangeMode.EAGER);
-        textField.setClearButtonVisible(true);
-        textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
-        textField.setWidthFull();
-        textField.getStyle().set("max-width", "100%");
-        textField.addValueChangeListener(
-                e -> filterChangeConsumer.accept(e.getValue()));
-        VerticalLayout layout = new VerticalLayout(label, textField);
-        layout.getThemeList().clear();
-        layout.getThemeList().add("spacing-xs");
-
-        return layout;
-    }
-
-    private void showNewEntryDialog() {
-        var dialog = new HardDiskDriveDialog(hdd -> {
-            presenter.addHdd(hdd);
-            refreshGrid();
-        });
-        dialog.setHeaderTitle("Добавление новой записи");
-        dialog.addOkClickListener(e -> dialog.save());
-
-        dialog.open();
-    }
-
-    private void showEditDialog(HardDiskDriveDto oldDto) {
-        var dialog = new HardDiskDriveDialog(newDto -> {
-            presenter.updateHdd(oldDto.id(), newDto);
-            refreshGrid();
-        }, oldDto);
-        dialog.setHeaderTitle("Изменение записи");
-        dialog.addOkClickListener(e -> dialog.save());
-
-        dialog.open();
-    }
-
-    private void showDelConfirmDialog() {
-        var selectedItems = hddGrid.getSelectedItems();
-        String message = selectedItems.size() == 1
-                ? "Вы действительно хотите удалить запись?"
-                : "Вы действительно хотите удалить несколько записей?";
-
-        Div textDiv = new Div(message);
-        textDiv.getStyle().set("padding", "var(--lumo-space-m)");
-
-        CustomDialog confirmDialog = new CustomDialog("Удаление записи", textDiv);
-        confirmDialog.setOkButtonText("Да, удалить");
-        confirmDialog.setCancelDialogButtonText("Нет");
-
-        confirmDialog.open();
-
-        confirmDialog.addOkClickListener(e -> {
-            List<Long> ids = selectedItems.stream()
-                    .map(HardDiskDriveDto::id)
-                    .toList();
-
-            presenter.deleteHdd(ids);
-            refreshGrid();
-            confirmDialog.close();
-
-            Notification.show(
-                    "Удалено записей: " + ids.size(),
-                    3000,
-                    Notification.Position.BOTTOM_END
-            ).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        });
-
-        confirmDialog.open();
-    }
-
-    private void showErrorDialog(String message) {
-        Div textDiv = new Div(message);
-
-        CustomDialog errorDialog = new CustomDialog("Ошибка", textDiv);
-        errorDialog.setCancelButtonVisible(false);
-
-        errorDialog.open();
-
-        errorDialog.addOkClickListener(e -> errorDialog.close());
     }
 
     private static class HardDiskDriveFilter {
@@ -367,7 +190,7 @@ public class HardDiskDriveView extends AppLayout {
         }
     }
 
-    static class HardDiskDriveForm extends FormLayout {
+    static class HardDiskDriveForm extends BaseForm<HardDiskDriveDto> {
         private TextArea nameField;
         private NumberField capacityField;
         private ComboBox<Bytes> capacityUnitBox;
@@ -377,18 +200,37 @@ public class HardDiskDriveView extends AppLayout {
         private NumberField hddCacheField;
         private NumberField powerConsumptionField;
 
-        private Binder<HardDiskDriveDto> binder = new Binder<>(HardDiskDriveDto.class);
+        private Binder<HardDiskDriveDto> binder;
         private Long currentId = null;
 
         public HardDiskDriveForm() {
+            super();
+
+            binder = new Binder<>(HardDiskDriveDto.class);
+            setBinder(binder);
+
             setupFields();
             setupBinder();
-            add(nameField, capacityField, hddInterfaceComboBox, hddFormatRadio, hddRpmField,
+
+            HorizontalLayout capacityFieldLayout = new HorizontalLayout();
+            capacityFieldLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+            capacityFieldLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+            capacityFieldLayout.setMargin(false);
+            capacityFieldLayout.add(capacityField, capacityUnitBox);
+
+            add(nameField, capacityFieldLayout, hddInterfaceComboBox, hddFormatRadio, hddRpmField,
                     hddCacheField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
-        private void setupFields() {
+        @Override
+        protected void setDto(HardDiskDriveDto dto) {
+            this.currentId = dto.id();
+            binder.readBean(dto);
+        }
+
+        @Override
+        protected void setupFields() {
             nameField = new TextArea("Название:");
             nameField.setMinRows(1);
             nameField.setMaxRows(1);
@@ -399,12 +241,13 @@ public class HardDiskDriveView extends AppLayout {
             capacityField = new NumberField("Объём:");
             capacityField.setClearButtonVisible(true);
             capacityField.setRequiredIndicatorVisible(true);
+            capacityField.setStepButtonsVisible(true);
+            capacityField.setWidthFull();
 
             capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
             capacityUnitBox.setValue(Bytes.MB);
-            capacityField.setSuffixComponent(capacityUnitBox);
 
             hddInterfaceComboBox = new ComboBox<>("Интерфейс:");
             hddInterfaceComboBox.setItems("SATA","SCSI", "SAS", "IDE", "ESDI");
@@ -427,7 +270,8 @@ public class HardDiskDriveView extends AppLayout {
             powerConsumptionField.setClearButtonVisible(true);
         }
 
-        private void setupBinder() {
+        @Override
+        protected void setupBinder() {
             // Bind fields to DTO
             binder.forField(nameField)
                     .asRequired("Название обязательно")
@@ -484,28 +328,8 @@ public class HardDiskDriveView extends AppLayout {
                     );
         }
 
-        public void setHardDiskDrive(HardDiskDriveDto hdd) {
-            this.currentId = hdd.id();
-            binder.readBean(hdd);
-        }
-
-        private float toMegabytes(float value, Bytes unit) {
-            if (unit == Bytes.MB)
-                return value;
-            else {
-                if (unit.getRank() > Bytes.MB.getRank())
-                    return (float) (value * Math.pow(1024, unit.getRank() - Bytes.MB.getRank()));
-
-                else {
-                    if (unit == Bytes.BIT)
-                        return (float) ((value / 8) / Math.pow(1024, Bytes.MB.getRank() - 1));
-
-                    return (float) (value / Math.pow(1024, Bytes.MB.getRank() - unit.getRank()));
-                }
-            }
-        }
-
-        public Optional<HardDiskDriveDto> getFormDataObject() {
+        @Override
+        protected Optional<HardDiskDriveDto> getFormDataObject() {
             if (!isValid()) {
                 return Optional.empty();
             }
@@ -524,11 +348,8 @@ public class HardDiskDriveView extends AppLayout {
             return Optional.of(dto);
         }
 
-        public boolean isValid() {
-            return binder.validate().isOk();
-        }
-
-        public void clear() {
+        @Override
+        protected void clearFields() {
             currentId = null;
             nameField.clear();
             capacityField.clear();
@@ -538,63 +359,6 @@ public class HardDiskDriveView extends AppLayout {
             hddFormatRadio.setValue("3.5\"");
             powerConsumptionField.clear();
             binder.validate();
-        }
-    }
-
-    static class HardDiskDriveDialog extends CustomDialog {
-        private final HardDiskDriveForm form;
-        private final SerializableConsumer<HardDiskDriveDto> onSaveCallback;
-        private boolean isEditMode;
-
-        public HardDiskDriveDialog(SerializableConsumer<HardDiskDriveDto> onSaveCallback) {
-            this(onSaveCallback, null);
-        }
-
-        public HardDiskDriveDialog(SerializableConsumer<HardDiskDriveDto> onSaveCallback, HardDiskDriveDto dto) {
-            this.onSaveCallback = onSaveCallback;
-
-            form = new HardDiskDriveForm();
-            isEditMode = false;
-
-            if (dto != null) {
-                isEditMode = true;
-                form.setHardDiskDrive(dto);
-            }
-
-            addToDialogBody(form);
-        }
-
-        private void save() {
-            if (!form.isValid()) {
-                Notification notification = Notification.show(
-                        "Пожалуйста, исправьте ошибки в форме",
-                        3000,
-                        Notification.Position.MIDDLE
-                );
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                return;
-            }
-
-            form.getFormDataObject().ifPresent(hdd -> {
-                try {
-                    onSaveCallback.accept(hdd);
-                    close();
-
-                    Notification notification = Notification.show(
-                            isEditMode ? "Запись обновлена" : "Запись создана",
-                            3000,
-                            Notification.Position.MIDDLE
-                    );
-                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                } catch (Exception e) {
-                    Notification notification = Notification.show(
-                            "Ошибка при сохранении: " + e.getMessage(),
-                            5000,
-                            Notification.Position.MIDDLE
-                    );
-                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                }
-            });
         }
     }
 }

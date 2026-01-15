@@ -1,7 +1,7 @@
 package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
-import com.nikkin.devicesdb.Services.HardDiskDriveService;
+import com.nikkin.devicesdb.Services.HDDService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -13,23 +13,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/hdd")
-public class HardDiskDriveController {
-    private final HardDiskDriveService hddService;
+public class HDDController {
+    private final HDDService hddService;
 
-    public HardDiskDriveController(HardDiskDriveService hddService) {
+    public HDDController(HDDService hddService) {
         this.hddService = hddService;
     }
 
     @PostMapping
     public ResponseEntity<HardDiskDriveDto> addHardDiskDrive(@RequestBody @Valid HardDiskDriveDto hddDto) {
         HardDiskDriveDto createdHddDto = hddService.add(hddDto);
-        return new ResponseEntity<HardDiskDriveDto>(createdHddDto, HttpStatus.OK);
+        return new ResponseEntity<>(createdHddDto, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<HardDiskDriveDto>> getAllHardDiskDrives() {
         List<HardDiskDriveDto> allHddDtos = hddService.getAll();
-        return new ResponseEntity<List<HardDiskDriveDto>>(allHddDtos, HttpStatus.OK);
+        return new ResponseEntity<>(allHddDtos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -37,7 +37,7 @@ public class HardDiskDriveController {
         HardDiskDriveDto hddDto = hddService.getById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        return new ResponseEntity<HardDiskDriveDto>(hddDto, HttpStatus.OK);
+        return new ResponseEntity<>(hddDto, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -49,7 +49,7 @@ public class HardDiskDriveController {
     @PutMapping("/{id}")
     public ResponseEntity<HardDiskDriveDto> replaceHardDiskDrive(@PathVariable Long id, @RequestBody @Valid HardDiskDriveDto hddDto) {
         HardDiskDriveDto updatedHddDto = hddService.update(id, hddDto);
-        return new ResponseEntity<HardDiskDriveDto>(updatedHddDto, HttpStatus.OK);
+        return new ResponseEntity<>(updatedHddDto, HttpStatus.OK);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

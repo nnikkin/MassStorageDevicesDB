@@ -7,6 +7,8 @@ import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.dialog.DialogVariant;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -27,28 +29,12 @@ public class CustomDialog extends Dialog {
         cancelDialogButton.setText("Отмена");
     }
 
-    public CustomDialog(String title) {
-        setHeaderTitle(title);
-        dialogComponents = null;
-        Create();
-        okDialogButton.setText("OK");
-        cancelDialogButton.setText("Отмена");
-    }
-
     public CustomDialog(String title, Component... dialogComponents) {
         setHeaderTitle(title);
         this.dialogComponents = dialogComponents;
         Create();
         okDialogButton.setText("OK");
         cancelDialogButton.setText("Отмена");
-    }
-
-    public CustomDialog(String title, String okText, String cancelText, Component... dialogComponents) {
-        setHeaderTitle(title);
-        this.dialogComponents = dialogComponents;
-        Create();
-        okDialogButton.setText(okText);
-        cancelDialogButton.setText(cancelText);
     }
 
     private void Create() {
@@ -59,6 +45,7 @@ public class CustomDialog extends Dialog {
             dialogLayout.add(dialogComponents);
 
         okDialogButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         getFooter().add(cancelDialogButton, okDialogButton);
 
         add(dialogLayout);
@@ -66,6 +53,8 @@ public class CustomDialog extends Dialog {
         cancelDialogButton.addClickListener(e -> close());
         setCloseOnEsc(true);
         setCloseOnOutsideClick(false);
+
+        addThemeVariants(DialogVariant.LUMO_NO_PADDING);
     }
 
     public void setOkButtonText(String text) {okDialogButton.setText(text);}

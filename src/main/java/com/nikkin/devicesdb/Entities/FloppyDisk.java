@@ -10,17 +10,13 @@ public class FloppyDisk {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Size(max=30)
     private String name;
 
-    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
     private Float capacity;
 
-    @Positive(message = "Размер дискеты не может быть отрицательным либо равным нулю")
-    private Float format;       // 8-inch, 5-inch, 3.5-inch...
+    private Float format;
 
-    @Size(max=2)
-    private String diskDensity;   // SD, DD, QD, HD...
+    private String diskDensity;
 
     private Boolean isDoubleSided;
 

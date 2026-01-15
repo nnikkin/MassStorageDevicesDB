@@ -2,91 +2,44 @@ package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
 import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
-import com.nikkin.devicesdb.Presenters.RandomAccessMemoryPresenter;
-import com.nikkin.devicesdb.Views.CustomDialog;
-import com.nikkin.devicesdb.Views.NavBar;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
+import com.nikkin.devicesdb.Entities.RandomAccessMemory;
+import com.nikkin.devicesdb.Services.RAMService;
+import com.nikkin.devicesdb.Views.BaseForm;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.Scroller;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 @Route("ram")
-public class RandomAccessMemoryView extends AppLayout {
-    private final RandomAccessMemoryPresenter presenter;
-    private Grid<RandomAccessMemoryDto> ramGrid;
-    private List<Component> buttons;
-
-    public RandomAccessMemoryView(RandomAccessMemoryPresenter presenter) {
-        this.presenter = presenter;
-
-        VerticalLayout layout = new VerticalLayout();
-        layout.setWidthFull();
-
-        H1 pageTitle = new H1("Запоминающие устройства - ОЗУ");
-        pageTitle.getStyle().set("font-size", "var(--lumo-font-size-l)")
-                .set("margin", "0");
-
-        // Настройка навигационного меню
-        DrawerToggle toggle = new DrawerToggle();
-        NavBar nav = new NavBar();
-        Div navDrawer = new Div(nav);
-        navDrawer.setWidthFull();
-
-        Scroller scroller = new Scroller(navDrawer);
-        scroller.setClassName(LumoUtility.Padding.SMALL);
-
-        addToDrawer(scroller);
-        addToNavbar(toggle, pageTitle);
-
-        setPrimarySection(Section.DRAWER);
-
-        HorizontalLayout tableMenu = new HorizontalLayout();
-
-        setupButtons();
-        tableMenu.add(buttons);
-
-        setContent(layout);
-
-        initTable();
-        fillTable();
-        setupFilters();
-
-        layout.add(tableMenu, ramGrid);
+public class RAMView extends BaseView<RandomAccessMemory, RandomAccessMemoryDto> {
+    public RAMView(RAMService service) {
+        super("ОЗУ", service);
     }
 
-    private void initTable() {
-        ramGrid = new Grid<>(RandomAccessMemoryDto.class, false);
+    @Override
+    protected BaseForm<RandomAccessMemoryDto> createForm() {
+        return new RandomAccessMemoryForm();
+    }
+
+    @Override
+    protected void initTable() {
+        var ramGrid = new Grid<>(RandomAccessMemoryDto.class, false);
+
         ramGrid.setItems(new ArrayList<>());
         ramGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
         ramGrid.setSelectionMode(Grid.SelectionMode.MULTI);
@@ -97,7 +50,7 @@ public class RandomAccessMemoryView extends AppLayout {
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(RandomAccessMemoryDto::capacity)
+        ramGrid.addColumn(dto -> String.format("%.2f", dto.capacity()))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -121,7 +74,7 @@ public class RandomAccessMemoryView extends AppLayout {
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(RandomAccessMemoryDto::frequencyMhz)
+        ramGrid.addColumn(dto -> String.format("%.2f", dto.frequencyMhz()))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -133,29 +86,26 @@ public class RandomAccessMemoryView extends AppLayout {
 
 
         ramGrid.addSelectionListener(
-                selectionEvent -> {
-                    if (selectionEvent.getAllSelectedItems().isEmpty())
-                        buttons.forEach(button -> ((Button) button).setEnabled(false));
-                    else
-                        buttons.forEach(button -> ((Button) button).setEnabled(true));
-
-                    ((Button) buttons.getFirst()).setEnabled(true);
-                    ((Button) buttons.getLast()).setEnabled(true);
+            selectionEvent -> {
+                if (selectionEvent.getAllSelectedItems().isEmpty())
+                {
+                    changeEditBtnState(false);
+                    changeDelBtnState(false);
                 }
+                else
+                {
+                    changeDelBtnState(true);
+                    changeEditBtnState(true);
+                }
+            }
         );
+
+        setGrid(ramGrid);
     }
 
-    private void refreshGrid() {
-        ramGrid.deselectAll();
-        fillTable();
-    }
-
-    private void fillTable() {
-        List<RandomAccessMemoryDto> items = presenter.loadAllRam();
-        ramGrid.getListDataView().setItems(items);
-    }
-
-    private void setupFilters() {
+    @Override
+    protected void setupFilters() {
+        var ramGrid = getGrid();
         var headerCells = ramGrid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
@@ -171,127 +121,6 @@ public class RandomAccessMemoryView extends AppLayout {
         headerCells.get(6).setComponent(createFilterHeader("CAS-латентность", filter::setCasLatency));
         headerCells.get(7).setComponent(createFilterHeader("Тактовая частота (МГц)", filter::setFrequencyMhz));
         headerCells.getLast().setComponent(createFilterHeader("Поддержка ECC", filter::setSupportsEcc));
-    }
-
-    private void setupButtons() {
-        buttons = new ArrayList<>();
-
-        Button addBtn = new Button("Добавить", VaadinIcon.PLUS.create());
-        addBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        addBtn.addClickListener(e -> showNewEntryDialog());
-
-        Button editBtn = new Button("Изменить", VaadinIcon.PENCIL.create());
-        editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        editBtn.setEnabled(false);
-        editBtn.addClickListener(e -> {
-            var selected = ramGrid.getSelectedItems();
-            if (selected.size() != 1) {
-                showErrorDialog("Выберите одну запись для редактирования");
-            } else {
-                showEditDialog(selected.iterator().next());
-            }
-        });
-
-        Button delBtn = new Button("Удалить", VaadinIcon.TRASH.create());
-        delBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        delBtn.setEnabled(false);
-        delBtn.addClickListener(e -> showDelConfirmDialog());
-
-        Button refreshBtn = new Button("Обновить", VaadinIcon.REFRESH.create());
-        refreshBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        refreshBtn.addClickListener(e -> refreshGrid());
-
-        buttons.add(addBtn);
-        buttons.add(editBtn);
-        buttons.add(delBtn);
-        buttons.add(refreshBtn);
-    }
-
-    private static Component createFilterHeader(String labelText,
-                                                Consumer<String> filterChangeConsumer) {
-        NativeLabel label = new NativeLabel(labelText);
-        label.getStyle().set("padding-top", "var(--lumo-space-m)")
-                .set("font-size", "var(--lumo-font-size-xs)");
-        TextField textField = new TextField();
-        textField.setValueChangeMode(ValueChangeMode.EAGER);
-        textField.setClearButtonVisible(true);
-        textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
-        textField.setWidthFull();
-        textField.getStyle().set("max-width", "100%");
-        textField.addValueChangeListener(
-                e -> filterChangeConsumer.accept(e.getValue()));
-        VerticalLayout layout = new VerticalLayout(label, textField);
-        layout.getThemeList().clear();
-        layout.getThemeList().add("spacing-xs");
-
-        return layout;
-    }
-
-    private void showNewEntryDialog() {
-        var dialog = new RandomAccessMemoryDialog(ram -> {
-            presenter.addRam(ram);
-            refreshGrid();
-        });
-        dialog.setHeaderTitle("Добавление новой записи");
-        dialog.addOkClickListener(e -> dialog.save());
-
-        dialog.open();
-    }
-
-    private void showEditDialog(RandomAccessMemoryDto oldDto) {
-        var dialog = new RandomAccessMemoryDialog(newDto -> {
-            presenter.updateRam(oldDto.id(), newDto);
-            refreshGrid();
-        }, oldDto);
-        dialog.setHeaderTitle("Изменение записи");
-        dialog.addOkClickListener(e -> dialog.save());
-
-        dialog.open();
-    }
-
-    private void showDelConfirmDialog() {
-        var selectedItems = ramGrid.getSelectedItems();
-        String message = selectedItems.size() == 1
-                ? "Вы действительно хотите удалить запись?"
-                : "Вы действительно хотите удалить несколько записей?";
-
-        Div textDiv = new Div(message);
-        textDiv.getStyle().set("padding", "var(--lumo-space-m)");
-
-        CustomDialog confirmDialog = new CustomDialog("Удаление записи", textDiv);
-        confirmDialog.setOkButtonText("Да, удалить");
-        confirmDialog.setCancelDialogButtonText("Нет");
-
-        confirmDialog.open();
-
-        confirmDialog.addOkClickListener(e -> {
-            List<Long> ids = selectedItems.stream()
-                    .map(RandomAccessMemoryDto::id)
-                    .toList();
-
-            presenter.deleteRam(ids);
-            refreshGrid();
-            confirmDialog.close();
-
-            Notification.show(
-                    "Удалено записей: " + ids.size(),
-                    3000,
-                    Notification.Position.BOTTOM_END
-            ).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        });
-
-        confirmDialog.open();
-    }
-
-    private void showErrorDialog(String message) {
-        Div textDiv = new Div(message);
-
-        CustomDialog errorDialog = new CustomDialog("Ошибка", textDiv);
-        errorDialog.setCancelButtonVisible(false);
-
-        errorDialog.open();
-
-        errorDialog.addOkClickListener(e -> errorDialog.close());
     }
 
     private static class RandomAccessMemoryFilter {
@@ -397,7 +226,7 @@ public class RandomAccessMemoryView extends AppLayout {
         }
     }
 
-    static class RandomAccessMemoryForm extends FormLayout {
+    static class RandomAccessMemoryForm extends BaseForm<RandomAccessMemoryDto> {
         private TextArea nameField;
         private TextArea modelField;
         private TextArea manufacturerField;
@@ -409,18 +238,37 @@ public class RandomAccessMemoryView extends AppLayout {
         private NumberField ramLatencyField;
         private Checkbox ramEccSupportCheckbox;
 
-        private Binder<RandomAccessMemoryDto> binder = new Binder<>(RandomAccessMemoryDto.class);
+        private Binder<RandomAccessMemoryDto> binder;
         private Long currentId = null;
 
         public RandomAccessMemoryForm() {
+            super();
+
+            binder = new Binder<>(RandomAccessMemoryDto.class);
+            setBinder(binder);
+
             setupFields();
             setupBinder();
-            add(nameField, manufacturerField, modelField, capacityField, ramMemoryTypeBox, ramTypeRadio,
+
+            HorizontalLayout capacityFieldLayout = new HorizontalLayout();
+            capacityFieldLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+            capacityFieldLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+            capacityFieldLayout.setMargin(false);
+            capacityFieldLayout.add(capacityField, capacityUnitBox);
+
+            add(nameField, manufacturerField, modelField, capacityFieldLayout, ramMemoryTypeBox, ramTypeRadio,
                     ramFrequencyField, ramLatencyField, ramEccSupportCheckbox);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
-        private void setupFields() {
+        @Override
+        protected void setDto(RandomAccessMemoryDto dto) {
+            this.currentId = dto.id();
+            binder.readBean(dto);
+        }
+
+        @Override
+        protected void setupFields() {
             nameField = new TextArea("Название:");
             nameField.setMinRows(1);
             nameField.setMaxRows(1);
@@ -443,13 +291,15 @@ public class RandomAccessMemoryView extends AppLayout {
             manufacturerField.setClearButtonVisible(true);
 
             capacityField = new NumberField("Объём:");
+            capacityField.setRequiredIndicatorVisible(true);
             capacityField.setClearButtonVisible(true);
+            capacityField.setStepButtonsVisible(true);
+            capacityField.setWidthFull();
 
             capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
             capacityUnitBox.setValue(Bytes.MB);
-            capacityField.setSuffixComponent(capacityUnitBox);
 
             ramMemoryTypeBox = new ComboBox<>("Вид памяти:");
             ramMemoryTypeBox.setItems("DDR", "DDR2", "DDR3", "DDR3L", "DDR4", "DDR5");
@@ -468,7 +318,8 @@ public class RandomAccessMemoryView extends AppLayout {
             ramEccSupportCheckbox.setValue(false); // По умолчанию нет
         }
 
-        private void setupBinder() {
+        @Override
+        protected void setupBinder() {
             // Bind fields to DTO
             binder.forField(nameField)
                     .asRequired("Название обязательно")
@@ -511,8 +362,19 @@ public class RandomAccessMemoryView extends AppLayout {
             binder.forField(capacityField)
                     .asRequired("Объём обязателен")
                     .withValidator(capacity -> capacity > 0, "Объём должен быть положительным")
+                    .withConverter(new Converter<Double, Float>() {
+                        @Override
+                        public Result<Float> convertToModel(Double aDouble, ValueContext valueContext) {
+                            return Result.ok(aDouble.floatValue());
+                        }
+
+                        @Override
+                        public Double convertToPresentation(Float aFloat, ValueContext valueContext) {
+                            return 0.0;
+                        }
+                    })
                     .bind(
-                            dto -> dto.capacity() != null ? dto.capacity().doubleValue() : null,
+                            dto -> dto.capacity() != null ? dto.capacity() : null,
                             (dto, value) -> {}
                     );
 
@@ -537,28 +399,8 @@ public class RandomAccessMemoryView extends AppLayout {
                     );
         }
 
-        public void setRandomAccessMemory(RandomAccessMemoryDto ram) {
-            this.currentId = ram.id();
-            binder.readBean(ram);
-        }
-
-        private float toMegabytes(float value, Bytes unit) {
-            if (unit == Bytes.MB)
-                return value;
-            else {
-                if (unit.getRank() > Bytes.MB.getRank())
-                    return (float) (value * Math.pow(1024, unit.getRank() - Bytes.MB.getRank()));
-
-                else {
-                    if (unit == Bytes.BIT)
-                        return (float) ((value / 8) / Math.pow(1024, Bytes.MB.getRank() - 1));
-
-                    return (float) (value / Math.pow(1024, Bytes.MB.getRank() - unit.getRank()));
-                }
-            }
-        }
-
-        public Optional<RandomAccessMemoryDto> getFormDataObject() {
+        @Override
+        protected Optional<RandomAccessMemoryDto> getFormDataObject() {
             if (!isValid()) {
                 return Optional.empty();
             }
@@ -580,11 +422,8 @@ public class RandomAccessMemoryView extends AppLayout {
             return Optional.of(dto);
         }
 
-        public boolean isValid() {
-            return binder.validate().isOk();
-        }
-
-        public void clear() {
+        @Override
+        protected void clearFields() {
             currentId = null;
             nameField.clear();
             capacityField.clear();
@@ -594,63 +433,6 @@ public class RandomAccessMemoryView extends AppLayout {
             ramFrequencyField.clear();
             ramEccSupportCheckbox.setValue(false);
             binder.validate();
-        }
-    }
-
-    static class RandomAccessMemoryDialog extends CustomDialog {
-        private final RandomAccessMemoryForm form;
-        private final SerializableConsumer<RandomAccessMemoryDto> onSaveCallback;
-        private boolean isEditMode;
-
-        public RandomAccessMemoryDialog(SerializableConsumer<RandomAccessMemoryDto> onSaveCallback) {
-            this(onSaveCallback, null);
-        }
-
-        public RandomAccessMemoryDialog(SerializableConsumer<RandomAccessMemoryDto> onSaveCallback, RandomAccessMemoryDto dto) {
-            this.onSaveCallback = onSaveCallback;
-
-            form = new RandomAccessMemoryForm();
-            isEditMode = false;
-
-            if (dto != null) {
-                isEditMode = true;
-                form.setRandomAccessMemory(dto);
-            }
-
-            addToDialogBody(form);
-        }
-
-        private void save() {
-            if (!form.isValid()) {
-                Notification notification = Notification.show(
-                        "Пожалуйста, исправьте ошибки в форме",
-                        3000,
-                        Notification.Position.MIDDLE
-                );
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                return;
-            }
-
-            form.getFormDataObject().ifPresent(ram -> {
-                try {
-                    onSaveCallback.accept(ram);
-                    close();
-
-                    Notification notification = Notification.show(
-                            isEditMode ? "Запись обновлена" : "Запись создана",
-                            3000,
-                            Notification.Position.MIDDLE
-                    );
-                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                } catch (Exception e) {
-                    Notification notification = Notification.show(
-                            "Ошибка при сохранении: " + e.getMessage(),
-                            5000,
-                            Notification.Position.MIDDLE
-                    );
-                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                }
-            });
         }
     }
 }

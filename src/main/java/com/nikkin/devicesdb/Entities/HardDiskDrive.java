@@ -10,25 +10,18 @@ public class HardDiskDrive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Size(max=30)
     private String name;
 
-    @Size(min=1,max=10)
     private String driveInterface;       // SATA...
 
-    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
     private Float capacity;
 
-    @Size(min=1, max=4)
     private String format;           // 3.5", 2.5"
 
-    @Positive(message = "RPM не может быть отрицательным либо равным нулю")
     private Integer rpm;                // 5400, 7200...
 
-    @Positive(message = "Объём кэша не может быть отрицательным либо равным нулю")
     private Integer cache;
 
-    @Positive(message = "Энергопотребление не может быть отрицательным либо равным нулю")
     private Float powerConsumption;
 
     public Long getId() {

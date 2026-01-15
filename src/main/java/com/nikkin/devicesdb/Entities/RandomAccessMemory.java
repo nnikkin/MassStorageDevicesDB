@@ -12,33 +12,22 @@ public class RandomAccessMemory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Size(max=30)
     private String name;
 
-    @Size(max=30)
     private String model;
 
-    @Size(max=30)
     private String manufacturer;
 
-    @Size(max=10)
-    private String memoryType;            // DDR3, DDR4, DDR5...
+    private String memoryType;
 
-    @Size(max=10)
-    private String moduleType;      // DIMM/SO-DIMM
+    private String moduleType;
 
-    @Positive(message = "Объём не может быть отрицательным либо равным нулю")
     private Float capacity;
 
-    @Nullable
-    @Positive(message = "Тактовая частота не может быть отрицательным либо равным нулю")
     private Float frequencyMhz;
 
-    @Nullable
-    @Positive(message = "CAS-латентность не может быть отрицательной либо равной нулю")
     private Integer casLatency;
 
-    @NotNull
     private Boolean supportsEcc;
 
     public Long getId() {

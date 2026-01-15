@@ -3,11 +3,24 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.*;
 
 public record FlashDriveDto(
-        @Id Long id,
+        @Id
+        Long id,
+
+        @Size(max = 30)
         String name,
+
+        @Size(max = 10)
         String usbInterface,
+
+        @Size(max = 10)
         String usbType,
-        @Positive Float capacity,
-        @Positive Float writeSpeed,
-        @Positive Float readSpeed
-) {}
+
+        @Positive(message = "Объём не может быть отрицательным либо равным нулю")
+        Float capacity,
+
+        @Positive(message = "Скорость записи не может быть отрицательной либо равной нулю")
+        Float writeSpeed,
+
+        @Positive(message = "Скорость чтения не может быть отрицательной либо равной нулю")
+        Float readSpeed
+) implements Identifiable {}

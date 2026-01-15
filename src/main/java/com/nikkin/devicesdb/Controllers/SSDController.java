@@ -1,7 +1,7 @@
 package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
-import com.nikkin.devicesdb.Services.SolidStateDriveService;
+import com.nikkin.devicesdb.Services.SSDService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -13,23 +13,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/ssd")
-public class SolidStateDriveController {
-    private final SolidStateDriveService ssdService;
+public class SSDController {
+    private final SSDService ssdService;
 
-    public SolidStateDriveController(SolidStateDriveService ssdService) {
+    public SSDController(SSDService ssdService) {
         this.ssdService = ssdService;
     }
 
     @PostMapping
     public ResponseEntity<SolidStateDriveDto> addSolidStateDrive(@RequestBody @Valid SolidStateDriveDto ssdDto) {
         SolidStateDriveDto createdSsdDto = ssdService.add(ssdDto);
-        return new ResponseEntity<SolidStateDriveDto>(createdSsdDto, HttpStatus.OK);
+        return new ResponseEntity<>(createdSsdDto, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<List<SolidStateDriveDto>> getAllSolidStateDrives() {
         List<SolidStateDriveDto> allSsdDtos = ssdService.getAll();
-        return new ResponseEntity<List<SolidStateDriveDto>>(allSsdDtos, HttpStatus.OK);
+        return new ResponseEntity<>(allSsdDtos, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -37,7 +37,7 @@ public class SolidStateDriveController {
         SolidStateDriveDto ssdDto = ssdService.getById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        return new ResponseEntity<SolidStateDriveDto>(ssdDto, HttpStatus.OK);
+        return new ResponseEntity<>(ssdDto, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -49,7 +49,7 @@ public class SolidStateDriveController {
     @PutMapping("/{id}")
     public ResponseEntity<SolidStateDriveDto> replaceSolidStateDrive(@PathVariable Long id, @RequestBody @Valid SolidStateDriveDto ssdDto) {
         SolidStateDriveDto updatedSsdDto = ssdService.update(id, ssdDto);
-        return new ResponseEntity<SolidStateDriveDto>(updatedSsdDto, HttpStatus.OK);
+        return new ResponseEntity<>(updatedSsdDto, HttpStatus.OK);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

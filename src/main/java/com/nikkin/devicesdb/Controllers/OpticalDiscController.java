@@ -23,13 +23,13 @@ public class OpticalDiscController {
     @PostMapping
     public ResponseEntity<OpticalDiscDto> addOpticalDisc(@RequestBody @Valid OpticalDiscDto opticalDiscDto) {
         OpticalDiscDto createdOpticalDiscDto = opticalDiscService.add(opticalDiscDto);
-        return new ResponseEntity<OpticalDiscDto>(createdOpticalDiscDto, HttpStatus.OK);
+        return new ResponseEntity<>(createdOpticalDiscDto, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<OpticalDiscDto>> getAllOpticalDiscs() {
         List<OpticalDiscDto> allOpticalDiscDtos = opticalDiscService.getAll();
-        return new ResponseEntity<List<OpticalDiscDto>>(allOpticalDiscDtos, HttpStatus.OK);
+        return new ResponseEntity<>(allOpticalDiscDtos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -37,7 +37,7 @@ public class OpticalDiscController {
         OpticalDiscDto opticalDiscDto = opticalDiscService.getById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        return new ResponseEntity<OpticalDiscDto>(opticalDiscDto, HttpStatus.OK);
+        return new ResponseEntity<>(opticalDiscDto, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -49,7 +49,7 @@ public class OpticalDiscController {
     @PutMapping("/{id}")
     public ResponseEntity<OpticalDiscDto> replaceOpticalDisc(@PathVariable Long id, @RequestBody @Valid OpticalDiscDto opticalDiscDto) {
         OpticalDiscDto updatedOpticalDiscDto = opticalDiscService.update(id, opticalDiscDto);
-        return new ResponseEntity<OpticalDiscDto>(updatedOpticalDiscDto, HttpStatus.OK);
+        return new ResponseEntity<>(updatedOpticalDiscDto, HttpStatus.OK);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

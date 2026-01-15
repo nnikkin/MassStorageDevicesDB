@@ -23,13 +23,13 @@ public class FloppyDiskController {
     @PostMapping
     public ResponseEntity<FloppyDiskDto> addFloppyDisk(@RequestBody @Valid FloppyDiskDto floppyDiskDto) {
         FloppyDiskDto createdFloppyDiskDto = floppyDiskService.add(floppyDiskDto);
-        return new ResponseEntity<FloppyDiskDto>(createdFloppyDiskDto, HttpStatus.OK);
+        return new ResponseEntity<>(createdFloppyDiskDto, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<FloppyDiskDto>> getAllFloppyDisks() {
         List<FloppyDiskDto> allFloppyDiskDtos = floppyDiskService.getAll();
-        return new ResponseEntity<List<FloppyDiskDto>>(allFloppyDiskDtos, HttpStatus.OK);
+        return new ResponseEntity<>(allFloppyDiskDtos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -37,7 +37,7 @@ public class FloppyDiskController {
         FloppyDiskDto floppyDiskDto = floppyDiskService.getById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        return new ResponseEntity<FloppyDiskDto>(floppyDiskDto, HttpStatus.OK);
+        return new ResponseEntity<>(floppyDiskDto, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -49,7 +49,7 @@ public class FloppyDiskController {
     @PutMapping("/{id}")
     public ResponseEntity<FloppyDiskDto> replaceFloppyDisk(@PathVariable Long id, @RequestBody @Valid FloppyDiskDto floppyDiskDto) {
         FloppyDiskDto updatedFloppyDiskDto = floppyDiskService.update(id, floppyDiskDto);
-        return new ResponseEntity<FloppyDiskDto>(updatedFloppyDiskDto, HttpStatus.OK);
+        return new ResponseEntity<>(updatedFloppyDiskDto, HttpStatus.OK);
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

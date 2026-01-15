@@ -25,7 +25,7 @@ public class FlashDriveController {
     @PostMapping
     public ResponseEntity<FlashDriveDto> addFlashDrive(@RequestBody @Valid FlashDriveDto flashDriveDto) {
         FlashDriveDto createdFlashDriveDto = flashDriveService.add(flashDriveDto);
-        return new ResponseEntity<FlashDriveDto>(createdFlashDriveDto, HttpStatus.CREATED);
+        return new ResponseEntity<>(createdFlashDriveDto, HttpStatus.CREATED);
     }
 
     @GetMapping
