@@ -16,12 +16,10 @@ public class HDDService extends BaseService<HardDiskDrive, HardDiskDriveDto> {
     protected HardDiskDriveDto mapToDto(HardDiskDrive entity) {
         return new HardDiskDriveDto(
             entity.getId(),
-            entity.getName(),
+            entity.getManufacturer(),
             entity.getCapacity(),
             entity.getDriveInterface(),
             entity.getFormat(),
-            entity.getRpm(),
-            entity.getCache(),
             entity.getPowerConsumption()
         );
     }
@@ -29,12 +27,10 @@ public class HDDService extends BaseService<HardDiskDrive, HardDiskDriveDto> {
     @Override
     protected void updateEntity(HardDiskDrive entity, HardDiskDriveDto dto) {
         entity.setId(dto.id());
-        entity.setName(dto.name());
+        entity.setManufacturer(dto.manufacturer());
         entity.setDriveInterface(dto.driveInterface());
         entity.setCapacity(dto.capacity());
         entity.setFormat(dto.format());
-        entity.setRpm(dto.rpm());
-        entity.setCache(dto.cache());
         entity.setPowerConsumption(dto.powerConsumption());
     }
 

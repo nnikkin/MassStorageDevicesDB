@@ -18,22 +18,19 @@ public class RAMService extends BaseService<RandomAccessMemory, RandomAccessMemo
     protected RandomAccessMemoryDto mapToDto(RandomAccessMemory entity) {
         return new RandomAccessMemoryDto(
             entity.getId(),
-            entity.getName(),
             entity.getModel(),
             entity.getManufacturer(),
             entity.getMemoryType(),
             entity.getModuleType(),
             entity.getCapacity(),
             entity.getFrequencyMhz(),
-            entity.getCasLatency(),
-            entity.isSupportingEcc()
+            entity.getCasLatency()
         );
     }
 
     @Override
     protected void updateEntity(RandomAccessMemory entity, RandomAccessMemoryDto dto) {
         entity.setId(dto.id());
-        entity.setName(dto.name());
         entity.setModel(dto.model());
         entity.setManufacturer(dto.manufacturer());
         entity.setModuleType(dto.moduleType());
@@ -41,7 +38,6 @@ public class RAMService extends BaseService<RandomAccessMemory, RandomAccessMemo
         entity.setMemoryType(dto.memoryType());
         entity.setFrequencyMhz(dto.frequencyMhz());
         entity.setCasLatency(dto.casLatency());
-        entity.setSupportsEcc(dto.supportsEcc());
     }
 
     @Override

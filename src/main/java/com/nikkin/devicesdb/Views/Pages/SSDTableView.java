@@ -5,6 +5,7 @@ import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
 import com.nikkin.devicesdb.Entities.SolidStateDrive;
 import com.nikkin.devicesdb.Services.SSDService;
 import com.nikkin.devicesdb.Views.BaseForm;
+import com.nikkin.devicesdb.Views.BaseTableView;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
@@ -41,7 +42,7 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
         ssdGrid.setColumnRendering(ColumnRendering.LAZY);
         ssdGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        ssdGrid.addColumn(SolidStateDriveDto::name)
+        ssdGrid.addColumn(SolidStateDriveDto::manufacturer)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -54,10 +55,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
                 .setAutoWidth(true)
                 .setSortable(true);
         ssdGrid.addColumn(SolidStateDriveDto::nandType)
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
-        ssdGrid.addColumn(SolidStateDriveDto::tbw)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -105,10 +102,9 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
         headerCells.get(2).setComponent(createFilterHeader("Интерфейс", filter::setDriveInterface));
         headerCells.get(3).setComponent(createFilterHeader("Тип NAND", filter::setNandType));
-        headerCells.get(4).setComponent(createFilterHeader("TBW (ТБ)", filter::setTbw));
-        headerCells.get(5).setComponent(createFilterHeader("Скорость записи (МБ/с)", filter::setWriteSpeed));
-        headerCells.get(6).setComponent(createFilterHeader("Скорость чтения (МБ/с)", filter::setReadSpeed));
-        headerCells.get(7).setComponent(createFilterHeader("Энергопотребление (Вт)", filter::setPowerConsumption));
+        headerCells.get(4).setComponent(createFilterHeader("Скорость записи (МБ/с)", filter::setWriteSpeed));
+        headerCells.get(5).setComponent(createFilterHeader("Скорость чтения (МБ/с)", filter::setReadSpeed));
+        headerCells.getLast().setComponent(createFilterHeader("Энергопотребление (Вт)", filter::setPowerConsumption));
     }
 
     private static class SolidStateDriveFilter {
@@ -118,7 +114,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
         private String capacity;
         private String driveInterface;
         private String nandType;
-        private String tbw;
         private String writeSpeed;
         private String readSpeed;
         private String powerConsumption;
@@ -148,11 +143,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             this.dataView.refreshAll();
         }
 
-        public void setTbw(String tbw) {
-            this.tbw = tbw;
-            this.dataView.refreshAll();
-        }
-
         public void setWriteSpeed(String writeSpeed) {
             this.writeSpeed = writeSpeed;
             this.dataView.refreshAll();
@@ -169,11 +159,10 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
         }
 
         private boolean test(SolidStateDriveDto dto) {
-            return matches(dto.name(), name)
+            return matches(dto.manufacturer(), name)
                     && matchesNumeric(dto.capacity(), capacity)
                     && matches(dto.driveInterface(), driveInterface)
                     && matches(dto.nandType(), nandType)
-                    && matchesNumeric(dto.tbw(), tbw)
                     && matchesNumeric(dto.writeSpeed(), writeSpeed)
                     && matchesNumeric(dto.readSpeed(), readSpeed)
                     && matchesNumeric(dto.powerConsumption(), powerConsumption);
@@ -190,13 +179,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             }
             return value != null && String.valueOf(value).startsWith(searchTerm);
         }
-
-        private boolean matchesNumeric(Integer value, String searchTerm) {
-            if (searchTerm == null || searchTerm.isEmpty()) {
-                return true;
-            }
-            return value != null && String.valueOf(value).startsWith(searchTerm);
-        }
     }
 
     static class SolidStateDriveForm extends BaseForm<SolidStateDriveDto> {
@@ -205,7 +187,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
         private ComboBox<Bytes> capacityUnitBox;
         private ComboBox<String> ssdInterfaceComboBox;
         private ComboBox<String> ssdNandTypeBox;
-        private NumberField ssdTbwField;
         private NumberField writeSpeedField;
         private NumberField readSpeedField;
         private NumberField powerConsumptionField;
@@ -229,7 +210,7 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             capacityFieldLayout.add(capacityField, capacityUnitBox);
 
             add(nameField, capacityFieldLayout, ssdInterfaceComboBox, ssdNandTypeBox,
-                    ssdTbwField, writeSpeedField, readSpeedField, powerConsumptionField);
+                    writeSpeedField, readSpeedField, powerConsumptionField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -273,10 +254,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             );
             ssdNandTypeBox.setClearButtonVisible(true);
 
-            ssdTbwField = new NumberField("Максимальный ресурс записи:");
-            ssdTbwField.setSuffixComponent(new Div("ТБ"));
-            ssdTbwField.setClearButtonVisible(true);
-
             writeSpeedField = new NumberField("Скорость записи:");
             writeSpeedField.setSuffixComponent(new Div("МБ/с"));
             writeSpeedField.setClearButtonVisible(true);
@@ -296,7 +273,7 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
                     .asRequired("Название обязательно")
                     .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
                     .bind(
-                            SolidStateDriveDto::name,
+                            SolidStateDriveDto::manufacturer,
                             (dto, value) -> {}
                     );
 
@@ -317,13 +294,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             binder.forField(ssdNandTypeBox)
                     .bind(
                             SolidStateDriveDto::nandType,
-                            (dto, value) -> {}
-                    );
-
-            binder.forField(ssdTbwField)
-                    .withValidator(tbw -> tbw == null || tbw > 0, "TBW должен быть положительным")
-                    .bind(
-                            dto -> dto.tbw() != null ? dto.tbw().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
@@ -361,7 +331,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
                     ssdInterfaceComboBox.getValue() != null ? ssdInterfaceComboBox.getValue() : null,
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
                     ssdNandTypeBox.getValue(),
-                    ssdTbwField.getValue() != null ? ssdTbwField.getValue().intValue() : null,
                     writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
                     readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null,
                     powerConsumptionField.getValue() != null ? powerConsumptionField.getValue().floatValue() : null
@@ -377,7 +346,6 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             capacityField.clear();
             ssdInterfaceComboBox.clear();
             ssdNandTypeBox.clear();
-            ssdTbwField.clear();
             writeSpeedField.clear();
             readSpeedField.clear();
             powerConsumptionField.clear();

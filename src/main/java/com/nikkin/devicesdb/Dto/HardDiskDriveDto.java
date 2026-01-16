@@ -9,7 +9,7 @@ public record HardDiskDriveDto(
         Long id,
 
         @Size(max=30)
-        String name,
+        String manufacturer,
 
         @Positive(message = "Объём не может быть отрицательным либо равным нулю")
         Float capacity,
@@ -19,12 +19,6 @@ public record HardDiskDriveDto(
 
         @Size(max=4)
         String format,
-
-        @Positive(message = "RPM не может быть отрицательным либо равным нулю")
-        Integer rpm,
-
-        @Positive(message = "Объём кэша не может быть отрицательным либо равным нулю")
-        Integer cache,
 
         @Positive(message = "Энергопотребление не может быть отрицательным либо равным нулю")
         Float powerConsumption

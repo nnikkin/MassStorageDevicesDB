@@ -1,18 +1,8 @@
-package com.nikkin.devicesdb.Services;
+package com.nikkin.devicesdb._Unused;
 
-import com.nikkin.devicesdb.Dto.FlashDriveDto;
-import com.nikkin.devicesdb.Dto.OpticalDiscDto;
-import com.nikkin.devicesdb.Entities.FlashDrive;
-import com.nikkin.devicesdb.Entities.OpticalDisc;
-import com.nikkin.devicesdb.Repos.FlashDriveRepository;
-import com.nikkin.devicesdb.Repos.OpticalDiscRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.nikkin.devicesdb.Services.BaseService;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Validated

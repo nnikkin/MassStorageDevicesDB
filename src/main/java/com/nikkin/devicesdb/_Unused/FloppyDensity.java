@@ -1,4 +1,4 @@
-package com.nikkin.devicesdb.Domain;
+package com.nikkin.devicesdb._Unused;
 
 public enum FloppyDensity {
     SD("SD (Single Density)"), DD("DD (Double Density)"), QD("QD (Quad Density)"),

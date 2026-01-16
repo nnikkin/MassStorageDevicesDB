@@ -1,5 +1,6 @@
-package com.nikkin.devicesdb.Dto;
+package com.nikkin.devicesdb._Unused;
 
+import com.nikkin.devicesdb.Dto.Identifiable;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Positive;

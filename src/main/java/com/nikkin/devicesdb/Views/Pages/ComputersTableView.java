@@ -1,9 +1,9 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Dto.FlashDriveDto;
-import com.nikkin.devicesdb.Entities.FlashDrive;
-import com.nikkin.devicesdb.Services.FlashDriveService;
+import com.nikkin.devicesdb.Dto.ComputerDto;
+import com.nikkin.devicesdb.Entities.Computer;
+import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -18,24 +18,23 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
-import java.util.ArrayList;
-
-@Route("flash")
-final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDriveDto> {
-    public FlashDriveTableView(FlashDriveService service) {
-        super("Флеш-память", service);
+@Route("computers")
+final public class ComputersTableView extends BaseTableView<Computer, ComputerDto> {
+    public ComputersTableView(ComputerService service) {
+        super("Компьютеры", service);
     }
 
     @Override
-    protected BaseForm<FlashDriveDto> createForm() {
-        return new FlashDriveForm();
+    protected BaseForm<ComputerDto> createForm() {
+        return new ComputerForm();
     }
 
     @Override
     protected void initTable() {
-        var flashDriveGrid = new Grid<>(FlashDriveDto.class, false);
+        var flashDriveGrid = new Grid<>(ComputerDto.class, false);
 
         flashDriveGrid.setItems(new ArrayList<>());
         flashDriveGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
@@ -43,23 +42,23 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
         flashDriveGrid.setColumnRendering(ColumnRendering.LAZY);
         flashDriveGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        flashDriveGrid.addColumn(FlashDriveDto::name)
+        flashDriveGrid.addColumn(ComputerDto::name)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::capacity)
+        flashDriveGrid.addColumn(ComputerDto::linkedRamDtos)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::usbInterface)
+        flashDriveGrid.addColumn(ComputerDto::linkedHddDtos)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::readSpeed)
+        flashDriveGrid.addColumn(ComputerDto::linkedSsdDtos)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::writeSpeed)
+        flashDriveGrid.addColumn(ComputerDto::linkedFlashDtos)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -89,25 +88,21 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
                                         .getFirst()
                                         .getCells();
 
-        FlashDriveFilter filter = new FlashDriveFilter(flashDriveGrid.getListDataView());
+        ComputerFilter filter = new ComputerFilter(flashDriveGrid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
-        headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
-        headerCells.get(2).setComponent(createFilterHeader("Интерфейс USB", filter::setUsbInterface));
-        headerCells.get(3).setComponent(createFilterHeader("Скорость чтения (МБ/сек)", filter::setReadSpeed));
-        headerCells.getLast().setComponent(createFilterHeader("Скорость записи (МБ/сек)", filter::setWriteSpeed));
+        headerCells.get(1).setComponent(createFilterHeader("Связанные модули ОЗУ", filter::));
+        headerCells.get(2).setComponent(createFilterHeader("Связанные HDD", filter::));
+        headerCells.get(3).setComponent(createFilterHeader("Связанные SSD", filter::));
+        headerCells.getLast().setComponent(createFilterHeader("Связанные Flash", filter::));
     }
 
-    private static class FlashDriveFilter {
-        private final GridListDataView<FlashDriveDto> dataView;
+    private static class ComputerFilter {
+        private final GridListDataView<ComputerDto> dataView;
 
         private String name;
-        private String usbInterface;
-        private String capacity;
-        private String writeSpeed;
-        private String readSpeed;
 
-        public FlashDriveFilter(GridListDataView<FlashDriveDto> dataView) {
+        public ComputerFilter(GridListDataView<ComputerDto> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
         }
@@ -117,27 +112,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
             this.dataView.refreshAll();
         }
 
-        public void setUsbInterface(String usbInterface) {
-            this.usbInterface = usbInterface;
-            this.dataView.refreshAll();
-        }
-
-        public void setCapacity(String capacity) {
-            this.capacity = capacity;
-            this.dataView.refreshAll();
-        }
-
-        public void setWriteSpeed(String writeSpeed) {
-            this.writeSpeed = writeSpeed;
-            this.dataView.refreshAll();
-        }
-
-        public void setReadSpeed(String readSpeed) {
-            this.readSpeed = readSpeed;
-            this.dataView.refreshAll();
-        }
-
-        private boolean test(FlashDriveDto dto) {
+        private boolean test(ComputerDto dto) {
             return matches(dto.name(), name)
                     && matches(dto.usbInterface(), usbInterface)
                     && matchesNumeric(dto.capacity(), capacity)
@@ -159,7 +134,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
         }
     }
 
-    static class FlashDriveForm extends BaseForm<FlashDriveDto> {
+    static class ComputerForm extends BaseForm<ComputerDto> {
         private TextArea nameField;
         private NumberField capacityField;
         private ComboBox<Bytes> capacityUnitBox;
@@ -167,13 +142,13 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
         private NumberField readSpeedField;
         private NumberField writeSpeedField;
 
-        private Binder<FlashDriveDto> binder;
+        private Binder<ComputerDto> binder;
         private Long currentId = null;
 
-        public FlashDriveForm() {
+        public ComputerForm() {
             super();
 
-            binder = new Binder<>(FlashDriveDto.class);
+            binder = new Binder<>(ComputerDto.class);
             setBinder(binder);
 
             setupFields();
@@ -191,7 +166,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
         }
 
         @Override
-        protected void setDto(FlashDriveDto dto) {
+        protected void setDto(ComputerDto dto) {
             this.currentId = dto.id();
             binder.readBean(dto);
         }
@@ -237,7 +212,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
                     .asRequired("Название обязательно")
                     .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
                     .bind(
-                            FlashDriveDto::name,
+                            ComputerDto::name,
                             (dto, value) -> {}
                     );
 
@@ -271,12 +246,12 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
         }
 
         @Override
-        protected Optional<FlashDriveDto> getFormDataObject() {
+        protected Optional<ComputerDto> getFormDataObject() {
             if (!isValid()) {
                 return Optional.empty();
             }
 
-            FlashDriveDto dto = new FlashDriveDto(
+            ComputerDto dto = new ComputerDto(
                     currentId,
                     nameField.getValue(),
                     usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue() : null,

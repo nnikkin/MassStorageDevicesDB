@@ -5,6 +5,7 @@ import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
 import com.nikkin.devicesdb.Entities.RandomAccessMemory;
 import com.nikkin.devicesdb.Services.RAMService;
 import com.nikkin.devicesdb.Views.BaseForm;
+import com.nikkin.devicesdb.Views.BaseTableView;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
@@ -46,19 +47,15 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         ramGrid.setColumnRendering(ColumnRendering.LAZY);
         ramGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        ramGrid.addColumn(RandomAccessMemoryDto::name)
-                .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
-                .setAutoWidth(true)
-                .setSortable(true);
-        ramGrid.addColumn(dto -> String.format("%.2f", dto.capacity()))
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
         ramGrid.addColumn(RandomAccessMemoryDto::manufacturer)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
         ramGrid.addColumn(RandomAccessMemoryDto::model)
+                .setHeader("")
+                .setAutoWidth(true)
+                .setSortable(true);
+        ramGrid.addColumn(dto -> String.format("%.2f", dto.capacity()))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -75,11 +72,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
                 .setAutoWidth(true)
                 .setSortable(true);
         ramGrid.addColumn(dto -> String.format("%.2f", dto.frequencyMhz()))
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
-        ramGrid.addColumn(dto ->
-                        dto.supportsEcc() ? "Да" : "Нет")
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -112,21 +104,18 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
 
         RandomAccessMemoryFilter filter = new RandomAccessMemoryFilter(ramGrid.getListDataView());
 
-        headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
-        headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
-        headerCells.get(2).setComponent(createFilterHeader("Производитель", filter::setManufacturer));
-        headerCells.get(3).setComponent(createFilterHeader("Модель", filter::setModel));
-        headerCells.get(4).setComponent(createFilterHeader("Вид памяти", filter::setMemoryType));
-        headerCells.get(5).setComponent(createFilterHeader("Вид модуля", filter::setModuleType));
-        headerCells.get(6).setComponent(createFilterHeader("CAS-латентность", filter::setCasLatency));
-        headerCells.get(7).setComponent(createFilterHeader("Тактовая частота (МГц)", filter::setFrequencyMhz));
-        headerCells.getLast().setComponent(createFilterHeader("Поддержка ECC", filter::setSupportsEcc));
+        headerCells.getFirst().setComponent(createFilterHeader("Производитель", filter::setManufacturer));
+        headerCells.get(1).setComponent(createFilterHeader("Модель", filter::setModel));
+        headerCells.get(2).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
+        headerCells.get(3).setComponent(createFilterHeader("Вид памяти", filter::setMemoryType));
+        headerCells.get(4).setComponent(createFilterHeader("Вид модуля", filter::setModuleType));
+        headerCells.get(5).setComponent(createFilterHeader("CAS-латентность", filter::setCasLatency));
+        headerCells.getLast().setComponent(createFilterHeader("Тактовая частота (МГц)", filter::setFrequencyMhz));
     }
 
     private static class RandomAccessMemoryFilter {
         private final GridListDataView<RandomAccessMemoryDto> dataView;
 
-        private String name;
         private String model;
         private String manufacturer;
         private String capacity;
@@ -134,16 +123,10 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         private String moduleType;
         private String casLatency;
         private String frequencyMhz;
-        private Boolean supportsEcc;
 
         public RandomAccessMemoryFilter(GridListDataView<RandomAccessMemoryDto> dataView) {
             this.dataView = dataView;
             this.dataView.addFilter(this::test);
-        }
-
-        public void setName(String name) {
-            this.name = name;
-            this.dataView.refreshAll();
         }
 
         public void setCapacity(String capacity) {
@@ -181,27 +164,14 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
             this.dataView.refreshAll();
         }
 
-        public void setSupportsEcc(String value) {
-            if (value == null || value.isEmpty()) {
-                this.supportsEcc = null;
-            } else if ("да".contains(value.toLowerCase())) {
-                this.supportsEcc = true;
-            } else if ("нет".contains(value.toLowerCase())) {
-                this.supportsEcc = false;
-            }
-            this.dataView.refreshAll();
-        }
-
         private boolean test(RandomAccessMemoryDto dto) {
-            return matches(dto.name(), name)
-                    && matchesNumeric(dto.capacity(), capacity)
+            return matchesNumeric(dto.capacity(), capacity)
                     && matches(dto.memoryType(), memoryType)
                     && matches(dto.moduleType(), moduleType)
                     && matches(dto.model(), model)
                     && matches(dto.manufacturer(), manufacturer)
                     && matchesNumeric(dto.casLatency(), casLatency)
-                    && matchesNumeric(dto.frequencyMhz(), frequencyMhz)
-                    && (supportsEcc == null || dto.supportsEcc() == supportsEcc);
+                    && matchesNumeric(dto.frequencyMhz(), frequencyMhz);
         }
 
         private boolean matches(String value, String searchTerm) {
@@ -227,7 +197,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
     }
 
     static class RandomAccessMemoryForm extends BaseForm<RandomAccessMemoryDto> {
-        private TextArea nameField;
         private TextArea modelField;
         private TextArea manufacturerField;
         private NumberField capacityField;
@@ -236,7 +205,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         private RadioButtonGroup<String> ramTypeRadio;
         private NumberField ramFrequencyField;
         private NumberField ramLatencyField;
-        private Checkbox ramEccSupportCheckbox;
 
         private Binder<RandomAccessMemoryDto> binder;
         private Long currentId = null;
@@ -256,8 +224,8 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
             capacityFieldLayout.setMargin(false);
             capacityFieldLayout.add(capacityField, capacityUnitBox);
 
-            add(nameField, manufacturerField, modelField, capacityFieldLayout, ramMemoryTypeBox, ramTypeRadio,
-                    ramFrequencyField, ramLatencyField, ramEccSupportCheckbox);
+            add(manufacturerField, modelField, capacityFieldLayout, ramMemoryTypeBox, ramTypeRadio,
+                    ramFrequencyField, ramLatencyField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -269,13 +237,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
 
         @Override
         protected void setupFields() {
-            nameField = new TextArea("Название:");
-            nameField.setMinRows(1);
-            nameField.setMaxRows(1);
-            nameField.setMinLength(1);
-            nameField.setMaxLength(30);
-            nameField.setClearButtonVisible(true);
-
             modelField = new TextArea("Модель:");
             modelField.setMinRows(1);
             modelField.setMaxRows(1);
@@ -313,22 +274,10 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
             ramLatencyField = new NumberField("CAS-латентность:");
             ramLatencyField.setPrefixComponent(new Div("CL"));
             ramLatencyField.setClearButtonVisible(true);
-
-            ramEccSupportCheckbox = new Checkbox("Поддерживает ECC?");
-            ramEccSupportCheckbox.setValue(false); // По умолчанию нет
         }
 
         @Override
         protected void setupBinder() {
-            // Bind fields to DTO
-            binder.forField(nameField)
-                    .asRequired("Название обязательно")
-                    .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
-                    .bind(
-                            RandomAccessMemoryDto::name,
-                            (dto, value) -> {}
-                    );
-
             binder.forField(modelField)
                     .withValidator(model -> model.length() <= 30, "Название модели должно быть до 30 символов")
                     .bind(
@@ -391,12 +340,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
                             dto -> dto.casLatency() != null ? dto.casLatency().doubleValue() : null,
                             (dto, value) -> {}
                     );
-
-            binder.forField(ramEccSupportCheckbox)
-                    .bind(
-                            RandomAccessMemoryDto::supportsEcc,
-                            (dto, value) -> {}
-                    );
         }
 
         @Override
@@ -407,7 +350,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
 
             RandomAccessMemoryDto dto = new RandomAccessMemoryDto(
                     currentId,
-                    nameField.getValue(),
                     modelField.getValue(),
                     manufacturerField.getValue(),
                     ramMemoryTypeBox.getValue(),
@@ -415,8 +357,7 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(),
                             capacityUnitBox.getValue()) : null,
                     ramFrequencyField.getValue().floatValue(),
-                    ramLatencyField.getValue().intValue(),
-                    ramEccSupportCheckbox.getValue()
+                    ramLatencyField.getValue().intValue()
             );
 
             return Optional.of(dto);
@@ -425,13 +366,11 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         @Override
         protected void clearFields() {
             currentId = null;
-            nameField.clear();
             capacityField.clear();
             manufacturerField.clear();
             modelField.clear();
             ramLatencyField.clear();
             ramFrequencyField.clear();
-            ramEccSupportCheckbox.setValue(false);
             binder.validate();
         }
     }

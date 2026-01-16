@@ -16,11 +16,10 @@ public class SSDService extends BaseService<SolidStateDrive, SolidStateDriveDto>
     protected SolidStateDriveDto mapToDto(SolidStateDrive entity) {
         return new SolidStateDriveDto(
             entity.getId(),
-            entity.getName(),
+            entity.getManufacturer(),
             entity.getDriveInterface(),
             entity.getCapacity(),
             entity.getNandType(),
-            entity.getTbw(),
             entity.getWriteSpeed(),
             entity.getReadSpeed(),
             entity.getPowerConsumption()
@@ -30,11 +29,10 @@ public class SSDService extends BaseService<SolidStateDrive, SolidStateDriveDto>
     @Override
     protected void updateEntity(SolidStateDrive entity, SolidStateDriveDto dto) {
         entity.setId(dto.id());
-        entity.setName(dto.name());
+        entity.setManufacturer(dto.manufacturer());
         entity.setDriveInterface(dto.driveInterface());
         entity.setCapacity(dto.capacity());
         entity.setNandType(dto.nandType());
-        entity.setTbw(dto.tbw());
         entity.setWriteSpeed(dto.writeSpeed());
         entity.setReadSpeed(dto.readSpeed());
         entity.setPowerConsumption(dto.powerConsumption());

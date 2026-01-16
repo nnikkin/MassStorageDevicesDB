@@ -1,10 +1,7 @@
-package com.nikkin.devicesdb.Views.Pages;
+package com.nikkin.devicesdb._Unused;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Domain.FloppyDensity;
-import com.nikkin.devicesdb.Dto.FloppyDiskDto;
-import com.nikkin.devicesdb.Entities.FloppyDisk;
-import com.nikkin.devicesdb.Services.FloppyDiskService;
+import com.nikkin.devicesdb.Views.BaseTableView;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;

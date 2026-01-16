@@ -1,20 +1,17 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Services.*;
-import com.nikkin.devicesdb.Views.NavBar;
-import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.nikkin.devicesdb.Views.BaseAppView;
+import com.nikkin.devicesdb._Unused.FloppyDiskService;
+import com.nikkin.devicesdb._Unused.OpticalDiscService;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @Route("/")
 public class MainView extends BaseAppView {
@@ -50,7 +47,7 @@ public class MainView extends BaseAppView {
         // Статистические карточки
         HorizontalLayout statsLayout = createStatsCards();
 
-        // Графики
+        // График
         HorizontalLayout chartsLayout = new HorizontalLayout();
         chartsLayout.setWidthFull();
 

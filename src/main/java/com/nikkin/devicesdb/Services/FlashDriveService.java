@@ -20,7 +20,6 @@ public class FlashDriveService extends BaseService<FlashDrive, FlashDriveDto> {
             entity.getId(),
             entity.getName(),
             entity.getUsbInterface(),
-            entity.getUsbType(),
             entity.getCapacity(),
             entity.getWriteSpeed(),
             entity.getReadSpeed()
@@ -32,7 +31,6 @@ public class FlashDriveService extends BaseService<FlashDrive, FlashDriveDto> {
         entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setUsbInterface(dto.usbInterface());
-        entity.setUsbType(dto.usbType());
         entity.setCapacity(dto.capacity());
         entity.setWriteSpeed(dto.writeSpeed());
         entity.setReadSpeed(dto.readSpeed());

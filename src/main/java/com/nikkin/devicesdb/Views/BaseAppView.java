@@ -1,6 +1,5 @@
-package com.nikkin.devicesdb.Views.Pages;
+package com.nikkin.devicesdb.Views;
 
-import com.nikkin.devicesdb.Views.NavBar;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;

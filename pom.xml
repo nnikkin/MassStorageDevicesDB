@@ -6,7 +6,7 @@
     <!-- Project from https://start.vaadin.com/c39f5732-38fc-4528-9e4c-e23d395ed4bb -->
     <groupId>com.nikkin.devicesdb</groupId>
     <artifactId>mass-storage-devices</artifactId>
-    <name>Mass Storage Devices</name>
+    <manufacturer>Mass Storage Devices</manufacturer>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 

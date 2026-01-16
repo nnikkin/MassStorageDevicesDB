@@ -1,9 +1,7 @@
-package com.nikkin.devicesdb.Entities;
+package com.nikkin.devicesdb._Unused;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 
 @Entity
 public class OpticalDisc {

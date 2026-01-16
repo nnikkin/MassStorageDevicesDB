@@ -1,8 +1,6 @@
 package com.nikkin.devicesdb.Entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 
 @Entity
 public class HardDiskDrive {
@@ -10,7 +8,7 @@ public class HardDiskDrive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String manufacturer;
 
     private String driveInterface;       // SATA...
 
@@ -18,11 +16,11 @@ public class HardDiskDrive {
 
     private String format;           // 3.5", 2.5"
 
-    private Integer rpm;                // 5400, 7200...
-
-    private Integer cache;
-
     private Float powerConsumption;
+
+    @ManyToOne
+    @JoinColumn(name = "computer_id") // Имя колонки во внешнем ключе в БД
+    private Computer computer;
 
     public Long getId() {
         return id;
@@ -32,12 +30,12 @@ public class HardDiskDrive {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getManufacturer() {
+        return manufacturer;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
     }
 
     public String getDriveInterface() {
@@ -64,27 +62,19 @@ public class HardDiskDrive {
         this.format = format;
     }
 
-    public Integer getRpm() {
-        return rpm;
-    }
-
-    public void setRpm(Integer rpm) {
-        this.rpm = rpm;
-    }
-
-    public Integer getCache() {
-        return cache;
-    }
-
-    public void setCache(Integer cache) {
-        this.cache = cache;
-    }
-
     public Float getPowerConsumption() {
         return powerConsumption;
     }
 
     public void setPowerConsumption(Float powerConsumption) {
         this.powerConsumption = powerConsumption;
+    }
+
+    public Computer getComputer() {
+        return computer;
+    }
+
+    public void setComputer(Computer computer) {
+        this.computer = computer;
     }
 }

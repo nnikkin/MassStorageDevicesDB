@@ -1,10 +1,7 @@
-package com.nikkin.devicesdb.Views.Pages;
+package com.nikkin.devicesdb.Views;
 
 import com.nikkin.devicesdb.Dto.Identifiable;
 import com.nikkin.devicesdb.Services.BaseService;
-import com.nikkin.devicesdb.Views.BaseDialog;
-import com.nikkin.devicesdb.Views.BaseForm;
-import com.nikkin.devicesdb.Views.CustomDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

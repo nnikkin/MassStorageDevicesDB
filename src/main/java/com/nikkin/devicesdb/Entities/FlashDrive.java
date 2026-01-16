@@ -1,19 +1,26 @@
 package com.nikkin.devicesdb.Entities;
-import jakarta.annotation.Nullable;
+
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 
 @Entity
 public class FlashDrive {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+
     private Float capacity;
+
     private String usbInterface;
-    private String usbType;
+
     private Float writeSpeed;
+
     private Float readSpeed;
+
+    @ManyToOne
+    @JoinColumn(name = "computer_id") // Имя колонки во внешнем ключе в БД
+    private Computer computer;
 
     public Long getId() {
         return id;
@@ -39,14 +46,6 @@ public class FlashDrive {
         this.usbInterface = usbInterface;
     }
 
-    public String getUsbType() {
-        return usbType;
-    }
-
-    public void setUsbType(String usbType) {
-        this.usbType = usbType;
-    }
-
     public Float getCapacity() {
         return capacity;
     }
@@ -69,6 +68,14 @@ public class FlashDrive {
 
     public void setReadSpeed(Float readSpeed) {
         this.readSpeed = readSpeed;
+    }
+
+    public Computer getComputer() {
+        return computer;
+    }
+
+    public void setComputer(Computer computer) {
+        this.computer = computer;
     }
 }
 

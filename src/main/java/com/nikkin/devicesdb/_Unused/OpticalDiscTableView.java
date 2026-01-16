@@ -1,9 +1,7 @@
-package com.nikkin.devicesdb.Views.Pages;
+package com.nikkin.devicesdb._Unused;
 
 import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Dto.OpticalDiscDto;
-import com.nikkin.devicesdb.Entities.OpticalDisc;
-import com.nikkin.devicesdb.Services.OpticalDiscService;
+import com.nikkin.devicesdb.Views.BaseTableView;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;

@@ -1,8 +1,6 @@
 package com.nikkin.devicesdb.Entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 
 @Entity
 public class SolidStateDrive {
@@ -10,21 +8,23 @@ public class SolidStateDrive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String manufacturer;
 
     private String driveInterface;
     
     private Float capacity;
     
     private String nandType;
-    
-    private Integer tbw;
-    
+
     private Float writeSpeed;
     
     private Float readSpeed;
     
     private Float powerConsumption;
+
+    @ManyToOne
+    @JoinColumn(name = "computer_id") // Имя колонки во внешнем ключе в БД
+    private Computer computer;
 
     public Long getId() {
         return id;
@@ -34,12 +34,12 @@ public class SolidStateDrive {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getManufacturer() {
+        return manufacturer;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
     }
 
     public String getDriveInterface() {
@@ -66,15 +66,6 @@ public class SolidStateDrive {
         this.nandType = nandType;
     }
 
-
-    public Integer getTbw() {
-        return tbw;
-    }
-
-    public void setTbw(Integer tbw) {
-        this.tbw = tbw;
-    }
-
     public Float getWriteSpeed() {
         return writeSpeed;
     }
@@ -97,5 +88,13 @@ public class SolidStateDrive {
 
     public void setPowerConsumption(Float powerConsumption) {
         this.powerConsumption = powerConsumption;
+    }
+
+    public Computer getComputer() {
+        return computer;
+    }
+
+    public void setComputer(Computer computer) {
+        this.computer = computer;
     }
 }

@@ -1,18 +1,12 @@
 package com.nikkin.devicesdb.Entities;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 
 @Entity
 public class RandomAccessMemory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String name;
 
     private String model;
 
@@ -28,7 +22,9 @@ public class RandomAccessMemory {
 
     private Integer casLatency;
 
-    private Boolean supportsEcc;
+    @ManyToOne
+    @JoinColumn(name = "computer_id") // Имя колонки во внешнем ключе в БД
+    private Computer computer;
 
     public Long getId() {
         return id;
@@ -36,14 +32,6 @@ public class RandomAccessMemory {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getModel() {
@@ -86,29 +74,27 @@ public class RandomAccessMemory {
         this.capacity = capacity;
     }
 
-    @Nullable
     public Float getFrequencyMhz() {
         return frequencyMhz;
     }
 
-    public void setFrequencyMhz(@Nullable Float frequencyMhz) {
+    public void setFrequencyMhz(Float frequencyMhz) {
         this.frequencyMhz = frequencyMhz;
     }
 
-    @Nullable
     public Integer getCasLatency() {
         return casLatency;
     }
 
-    public void setCasLatency(@Nullable Integer casLatency) {
+    public void setCasLatency(Integer casLatency) {
         this.casLatency = casLatency;
     }
 
-    public boolean isSupportingEcc() {
-        return supportsEcc;
+    public Computer getComputer() {
+        return computer;
     }
 
-    public void setSupportsEcc(boolean supportsEcc) {
-        this.supportsEcc = supportsEcc;
+    public void setComputer(Computer computer) {
+        this.computer = computer;
     }
 }

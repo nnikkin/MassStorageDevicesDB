@@ -5,6 +5,7 @@ import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
 import com.nikkin.devicesdb.Entities.HardDiskDrive;
 import com.nikkin.devicesdb.Services.HDDService;
 import com.nikkin.devicesdb.Views.BaseForm;
+import com.nikkin.devicesdb.Views.BaseTableView;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
@@ -42,7 +43,7 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
         hddGrid.setColumnRendering(ColumnRendering.LAZY);
         hddGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        hddGrid.addColumn(HardDiskDriveDto::name)
+        hddGrid.addColumn(HardDiskDriveDto::manufacturer)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -55,14 +56,6 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
                 .setAutoWidth(true)
                 .setSortable(true);
         hddGrid.addColumn(HardDiskDriveDto::format)
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
-        hddGrid.addColumn(HardDiskDriveDto::cache)
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
-        hddGrid.addColumn(HardDiskDriveDto::rpm)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -98,24 +91,20 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
 
         HardDiskDriveFilter filter = new HardDiskDriveFilter(hddGrid.getListDataView());
 
-        headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
+        headerCells.getFirst().setComponent(createFilterHeader("Производитель", filter::setManufacturer));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
-        headerCells.get(2).setComponent(createFilterHeader("Интерфейс:", filter::setDriveInterface));
-        headerCells.get(3).setComponent(createFilterHeader("Формат:", filter::setFormat));
-        headerCells.get(4).setComponent(createFilterHeader("Размер кэша (МБ):", filter::setCache));
-        headerCells.get(4).setComponent(createFilterHeader("RPM (об/мин):", filter::setRpm));
-        headerCells.get(4).setComponent(createFilterHeader("Энергопотребление (Ватт):", filter::setPowerConsumption));
+        headerCells.get(2).setComponent(createFilterHeader("Интерфейс", filter::setDriveInterface));
+        headerCells.get(3).setComponent(createFilterHeader("Формат", filter::setFormat));
+        headerCells.getLast().setComponent(createFilterHeader("Энергопотребление (Ватт)", filter::setPowerConsumption));
     }
 
     private static class HardDiskDriveFilter {
         private final GridListDataView<HardDiskDriveDto> dataView;
 
-        private String name;
+        private String manufacturer;
         private String capacity;
         private String format;
         private String driveInterface;
-        private String rpm;
-        private String cache;
         private String powerConsumption;
 
         public HardDiskDriveFilter(GridListDataView<HardDiskDriveDto> dataView) {
@@ -123,8 +112,8 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
             this.dataView.addFilter(this::test);
         }
 
-        public void setName(String name) {
-            this.name = name;
+        public void setManufacturer(String manufacturer) {
+            this.manufacturer = manufacturer;
             this.dataView.refreshAll();
         }
 
@@ -143,28 +132,16 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
             this.dataView.refreshAll();
         }
 
-        public void setRpm(String rpm) {
-            this.rpm = rpm;
-            this.dataView.refreshAll();
-        }
-
-        public void setCache(String cache) {
-            this.cache = cache;
-            this.dataView.refreshAll();
-        }
-
         public void setPowerConsumption(String powerConsumption) {
             this.powerConsumption = powerConsumption;
             this.dataView.refreshAll();
         }
 
         private boolean test(HardDiskDriveDto dto) {
-            return matches(dto.name(), name)
+            return matches(dto.manufacturer(), manufacturer)
                     && matchesNumeric(dto.capacity(), capacity)
                     && matches(dto.format(), format)
                     && matchesNumeric(dto.powerConsumption(), powerConsumption)
-                    && matchesNumeric(dto.rpm(), rpm)
-                    && matchesNumeric(dto.cache(), cache)
                     && matches(dto.driveInterface(), driveInterface);
         }
 
@@ -180,24 +157,14 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
 
             return String.valueOf(value).startsWith(searchTerm);
         }
-
-        private boolean matchesNumeric(Integer value, String searchTerm) {
-            if (searchTerm == null || searchTerm.isEmpty()) {
-                return true;
-            }
-
-            return String.valueOf(value).startsWith(searchTerm);
-        }
     }
 
     static class HardDiskDriveForm extends BaseForm<HardDiskDriveDto> {
-        private TextArea nameField;
+        private TextArea manufacturerField;
         private NumberField capacityField;
         private ComboBox<Bytes> capacityUnitBox;
         private ComboBox<String> hddInterfaceComboBox;
         private RadioButtonGroup<String> hddFormatRadio;
-        private NumberField hddRpmField;
-        private NumberField hddCacheField;
         private NumberField powerConsumptionField;
 
         private Binder<HardDiskDriveDto> binder;
@@ -218,8 +185,7 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
             capacityFieldLayout.setMargin(false);
             capacityFieldLayout.add(capacityField, capacityUnitBox);
 
-            add(nameField, capacityFieldLayout, hddInterfaceComboBox, hddFormatRadio, hddRpmField,
-                    hddCacheField);
+            add(manufacturerField, capacityFieldLayout, hddInterfaceComboBox, hddFormatRadio);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -231,12 +197,12 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
 
         @Override
         protected void setupFields() {
-            nameField = new TextArea("Название:");
-            nameField.setMinRows(1);
-            nameField.setMaxRows(1);
-            nameField.setMinLength(1);
-            nameField.setMaxLength(30);
-            nameField.setClearButtonVisible(true);
+            manufacturerField = new TextArea("Производитель:");
+            manufacturerField.setMinRows(1);
+            manufacturerField.setMaxRows(1);
+            manufacturerField.setMinLength(1);
+            manufacturerField.setMaxLength(30);
+            manufacturerField.setClearButtonVisible(true);
 
             capacityField = new NumberField("Объём:");
             capacityField.setClearButtonVisible(true);
@@ -256,14 +222,6 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
             hddFormatRadio = new RadioButtonGroup<>("Формат:");
             hddFormatRadio.setItems("2.5\"", "3.5\"");
 
-            hddRpmField = new NumberField("RPM (оборотов в минуту):");
-            hddRpmField.setSuffixComponent(new Div("об/мин"));
-            hddRpmField.setClearButtonVisible(true);
-
-            hddCacheField = new NumberField("Размер кэша (МБ):");
-            hddCacheField.setSuffixComponent(new Div("МБ"));
-            hddCacheField.setClearButtonVisible(true);
-
             powerConsumptionField = new NumberField("Энергопотребление (Вт):");
             powerConsumptionField.setSuffixComponent(new Div("Вт"));
             powerConsumptionField.setClearButtonVisible(true);
@@ -272,11 +230,10 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
         @Override
         protected void setupBinder() {
             // Bind fields to DTO
-            binder.forField(nameField)
-                    .asRequired("Название обязательно")
-                    .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
+            binder.forField(manufacturerField)
+                    .withValidator(name -> name.length() <= 30, "Название производителя должно быть до 30 символов")
                     .bind(
-                            HardDiskDriveDto::name,
+                            HardDiskDriveDto::manufacturer,
                             (dto, value) -> {}
                     );
 
@@ -285,22 +242,6 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
                     .withValidator(capacity -> capacity > 0, "Объём должен быть положительным")
                     .bind(
                             dto -> dto.capacity() != null ? dto.capacity().doubleValue() : null,
-                            (dto, value) -> {}
-                    );
-
-            binder.forField(hddCacheField)
-                    .withValidator(cache -> cache == null || cache > 0,
-                            "Размер кэша должен быть положительным")
-                    .bind(
-                            dto -> dto.cache() != null ? dto.cache().doubleValue() : null,
-                            (dto, value) -> {}
-                    );
-
-            binder.forField(hddRpmField)
-                    .withValidator(rpm -> rpm == null || rpm > 0,
-                            "Значение RPM должно быть положительным")
-                    .bind(
-                            dto -> dto.rpm() != null ? dto.rpm().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
@@ -333,12 +274,10 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
 
             HardDiskDriveDto dto = new HardDiskDriveDto(
                     currentId,
-                    nameField.getValue(),
+                    manufacturerField.getValue(),
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
                     hddInterfaceComboBox.getValue(),
                     hddFormatRadio.getValue(),
-                    hddRpmField.getValue() != null ? hddRpmField.getValue().intValue() : null,
-                    hddCacheField.getValue() != null ? hddCacheField.getValue().intValue() : null,
                     powerConsumptionField.getValue() != null ? powerConsumptionField.getValue().floatValue() : null
             );
 
@@ -348,10 +287,8 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
         @Override
         protected void clearFields() {
             currentId = null;
-            nameField.clear();
+            manufacturerField.clear();
             capacityField.clear();
-            hddRpmField.clear();
-            hddCacheField.clear();
             hddInterfaceComboBox.clear();
             hddFormatRadio.setValue("3.5\"");
             powerConsumptionField.clear();

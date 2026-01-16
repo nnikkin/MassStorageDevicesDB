@@ -12,9 +12,6 @@ public record FlashDriveDto(
         @Size(max = 10)
         String usbInterface,
 
-        @Size(max = 10)
-        String usbType,
-
         @Positive(message = "Объём не может быть отрицательным либо равным нулю")
         Float capacity,
 

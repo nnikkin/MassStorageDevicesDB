@@ -1,6 +1,5 @@
-package com.nikkin.devicesdb.Repos;
+package com.nikkin.devicesdb._Unused;
 
-import com.nikkin.devicesdb.Entities.OpticalDisc;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

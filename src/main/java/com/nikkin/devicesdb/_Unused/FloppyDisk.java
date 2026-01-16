@@ -1,8 +1,9 @@
-package com.nikkin.devicesdb.Entities;
+package com.nikkin.devicesdb._Unused;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 @Entity
 public class FloppyDisk {

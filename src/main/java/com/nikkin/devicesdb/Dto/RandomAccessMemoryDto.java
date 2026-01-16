@@ -13,9 +13,6 @@ public record RandomAccessMemoryDto(
         Long id,
 
         @Size(max=30)
-        String name,
-
-        @Size(max=30)
         String model,
 
         @Size(max=30)
@@ -36,8 +33,5 @@ public record RandomAccessMemoryDto(
 
         @Nullable
         @Positive(message = "CAS-латентность не может быть отрицательной либо равной нулю")
-        Integer casLatency,
-
-        @NotNull
-        Boolean supportsEcc
+        Integer casLatency
 ) implements Identifiable {}

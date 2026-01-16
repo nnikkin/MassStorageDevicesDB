@@ -8,7 +8,7 @@ public record SolidStateDriveDto(
         @Id Long id,
 
         @Size(max=30)
-        String name,
+        String manufacturer,
 
         @Size(max=10)
         String driveInterface,
@@ -18,9 +18,6 @@ public record SolidStateDriveDto(
 
         @Size(max=10)
         String nandType,
-
-        @Positive(message = "Максимальный ресурс записи не может быть отрицательным либо равным нулю")
-        Integer tbw,
 
         @Positive(message = "Скорость чтения не может быть отрицательным либо равным нулю")
         Float writeSpeed,
