@@ -20,8 +20,6 @@ public class RandomAccessMemory {
 
     private Float frequencyMhz;
 
-    private Integer casLatency;
-
     @ManyToOne
     @JoinColumn(name = "computer_id") // Имя колонки во внешнем ключе в БД
     private Computer computer;
@@ -80,14 +78,6 @@ public class RandomAccessMemory {
 
     public void setFrequencyMhz(Float frequencyMhz) {
         this.frequencyMhz = frequencyMhz;
-    }
-
-    public Integer getCasLatency() {
-        return casLatency;
-    }
-
-    public void setCasLatency(Integer casLatency) {
-        this.casLatency = casLatency;
     }
 
     public Computer getComputer() {

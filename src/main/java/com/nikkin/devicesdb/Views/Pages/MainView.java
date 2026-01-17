@@ -2,8 +2,6 @@ package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Services.*;
 import com.nikkin.devicesdb.Views.BaseAppView;
-import com.nikkin.devicesdb._Unused.FloppyDiskService;
-import com.nikkin.devicesdb._Unused.OpticalDiscService;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.*;
@@ -16,26 +14,25 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 @Route("/")
 public class MainView extends BaseAppView {
 
-    private final FlashDriveService flashDriveService;
-    private final FloppyDiskService floppyDiskService;
-    private final HDDService hddService;
-    private final OpticalDiscService opticalDiscService;
+    private final ComputerService computerService;
     private final RAMService ramService;
+    private final FlashDriveService flashDriveService;
+    private final HDDService hddService;
     private final SSDService ssdService;
 
-    public MainView(FlashDriveService flashDriveService,
-                    FloppyDiskService floppyDiskService,
-                    HDDService hddService,
-                    OpticalDiscService opticalDiscService,
-                    RAMService ramService,
-                    SSDService ssdService) {
+    public MainView(
+            ComputerService computerService,
+            RAMService ramService,
+            FlashDriveService flashDriveService,
+            HDDService hddService,
+            SSDService ssdService
+    ) {
         super("Запоминающие устройства");
 
-        this.flashDriveService = flashDriveService;
-        this.floppyDiskService = floppyDiskService;
-        this.hddService = hddService;
-        this.opticalDiscService = opticalDiscService;
+        this.computerService = computerService;
         this.ramService = ramService;
+        this.flashDriveService = flashDriveService;
+        this.hddService = hddService;
         this.ssdService = ssdService;
 
         // Создание дашборда
@@ -72,18 +69,16 @@ public class MainView extends BaseAppView {
         layout.setJustifyContentMode(FlexComponent.JustifyContentMode.EVENLY);
 
         layout.add(
+                createStatCard("ПК", computerService.getAll().size(),
+                    new Image(DownloadHandler.forServletResource("icons/pc.ico"), "")),
                 createStatCard("Флеш-память", flashDriveService.getAll().size(),
-                        new Image(DownloadHandler.forServletResource("icons/flash.ico"), "")),
-                createStatCard("Дискеты", floppyDiskService.getAll().size(),
-                        new Image(DownloadHandler.forServletResource("icons/floppy2.ico"), "")),
+                    new Image(DownloadHandler.forServletResource("icons/flash.ico"), "")),
                 createStatCard("Жёсткие диски", hddService.getAll().size(),
-                        new Image(DownloadHandler.forServletResource("icons/drive.ico"), "")),
-                createStatCard("Оптические диски", opticalDiscService.getAll().size(),
-                        new Image(DownloadHandler.forServletResource("icons/optical.ico"), "")),
+                    new Image(DownloadHandler.forServletResource("icons/drive.ico"), "")),
                 createStatCard("ОЗУ", ramService.getAll().size(),
-                        new Image(DownloadHandler.forServletResource("icons/ram2.ico"), "")),
+                    new Image(DownloadHandler.forServletResource("icons/ram2.ico"), "")),
                 createStatCard("Твердотельные накопители", ssdService.getAll().size(),
-                        new Image(DownloadHandler.forServletResource("icons/drive.ico"), ""))
+                    new Image(DownloadHandler.forServletResource("icons/drive.ico"), ""))
         );
 
         return layout;
@@ -129,9 +124,7 @@ public class MainView extends BaseAppView {
 
         DataSeries series = new DataSeries();
         series.add(new DataSeriesItem("Флеш-память", flashDriveService.getAll().size()));
-        series.add(new DataSeriesItem("Дискеты", floppyDiskService.getAll().size()));
         series.add(new DataSeriesItem("HDD", hddService.getAll().size()));
-        series.add(new DataSeriesItem("Оптические", opticalDiscService.getAll().size()));
         series.add(new DataSeriesItem("ОЗУ", ramService.getAll().size()));
         series.add(new DataSeriesItem("SSD", ssdService.getAll().size()));
 

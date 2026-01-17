@@ -2,14 +2,18 @@ package com.nikkin.devicesdb.Services;
 
 import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
 import com.nikkin.devicesdb.Entities.SolidStateDrive;
+import com.nikkin.devicesdb.Repos.ComputerRepository;
 import com.nikkin.devicesdb.Repos.SSDRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SSDService extends BaseService<SolidStateDrive, SolidStateDriveDto> {
-    public SSDService(SSDRepository repository) {
+    private final ComputerRepository computerRepository;
+
+    public SSDService(SSDRepository repository, ComputerRepository computerRepository) {
         super();
-        setCrudRepository(repository);
+        setRepository(repository);
+        this.computerRepository = computerRepository;
     }
 
     @Override
@@ -22,7 +26,8 @@ public class SSDService extends BaseService<SolidStateDrive, SolidStateDriveDto>
             entity.getNandType(),
             entity.getWriteSpeed(),
             entity.getReadSpeed(),
-            entity.getPowerConsumption()
+            entity.getPowerConsumption(),
+            entity.getComputer() != null ? entity.getComputer().getId() : null
         );
     }
 
@@ -36,6 +41,12 @@ public class SSDService extends BaseService<SolidStateDrive, SolidStateDriveDto>
         entity.setWriteSpeed(dto.writeSpeed());
         entity.setReadSpeed(dto.readSpeed());
         entity.setPowerConsumption(dto.powerConsumption());
+
+        if (dto.computerId() != null) {
+            computerRepository.findById(dto.computerId()).ifPresent(entity::setComputer);
+        } else {
+            entity.setComputer(null);
+        }
     }
 
     @Override

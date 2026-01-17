@@ -1,26 +1,23 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
 import com.nikkin.devicesdb.Entities.RandomAccessMemory;
+import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.RAMService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.Result;
-import com.vaadin.flow.data.binder.ValueContext;
-import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
@@ -28,8 +25,11 @@ import java.util.Optional;
 
 @Route("ram")
 public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccessMemoryDto> {
-    public RAMTableView(RAMService service) {
+    protected static ComputerService computerService;
+
+    public RAMTableView(RAMService service, ComputerService computerService) {
         super("ОЗУ", service);
+        this.computerService = computerService;
     }
 
     @Override
@@ -67,12 +67,21 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(RandomAccessMemoryDto::casLatency)
+        ramGrid.addColumn(dto -> String.format("%.2f", dto.frequencyMhz()))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(dto -> String.format("%.2f", dto.frequencyMhz()))
-                .setHeader("")
+        ramGrid.addColumn(
+                dto -> {
+                    if (dto.computerId() == null) {
+                        return "Не назначен";
+                    }
+
+                    return computerService.getById(dto.computerId())
+                            .map(ComputerDto::name)
+                            .orElse("Не назначен");
+                })
+                .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
 
@@ -109,8 +118,8 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         headerCells.get(2).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
         headerCells.get(3).setComponent(createFilterHeader("Вид памяти", filter::setMemoryType));
         headerCells.get(4).setComponent(createFilterHeader("Вид модуля", filter::setModuleType));
-        headerCells.get(5).setComponent(createFilterHeader("CAS-латентность", filter::setCasLatency));
-        headerCells.getLast().setComponent(createFilterHeader("Тактовая частота (МГц)", filter::setFrequencyMhz));
+        headerCells.get(5).setComponent(createFilterHeader("Тактовая частота (МГц)", filter::setFrequencyMhz));
+        headerCells.getLast().setComponent(createFilterHeader("Компьютер", null));
     }
 
     private static class RandomAccessMemoryFilter {
@@ -121,7 +130,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         private String capacity;
         private String memoryType;
         private String moduleType;
-        private String casLatency;
         private String frequencyMhz;
 
         public RandomAccessMemoryFilter(GridListDataView<RandomAccessMemoryDto> dataView) {
@@ -154,11 +162,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
             this.dataView.refreshAll();
         }
 
-        public void setCasLatency(String casLatency) {
-            this.casLatency = casLatency;
-            this.dataView.refreshAll();
-        }
-
         public void setFrequencyMhz(String frequencyMhz) {
             this.frequencyMhz = frequencyMhz;
             this.dataView.refreshAll();
@@ -170,7 +173,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
                     && matches(dto.moduleType(), moduleType)
                     && matches(dto.model(), model)
                     && matches(dto.manufacturer(), manufacturer)
-                    && matchesNumeric(dto.casLatency(), casLatency)
                     && matchesNumeric(dto.frequencyMhz(), frequencyMhz);
         }
 
@@ -180,14 +182,6 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         }
 
         private boolean matchesNumeric(Float value, String searchTerm) {
-            if (searchTerm == null || searchTerm.isEmpty()) {
-                return true;
-            }
-
-            return String.valueOf(value).startsWith(searchTerm);
-        }
-
-        private boolean matchesNumeric(Integer value, String searchTerm) {
             if (searchTerm == null || searchTerm.isEmpty()) {
                 return true;
             }
@@ -204,7 +198,7 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         private ComboBox<String> ramMemoryTypeBox;
         private RadioButtonGroup<String> ramTypeRadio;
         private NumberField ramFrequencyField;
-        private NumberField ramLatencyField;
+        private ComboBox<ComputerDto> computersField;
 
         private Binder<RandomAccessMemoryDto> binder;
         private Long currentId = null;
@@ -225,7 +219,7 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
             capacityFieldLayout.add(capacityField, capacityUnitBox);
 
             add(manufacturerField, modelField, capacityFieldLayout, ramMemoryTypeBox, ramTypeRadio,
-                    ramFrequencyField, ramLatencyField);
+                    ramFrequencyField, computersField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -271,9 +265,11 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
             ramFrequencyField = new NumberField("Тактовая частота (МГц):");
             ramFrequencyField.setClearButtonVisible(true);
 
-            ramLatencyField = new NumberField("CAS-латентность:");
-            ramLatencyField.setPrefixComponent(new Div("CL"));
-            ramLatencyField.setClearButtonVisible(true);
+            computersField = new ComboBox<>("Компьютер:");
+            computersField.setItems(computerService.getAll());
+            computersField.setItemLabelGenerator(ComputerDto::name);
+            computersField.setClearButtonVisible(true);
+            computersField.setRequiredIndicatorVisible(true);
         }
 
         @Override
@@ -311,35 +307,25 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
             binder.forField(capacityField)
                     .asRequired("Объём обязателен")
                     .withValidator(capacity -> capacity > 0, "Объём должен быть положительным")
-                    .withConverter(new Converter<Double, Float>() {
-                        @Override
-                        public Result<Float> convertToModel(Double aDouble, ValueContext valueContext) {
-                            return Result.ok(aDouble.floatValue());
-                        }
-
-                        @Override
-                        public Double convertToPresentation(Float aFloat, ValueContext valueContext) {
-                            return 0.0;
-                        }
-                    })
                     .bind(
-                            dto -> dto.capacity() != null ? dto.capacity() : null,
+                            dto -> dto.capacity() != null ? dto.capacity().doubleValue() : null,
                             (dto, value) -> {}
                     );
 
             binder.forField(ramFrequencyField)
-                    .withValidator(frequency -> frequency == null || frequency > 0, "Частота должна быть положительной")
-                    .bind(
-                            dto -> dto.frequencyMhz() != null ? dto.frequencyMhz().doubleValue() : null,
-                            (dto, value) -> {}
-                    );
+                .withValidator(frequency -> frequency == null || frequency > 0, "Частота должна быть положительной")
+                .bind(
+                        dto -> dto.frequencyMhz() != null ? dto.frequencyMhz().doubleValue() : null,
+                        (dto, value) -> {}
+                );
 
-            binder.forField(ramLatencyField)
-                    .withValidator(latency -> latency == null || latency > 0, "Значение должно быть положительным")
-                    .bind(
-                            dto -> dto.casLatency() != null ? dto.casLatency().doubleValue() : null,
-                            (dto, value) -> {}
-                    );
+            binder.forField(computersField)
+                .asRequired("Связка с компьютером обязательна")
+                .bind(
+                        dto -> dto.computerId() == null ? null :
+                                computerService.getById(dto.computerId()).orElse(null),
+                        (dto, value) -> {}
+                );
         }
 
         @Override
@@ -356,8 +342,8 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
                     ramTypeRadio.getValue(),
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(),
                             capacityUnitBox.getValue()) : null,
-                    ramFrequencyField.getValue().floatValue(),
-                    ramLatencyField.getValue().intValue()
+                    ramFrequencyField.getValue() != null ? ramFrequencyField.getValue().floatValue() : null,
+                    computersField.getValue().id()
             );
 
             return Optional.of(dto);
@@ -369,8 +355,8 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
             capacityField.clear();
             manufacturerField.clear();
             modelField.clear();
-            ramLatencyField.clear();
             ramFrequencyField.clear();
+            computersField.clear();
             binder.validate();
         }
     }

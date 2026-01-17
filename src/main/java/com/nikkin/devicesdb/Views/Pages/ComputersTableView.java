@@ -1,25 +1,23 @@
 package com.nikkin.devicesdb.Views.Pages;
 
-import com.nikkin.devicesdb.Domain.Bytes;
-import com.nikkin.devicesdb.Dto.ComputerDto;
+import com.nikkin.devicesdb.Dto.*;
 import com.nikkin.devicesdb.Entities.Computer;
 import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Route("computers")
 final public class ComputersTableView extends BaseTableView<Computer, ComputerDto> {
@@ -34,72 +32,78 @@ final public class ComputersTableView extends BaseTableView<Computer, ComputerDt
 
     @Override
     protected void initTable() {
-        var flashDriveGrid = new Grid<>(ComputerDto.class, false);
+        var computerGrid = new Grid<>(ComputerDto.class, false);
 
-        flashDriveGrid.setItems(new ArrayList<>());
-        flashDriveGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        flashDriveGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        flashDriveGrid.setColumnRendering(ColumnRendering.LAZY);
-        flashDriveGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        computerGrid.setItems(new ArrayList<>());
+        computerGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        computerGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+        computerGrid.setColumnRendering(ColumnRendering.LAZY);
+        computerGrid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        flashDriveGrid.addColumn(ComputerDto::name)
-                .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
-                .setAutoWidth(true)
-                .setSortable(true);
-        flashDriveGrid.addColumn(ComputerDto::linkedRamDtos)
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
-        flashDriveGrid.addColumn(ComputerDto::linkedHddDtos)
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
-        flashDriveGrid.addColumn(ComputerDto::linkedSsdDtos)
-                .setHeader("")
-                .setAutoWidth(true)
-                .setSortable(true);
-        flashDriveGrid.addColumn(ComputerDto::linkedFlashDtos)
-                .setHeader("")
+        computerGrid.addColumn(ComputerDto::name)
+                .setHeader("Название")
                 .setAutoWidth(true)
                 .setSortable(true);
 
-        flashDriveGrid.addSelectionListener(
+        computerGrid.addColumn(dto -> formatDeviceList(dto.linkedHddDtos(), "HDD"))
+                .setHeader("HDD")
+                .setAutoWidth(true)
+                .setSortable(false);
+
+        computerGrid.addColumn(dto -> formatDeviceList(dto.linkedSsdDtos(), "SSD"))
+                .setHeader("SSD")
+                .setAutoWidth(true)
+                .setSortable(false);
+
+        computerGrid.addColumn(dto -> formatDeviceList(dto.linkedRamDtos(), "RAM"))
+                .setHeader("ОЗУ")
+                .setAutoWidth(true)
+                .setSortable(false);
+
+        computerGrid.addColumn(dto -> formatDeviceList(dto.linkedFlashDtos(), "Flash"))
+                .setHeader("Флеш-память")
+                .setAutoWidth(true)
+                .setSortable(false);
+
+        computerGrid.addSelectionListener(
                 selectionEvent -> {
-                    if (selectionEvent.getAllSelectedItems().isEmpty())
-                    {
+                    if (selectionEvent.getAllSelectedItems().isEmpty()) {
                         changeEditBtnState(false);
                         changeDelBtnState(false);
-                    }
-                    else
-                    {
+                    } else {
                         changeDelBtnState(true);
                         changeEditBtnState(true);
                     }
                 }
         );
 
-        setGrid(flashDriveGrid);
+        setGrid(computerGrid);
+    }
+
+    // Форматирование списка устройств для отображения
+    private String formatDeviceList(List<?> devices, String type) {
+        if (devices == null || devices.isEmpty()) {
+            return "—";
+        }
+
+        return devices.size() + " шт.";
     }
 
     @Override
     protected void setupFilters() {
-        var flashDriveGrid = getGrid();
-        var headerCells = flashDriveGrid.getHeaderRows()
-                                        .getFirst()
-                                        .getCells();
+        var computerGrid = getGrid();
+        var headerCells = computerGrid.getHeaderRows()
+                .getFirst()
+                .getCells();
 
-        ComputerFilter filter = new ComputerFilter(flashDriveGrid.getListDataView());
+        ComputerFilter filter = new ComputerFilter(computerGrid.getListDataView());
 
-        headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
-        headerCells.get(1).setComponent(createFilterHeader("Связанные модули ОЗУ", filter::));
-        headerCells.get(2).setComponent(createFilterHeader("Связанные HDD", filter::));
-        headerCells.get(3).setComponent(createFilterHeader("Связанные SSD", filter::));
-        headerCells.getLast().setComponent(createFilterHeader("Связанные Flash", filter::));
+        headerCells.getFirst().setComponent(createFilterHeader("Поиск по названию", filter::setName));
+        // Для связанных устройств фильтры не имеют смысла, так как это списки
     }
 
     private static class ComputerFilter {
         private final GridListDataView<ComputerDto> dataView;
-
         private String name;
 
         public ComputerFilter(GridListDataView<ComputerDto> dataView) {
@@ -113,37 +117,20 @@ final public class ComputersTableView extends BaseTableView<Computer, ComputerDt
         }
 
         private boolean test(ComputerDto dto) {
-            return matches(dto.name(), name)
-                    && matches(dto.usbInterface(), usbInterface)
-                    && matchesNumeric(dto.capacity(), capacity)
-                    && matchesNumeric(dto.writeSpeed(), writeSpeed)
-                    && matchesNumeric(dto.readSpeed(), readSpeed);
+            return matches(dto.name(), name);
         }
 
         private boolean matches(String value, String searchTerm) {
             return searchTerm == null || searchTerm.isEmpty()
                     || (value != null && value.toLowerCase().contains(searchTerm.toLowerCase()));
         }
-
-        private boolean matchesNumeric(Float value, String searchTerm) {
-            if (searchTerm == null || searchTerm.isEmpty()) {
-                return true;
-            }
-
-            return String.valueOf(value).startsWith(searchTerm);
-        }
     }
 
     static class ComputerForm extends BaseForm<ComputerDto> {
         private TextArea nameField;
-        private NumberField capacityField;
-        private ComboBox<Bytes> capacityUnitBox;
-        private ComboBox<String> usbInterfaceBox;
-        private NumberField readSpeedField;
-        private NumberField writeSpeedField;
-
         private Binder<ComputerDto> binder;
         private Long currentId = null;
+        private VerticalLayout devicesSection;
 
         public ComputerForm() {
             super();
@@ -154,14 +141,8 @@ final public class ComputersTableView extends BaseTableView<Computer, ComputerDt
             setupFields();
             setupBinder();
 
-            HorizontalLayout capacityFieldLayout = new HorizontalLayout();
-            capacityFieldLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
-            capacityFieldLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-            capacityFieldLayout.setMargin(false);
-            capacityFieldLayout.add(capacityField, capacityUnitBox);
+            add(nameField);
 
-            add(nameField, capacityFieldLayout, usbInterfaceBox,
-                    writeSpeedField, readSpeedField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -173,74 +154,23 @@ final public class ComputersTableView extends BaseTableView<Computer, ComputerDt
 
         @Override
         protected void setupFields() {
-            nameField = new TextArea("Название:");
-            capacityField = new NumberField("Объём:");
-            capacityUnitBox = new ComboBox<>();
-            usbInterfaceBox = new ComboBox<>("Интерфейс:");
-            readSpeedField = new NumberField("Скорость записи:");
-            writeSpeedField = new NumberField("Скорость чтения:");
-
+            nameField = new TextArea("Название компьютера:");
             nameField.setMinRows(1);
             nameField.setMaxRows(1);
             nameField.setMinLength(1);
-            nameField.setMaxLength(30);
+            nameField.setMaxLength(100);
             nameField.setClearButtonVisible(true);
-
-            capacityField.setClearButtonVisible(true);
-            capacityField.setRequiredIndicatorVisible(true);
-            capacityField.setStepButtonsVisible(true);
-            capacityField.setWidthFull();
-
-            capacityUnitBox.setItems(Bytes.values());
-            capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
-            capacityUnitBox.setValue(Bytes.MB);
-
-            usbInterfaceBox.setItems("Type-A", "Type-C", "Micro-USB");
-            usbInterfaceBox.setClearButtonVisible(true);
-
-            readSpeedField.setSuffixComponent(new Div("МБ/с"));
-            readSpeedField.setClearButtonVisible(true);
-
-            writeSpeedField.setSuffixComponent(new Div("МБ/с"));
-            writeSpeedField.setClearButtonVisible(true);
+            nameField.setRequiredIndicatorVisible(true);
         }
 
         @Override
         protected void setupBinder() {
-            // Bind fields to DTO
             binder.forField(nameField)
                     .asRequired("Название обязательно")
-                    .withValidator(name -> name.length() <= 30, "Название должно быть до 30 символов")
+                    .withValidator(name -> !name.isEmpty() && name.length() <= 100,
+                            "Название должно быть от 1 до 100 символов")
                     .bind(
                             ComputerDto::name,
-                            (dto, value) -> {}
-                    );
-
-            binder.forField(capacityField)
-                    .asRequired("Объём обязателен")
-                    .withValidator(capacity -> capacity > 0, "Объём должен быть положительным")
-                    .bind(
-                            dto -> dto.capacity() != null ? dto.capacity().doubleValue() : null,
-                            (dto, value) -> {}
-                    );
-
-            binder.forField(usbInterfaceBox)
-                    .bind(
-                            dto -> dto.usbInterface() != null ? dto.usbInterface() : null,
-                            (dto, value) -> {}
-                    );
-
-            binder.forField(writeSpeedField)
-                    .withValidator(writeSpd -> writeSpd == null || writeSpd > 0, "Скорость должна быть положительной")
-                    .bind(
-                            dto -> dto.writeSpeed() != null ? dto.writeSpeed().doubleValue() : null,
-                            (dto, value) -> {}
-                    );
-
-            binder.forField(readSpeedField)
-                    .withValidator(readSpd -> readSpd == null || readSpd > 0, "Скорость должна быть положительной")
-                    .bind(
-                            dto -> dto.readSpeed() != null ? dto.readSpeed().doubleValue() : null,
                             (dto, value) -> {}
                     );
         }
@@ -254,10 +184,10 @@ final public class ComputersTableView extends BaseTableView<Computer, ComputerDt
             ComputerDto dto = new ComputerDto(
                     currentId,
                     nameField.getValue(),
-                    usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue() : null,
-                    capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
-                    writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
-                    readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    List.of()
             );
 
             return Optional.of(dto);
@@ -267,10 +197,6 @@ final public class ComputersTableView extends BaseTableView<Computer, ComputerDt
         protected void clearFields() {
             currentId = null;
             nameField.clear();
-            capacityField.clear();
-            usbInterfaceBox.clear();
-            writeSpeedField.clear();
-            readSpeedField.clear();
             binder.validate();
         }
     }

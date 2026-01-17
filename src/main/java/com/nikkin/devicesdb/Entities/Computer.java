@@ -2,7 +2,8 @@ package com.nikkin.devicesdb.Entities;
 
 import jakarta.persistence.*;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 
 @Entity
 public class Computer {
@@ -12,17 +13,17 @@ public class Computer {
 
     String name;
 
-    @OneToMany(mappedBy = "computer", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<HardDiskDrive> linkedHdds;
+    @OneToMany(mappedBy = "computer", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    Collection<HardDiskDrive> linkedHdds = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "computer", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<SolidStateDrive> linkedSsds;
+    @OneToMany(mappedBy = "computer", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    Collection<SolidStateDrive> linkedSsds = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "computer", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<RandomAccessMemory> linkedRams;
+    @OneToMany(mappedBy = "computer", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    Collection<RandomAccessMemory> linkedRams = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "computer", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<FlashDrive> linkedFlashDrives;
+    @OneToMany(mappedBy = "computer", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    Collection<FlashDrive> linkedFlashDrives = new LinkedHashSet<>();
 
     public Long getId() {
         return id;
@@ -40,35 +41,35 @@ public class Computer {
         this.name = name;
     }
 
-    public List<HardDiskDrive> getLinkedHdds() {
+    public Collection<HardDiskDrive> getLinkedHdds() {
         return linkedHdds;
     }
 
-    public void setLinkedHdds(List<HardDiskDrive> linkedHdds) {
+    public void setLinkedHdds(Collection<HardDiskDrive> linkedHdds) {
         this.linkedHdds = linkedHdds;
     }
 
-    public List<SolidStateDrive> getLinkedSsds() {
+    public Collection<SolidStateDrive> getLinkedSsds() {
         return linkedSsds;
     }
 
-    public void setLinkedSsds(List<SolidStateDrive> linkedSsds) {
+    public void setLinkedSsds(Collection<SolidStateDrive> linkedSsds) {
         this.linkedSsds = linkedSsds;
     }
 
-    public List<RandomAccessMemory> getLinkedRams() {
+    public Collection<RandomAccessMemory> getLinkedRams() {
         return linkedRams;
     }
 
-    public void setLinkedRams(List<RandomAccessMemory> linkedRams) {
+    public void setLinkedRams(Collection<RandomAccessMemory> linkedRams) {
         this.linkedRams = linkedRams;
     }
 
-    public List<FlashDrive> getLinkedFlashDrives() {
+    public Collection<FlashDrive> getLinkedFlashDrives() {
         return linkedFlashDrives;
     }
 
-    public void setLinkedFlashDrives(List<FlashDrive> linkedFlashDrives) {
+    public void setLinkedFlashDrives(Collection<FlashDrive> linkedFlashDrives) {
         this.linkedFlashDrives = linkedFlashDrives;
     }
 }

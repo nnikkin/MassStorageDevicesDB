@@ -1,8 +1,10 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
 import com.nikkin.devicesdb.Entities.SolidStateDrive;
+import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.SSDService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
@@ -23,8 +25,11 @@ import java.util.Optional;
 
 @Route("ssd")
 public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDriveDto> {
-    public SSDTableView(SSDService service) {
+    protected static ComputerService computerService;
+
+    public SSDTableView(SSDService service, ComputerService computerService) {
         super("Твердотельные накопители", service);
+        this.computerService = computerService;
     }
 
     @Override
@@ -70,6 +75,19 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
+        ssdGrid.addColumn(
+                        dto -> {
+                            if (dto.computerId() == null) {
+                                return "Не назначен";
+                            }
+
+                            return computerService.getById(dto.computerId())
+                                    .map(ComputerDto::name)
+                                    .orElse("Не назначен");
+                        })
+                .setHeader("Компьютер")
+                .setAutoWidth(true)
+                .setSortable(true);
 
         ssdGrid.addSelectionListener(
                 selectionEvent -> {
@@ -104,7 +122,8 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
         headerCells.get(3).setComponent(createFilterHeader("Тип NAND", filter::setNandType));
         headerCells.get(4).setComponent(createFilterHeader("Скорость записи (МБ/с)", filter::setWriteSpeed));
         headerCells.get(5).setComponent(createFilterHeader("Скорость чтения (МБ/с)", filter::setReadSpeed));
-        headerCells.getLast().setComponent(createFilterHeader("Энергопотребление (Вт)", filter::setPowerConsumption));
+        headerCells.get(6).setComponent(createFilterHeader("Энергопотребление (Вт)", filter::setPowerConsumption));
+        headerCells.getLast().setComponent(createFilterHeader("Компьютер", null));
     }
 
     private static class SolidStateDriveFilter {
@@ -190,6 +209,7 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
         private NumberField writeSpeedField;
         private NumberField readSpeedField;
         private NumberField powerConsumptionField;
+        private ComboBox<ComputerDto> computersField;
 
         private Binder<SolidStateDriveDto> binder;
         private Long currentId = null;
@@ -210,7 +230,7 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             capacityFieldLayout.add(capacityField, capacityUnitBox);
 
             add(nameField, capacityFieldLayout, ssdInterfaceComboBox, ssdNandTypeBox,
-                    writeSpeedField, readSpeedField, powerConsumptionField);
+                    writeSpeedField, readSpeedField, powerConsumptionField, computersField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -265,6 +285,12 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             powerConsumptionField = new NumberField("Энергопотребление:");
             powerConsumptionField.setSuffixComponent(new Div("Вт"));
             powerConsumptionField.setClearButtonVisible(true);
+
+            computersField = new ComboBox<>("Компьютер:");
+            computersField.setItems(computerService.getAll());
+            computersField.setItemLabelGenerator(ComputerDto::name);
+            computersField.setClearButtonVisible(true);
+            computersField.setRequiredIndicatorVisible(true);
         }
 
         @Override
@@ -317,6 +343,14 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
                             dto -> dto.powerConsumption() != null ? dto.powerConsumption().doubleValue() : null,
                             (dto, value) -> {}
                     );
+
+            binder.forField(computersField)
+                    .asRequired("Связка с компьютером обязательна")
+                    .bind(
+                            dto -> dto.computerId() == null ? null :
+                                    computerService.getById(dto.computerId()).orElse(null),
+                            (dto, value) -> {}
+                    );
         }
 
         @Override
@@ -333,7 +367,8 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
                     ssdNandTypeBox.getValue(),
                     writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
                     readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null,
-                    powerConsumptionField.getValue() != null ? powerConsumptionField.getValue().floatValue() : null
+                    powerConsumptionField.getValue() != null ? powerConsumptionField.getValue().floatValue() : null,
+                    computersField.getValue().id()
             );
 
             return Optional.of(dto);
@@ -349,6 +384,7 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
             writeSpeedField.clear();
             readSpeedField.clear();
             powerConsumptionField.clear();
+            computersField.clear();
             binder.validate();
         }
     }

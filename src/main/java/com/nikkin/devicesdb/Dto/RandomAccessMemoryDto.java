@@ -30,8 +30,6 @@ public record RandomAccessMemoryDto(
         @Nullable
         @Positive(message = "Тактовая частота не может быть отрицательным либо равным нулю")
         Float frequencyMhz,
-
-        @Nullable
-        @Positive(message = "CAS-латентность не может быть отрицательной либо равной нулю")
-        Integer casLatency
+        
+        Long computerId
 ) implements Identifiable {}

@@ -1,5 +1,6 @@
 package com.nikkin.devicesdb.Dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -26,5 +27,7 @@ public record SolidStateDriveDto(
         Float readSpeed,
 
         @Positive(message = "Значение энергопотребления не может быть отрицательным либо равным нулю")
-        Float powerConsumption
+        Float powerConsumption,
+
+        Long computerId
 ) implements Identifiable {}

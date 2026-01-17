@@ -1,5 +1,6 @@
 package com.nikkin.devicesdb.Dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -21,5 +22,7 @@ public record HardDiskDriveDto(
         String format,
 
         @Positive(message = "Энергопотребление не может быть отрицательным либо равным нулю")
-        Float powerConsumption
+        Float powerConsumption,
+
+        Long computerId
 ) implements Identifiable {}

@@ -7,7 +7,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Route("error")
+@Route("error-page")
 public class ErrorView extends BaseAppView implements HasErrorParameter<Exception> {
     private VerticalLayout content;
     private H1 errorTitle;
@@ -58,16 +58,5 @@ public class ErrorView extends BaseAppView implements HasErrorParameter<Exceptio
             errorMessage.setText("Произошла ошибка при обработке запроса.");
             return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
         }
-
-            //case HttpServletResponse.SC_FORBIDDEN:
-            //    errorTitle.setText("403 - Доступ запрещён");
-             //   errorMessage.setText("У вас нет прав для доступа к этому ресурсу.");
-             //   break;
-
-           // case HttpServletResponse.SC_INTERNAL_SERVER_ERROR:
-             //   errorTitle.setText("500 - Внутренняя ошибка сервера");
-            //    errorMessage.setText("Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже.");
-             //   break;
-
     }
 }

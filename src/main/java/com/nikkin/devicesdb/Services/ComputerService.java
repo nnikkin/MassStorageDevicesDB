@@ -3,11 +3,15 @@ package com.nikkin.devicesdb.Services;
 import com.nikkin.devicesdb.Dto.*;
 import com.nikkin.devicesdb.Entities.*;
 import com.nikkin.devicesdb.Repos.ComputerRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
+@Service
+@Validated
 public class ComputerService extends BaseService<Computer, ComputerDto> {
     public ComputerService(ComputerRepository repository) {
         super();
-        setCrudRepository(repository);
+        setRepository(repository);
     }
 
     @Override
@@ -23,7 +27,8 @@ public class ComputerService extends BaseService<Computer, ComputerDto> {
                         drive.getCapacity(),
                         drive.getDriveInterface(),
                         drive.getFormat(),
-                        drive.getPowerConsumption())
+                        drive.getPowerConsumption(),
+                        entity.getId())
                     )
                     .toList(),
                 entity.getLinkedSsds()
@@ -36,7 +41,8 @@ public class ComputerService extends BaseService<Computer, ComputerDto> {
                         drive.getNandType(),
                         drive.getWriteSpeed(),
                         drive.getReadSpeed(),
-                        drive.getPowerConsumption())
+                        drive.getPowerConsumption(),
+                        entity.getId())
                     )
                     .toList(),
                 entity.getLinkedRams()
@@ -49,7 +55,7 @@ public class ComputerService extends BaseService<Computer, ComputerDto> {
                         drive.getModuleType(),
                         drive.getCapacity(),
                         drive.getFrequencyMhz(),
-                        drive.getCasLatency())
+                        entity.getId())
                     )
                     .toList(),
                 entity.getLinkedFlashDrives()
@@ -60,7 +66,8 @@ public class ComputerService extends BaseService<Computer, ComputerDto> {
                         drive.getUsbInterface(),
                         drive.getCapacity(),
                         drive.getWriteSpeed(),
-                        drive.getReadSpeed())
+                        drive.getReadSpeed(),
+                        entity.getId())
                     )
                     .toList()
         );
@@ -97,7 +104,6 @@ public class ComputerService extends BaseService<Computer, ComputerDto> {
                         ram.setModuleType(item.moduleType());
                         ram.setCapacity(item.capacity());
                         ram.setFrequencyMhz(item.frequencyMhz());
-                        ram.setCasLatency(item.casLatency());
                         ram.setComputer(entity);
                         return ram;
                     })

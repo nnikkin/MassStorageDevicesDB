@@ -2,14 +2,17 @@ package com.nikkin.devicesdb.Services;
 
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
 import com.nikkin.devicesdb.Entities.HardDiskDrive;
+import com.nikkin.devicesdb.Repos.ComputerRepository;
 import com.nikkin.devicesdb.Repos.HDDRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class HDDService extends BaseService<HardDiskDrive, HardDiskDriveDto> {
-    public HDDService(HDDRepository repository) {
+    private final ComputerRepository computerRepository;
+    public HDDService(HDDRepository repository, ComputerRepository computerRepository) {
         super();
-        setCrudRepository(repository);
+        setRepository(repository);
+        this.computerRepository = computerRepository;
     }
 
     @Override
@@ -20,7 +23,8 @@ public class HDDService extends BaseService<HardDiskDrive, HardDiskDriveDto> {
             entity.getCapacity(),
             entity.getDriveInterface(),
             entity.getFormat(),
-            entity.getPowerConsumption()
+            entity.getPowerConsumption(),
+            entity.getComputer() != null ? entity.getComputer().getId() : null
         );
     }
 
@@ -32,6 +36,12 @@ public class HDDService extends BaseService<HardDiskDrive, HardDiskDriveDto> {
         entity.setCapacity(dto.capacity());
         entity.setFormat(dto.format());
         entity.setPowerConsumption(dto.powerConsumption());
+
+        if (dto.computerId() != null) {
+            computerRepository.findById(dto.computerId()).ifPresent(entity::setComputer);
+        } else {
+            entity.setComputer(null);
+        }
     }
 
     @Override

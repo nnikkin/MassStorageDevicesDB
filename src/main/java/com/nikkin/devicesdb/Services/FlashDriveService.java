@@ -2,6 +2,7 @@ package com.nikkin.devicesdb.Services;
 
 import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Entities.FlashDrive;
+import com.nikkin.devicesdb.Repos.ComputerRepository;
 import com.nikkin.devicesdb.Repos.FlashDriveRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -9,9 +10,12 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 public class FlashDriveService extends BaseService<FlashDrive, FlashDriveDto> {
-    public FlashDriveService(FlashDriveRepository repository) {
+    private final ComputerRepository computerRepository;
+
+    public FlashDriveService(FlashDriveRepository repository, ComputerRepository computerRepository) {
         super();
-        setCrudRepository(repository);
+        setRepository(repository);
+        this.computerRepository = computerRepository;
     }
 
     @Override
@@ -22,7 +26,8 @@ public class FlashDriveService extends BaseService<FlashDrive, FlashDriveDto> {
             entity.getUsbInterface(),
             entity.getCapacity(),
             entity.getWriteSpeed(),
-            entity.getReadSpeed()
+            entity.getReadSpeed(),
+            entity.getComputer() != null ? entity.getComputer().getId() : null
         );
     }
 
@@ -34,6 +39,12 @@ public class FlashDriveService extends BaseService<FlashDrive, FlashDriveDto> {
         entity.setCapacity(dto.capacity());
         entity.setWriteSpeed(dto.writeSpeed());
         entity.setReadSpeed(dto.readSpeed());
+
+        if (dto.computerId() != null) {
+            computerRepository.findById(dto.computerId()).ifPresent(entity::setComputer);
+        } else {
+            entity.setComputer(null);
+        }
     }
 
     @Override

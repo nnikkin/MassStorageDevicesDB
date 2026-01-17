@@ -1,4 +1,5 @@
 package com.nikkin.devicesdb.Dto;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.*;
 
@@ -19,5 +20,7 @@ public record FlashDriveDto(
         Float writeSpeed,
 
         @Positive(message = "Скорость чтения не может быть отрицательной либо равной нулю")
-        Float readSpeed
+        Float readSpeed,
+
+        Long computerId
 ) implements Identifiable {}

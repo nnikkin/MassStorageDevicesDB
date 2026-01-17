@@ -1,8 +1,10 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Entities.FlashDrive;
+import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.FlashDriveService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
@@ -24,8 +26,11 @@ import java.util.ArrayList;
 
 @Route("flash")
 final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDriveDto> {
-    public FlashDriveTableView(FlashDriveService service) {
+    protected static ComputerService computerService;
+
+    public FlashDriveTableView(FlashDriveService service, ComputerService computerService) {
         super("Флеш-память", service);
+        this.computerService = computerService;
     }
 
     @Override
@@ -63,6 +68,19 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
+        flashDriveGrid.addColumn(
+                        dto -> {
+                            if (dto.computerId() == null) {
+                                return "Не назначен";
+                            }
+
+                            return computerService.getById(dto.computerId())
+                                    .map(ComputerDto::name)
+                                    .orElse("Не назначен");
+                        })
+                .setHeader("Компьютер")
+                .setAutoWidth(true)
+                .setSortable(true);
 
         flashDriveGrid.addSelectionListener(
                 selectionEvent -> {
@@ -95,7 +113,8 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
         headerCells.get(2).setComponent(createFilterHeader("Интерфейс USB", filter::setUsbInterface));
         headerCells.get(3).setComponent(createFilterHeader("Скорость чтения (МБ/сек)", filter::setReadSpeed));
-        headerCells.getLast().setComponent(createFilterHeader("Скорость записи (МБ/сек)", filter::setWriteSpeed));
+        headerCells.get(4).setComponent(createFilterHeader("Скорость записи (МБ/сек)", filter::setWriteSpeed));
+        headerCells.getLast().setComponent(createFilterHeader("Компьютер", null));
     }
 
     private static class FlashDriveFilter {
@@ -166,6 +185,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
         private ComboBox<String> usbInterfaceBox;
         private NumberField readSpeedField;
         private NumberField writeSpeedField;
+        private ComboBox<ComputerDto> computersField;
 
         private Binder<FlashDriveDto> binder;
         private Long currentId = null;
@@ -186,7 +206,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
             capacityFieldLayout.add(capacityField, capacityUnitBox);
 
             add(nameField, capacityFieldLayout, usbInterfaceBox,
-                    writeSpeedField, readSpeedField);
+                    writeSpeedField, readSpeedField, computersField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -228,6 +248,12 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
 
             writeSpeedField.setSuffixComponent(new Div("МБ/с"));
             writeSpeedField.setClearButtonVisible(true);
+
+            computersField = new ComboBox<>("Компьютер:");
+            computersField.setItems(computerService.getAll());
+            computersField.setItemLabelGenerator(ComputerDto::name);
+            computersField.setClearButtonVisible(true);
+            computersField.setRequiredIndicatorVisible(true);
         }
 
         @Override
@@ -268,6 +294,14 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
                             dto -> dto.readSpeed() != null ? dto.readSpeed().doubleValue() : null,
                             (dto, value) -> {}
                     );
+
+            binder.forField(computersField)
+                    .asRequired("Связка с компьютером обязательна")
+                    .bind(
+                            dto -> dto.computerId() == null ? null :
+                                    computerService.getById(dto.computerId()).orElse(null),
+                            (dto, value) -> {}
+                    );
         }
 
         @Override
@@ -282,7 +316,8 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
                     usbInterfaceBox.getValue() != null ? usbInterfaceBox.getValue() : null,
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
                     writeSpeedField.getValue() != null ? writeSpeedField.getValue().floatValue() : null,
-                    readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null
+                    readSpeedField.getValue() != null ? readSpeedField.getValue().floatValue() : null,
+                    computersField.getValue().id()
             );
 
             return Optional.of(dto);
@@ -296,6 +331,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
             usbInterfaceBox.clear();
             writeSpeedField.clear();
             readSpeedField.clear();
+            computersField.clear();
             binder.validate();
         }
     }

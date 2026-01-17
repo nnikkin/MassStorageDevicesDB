@@ -1,17 +1,23 @@
 package com.nikkin.devicesdb.Services;
 
 import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
+import com.nikkin.devicesdb.Entities.Computer;
 import com.nikkin.devicesdb.Entities.RandomAccessMemory;
+import com.nikkin.devicesdb.Repos.ComputerRepository;
 import com.nikkin.devicesdb.Repos.RAMRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 @Service
 @Validated
 public class RAMService extends BaseService<RandomAccessMemory, RandomAccessMemoryDto> {
-    public RAMService(RAMRepository repository) {
+    private final ComputerRepository computerRepository;
+    public RAMService(RAMRepository repository, ComputerRepository computerRepository) {
         super();
-        setCrudRepository(repository);
+        setRepository(repository);
+        this.computerRepository = computerRepository;
     }
 
     @Override
@@ -24,7 +30,7 @@ public class RAMService extends BaseService<RandomAccessMemory, RandomAccessMemo
             entity.getModuleType(),
             entity.getCapacity(),
             entity.getFrequencyMhz(),
-            entity.getCasLatency()
+            entity.getComputer() != null ? entity.getComputer().getId() : null
         );
     }
 
@@ -37,7 +43,12 @@ public class RAMService extends BaseService<RandomAccessMemory, RandomAccessMemo
         entity.setCapacity(dto.capacity());
         entity.setMemoryType(dto.memoryType());
         entity.setFrequencyMhz(dto.frequencyMhz());
-        entity.setCasLatency(dto.casLatency());
+
+        if (dto.computerId() != null) {
+            computerRepository.findById(dto.computerId()).ifPresent(entity::setComputer);
+        } else {
+            entity.setComputer(null);
+        }
     }
 
     @Override

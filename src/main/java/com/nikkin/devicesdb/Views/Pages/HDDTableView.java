@@ -1,8 +1,10 @@
 package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
 import com.nikkin.devicesdb.Entities.HardDiskDrive;
+import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.HDDService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
@@ -24,8 +26,11 @@ import java.util.Optional;
 
 @Route("hdd")
 public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDriveDto> {
-    public HDDTableView(HDDService service) {
+    protected static ComputerService computerService;
+
+    public HDDTableView(HDDService service, ComputerService computerService) {
         super("Накопители на жёстких дисках", service);
+        this.computerService = computerService;
     }
 
     @Override
@@ -63,6 +68,19 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
+        hddGrid.addColumn(
+                        dto -> {
+                            if (dto.computerId() == null) {
+                                return "Не назначен";
+                            }
+
+                            return computerService.getById(dto.computerId())
+                                    .map(ComputerDto::name)
+                                    .orElse("Не назначен");
+                        })
+                .setHeader("Компьютер")
+                .setAutoWidth(true)
+                .setSortable(true);
 
         hddGrid.addSelectionListener(
                 selectionEvent -> {
@@ -95,7 +113,8 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
         headerCells.get(2).setComponent(createFilterHeader("Интерфейс", filter::setDriveInterface));
         headerCells.get(3).setComponent(createFilterHeader("Формат", filter::setFormat));
-        headerCells.getLast().setComponent(createFilterHeader("Энергопотребление (Ватт)", filter::setPowerConsumption));
+        headerCells.get(4).setComponent(createFilterHeader("Энергопотребление (Ватт)", filter::setPowerConsumption));
+        headerCells.getLast().setComponent(createFilterHeader("Компьютер", null));
     }
 
     private static class HardDiskDriveFilter {
@@ -166,6 +185,7 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
         private ComboBox<String> hddInterfaceComboBox;
         private RadioButtonGroup<String> hddFormatRadio;
         private NumberField powerConsumptionField;
+        private ComboBox<ComputerDto> computersField;
 
         private Binder<HardDiskDriveDto> binder;
         private Long currentId = null;
@@ -185,7 +205,7 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
             capacityFieldLayout.setMargin(false);
             capacityFieldLayout.add(capacityField, capacityUnitBox);
 
-            add(manufacturerField, capacityFieldLayout, hddInterfaceComboBox, hddFormatRadio);
+            add(manufacturerField, capacityFieldLayout, hddInterfaceComboBox, hddFormatRadio, computersField);
             setResponsiveSteps(new ResponsiveStep("0", 1));
         }
 
@@ -225,6 +245,12 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
             powerConsumptionField = new NumberField("Энергопотребление (Вт):");
             powerConsumptionField.setSuffixComponent(new Div("Вт"));
             powerConsumptionField.setClearButtonVisible(true);
+
+            computersField = new ComboBox<>("Компьютер:");
+            computersField.setItems(computerService.getAll());
+            computersField.setItemLabelGenerator(ComputerDto::name);
+            computersField.setClearButtonVisible(true);
+            computersField.setRequiredIndicatorVisible(true);
         }
 
         @Override
@@ -264,6 +290,14 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
                             HardDiskDriveDto::format,
                             (dto, value) -> {}
                     );
+
+            binder.forField(computersField)
+                    .asRequired("Связка с компьютером обязательна")
+                    .bind(
+                            dto -> dto.computerId() == null ? null :
+                                    computerService.getById(dto.computerId()).orElse(null),
+                            (dto, value) -> {}
+                    );
         }
 
         @Override
@@ -278,7 +312,8 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
                     capacityField.getValue() != null ? toMegabytes(capacityField.getValue().floatValue(), capacityUnitBox.getValue()) : null,
                     hddInterfaceComboBox.getValue(),
                     hddFormatRadio.getValue(),
-                    powerConsumptionField.getValue() != null ? powerConsumptionField.getValue().floatValue() : null
+                    powerConsumptionField.getValue() != null ? powerConsumptionField.getValue().floatValue() : null,
+                    computersField.getValue().id()
             );
 
             return Optional.of(dto);
@@ -292,6 +327,7 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
             hddInterfaceComboBox.clear();
             hddFormatRadio.setValue("3.5\"");
             powerConsumptionField.clear();
+            computersField.clear();
             binder.validate();
         }
     }
