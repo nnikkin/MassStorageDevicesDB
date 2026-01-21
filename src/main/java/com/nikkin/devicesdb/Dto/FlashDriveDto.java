@@ -1,11 +1,12 @@
 package com.nikkin.devicesdb.Dto;
-import jakarta.annotation.Nullable;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.*;
 
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
+
+@Builder
 public record FlashDriveDto(
-        @Id
-        Long id,
+        Integer id,
 
         @Size(max = 30)
         String name,
@@ -22,5 +23,5 @@ public record FlashDriveDto(
         @Positive(message = "Скорость чтения не может быть отрицательной либо равной нулю")
         Float readSpeed,
 
-        Long computerId
-) implements Identifiable {}
+        Integer computerId
+)implements Identifiable {}

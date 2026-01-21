@@ -25,7 +25,7 @@ public class RestExceptionHandler {
 
     @ExceptionHandler({EntityNotFoundException.class})
     protected ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex, WebRequest request) {
-        ApiError apiError = new ApiError("Запись не найдена.", null);
+        ApiError apiError = new ApiError("Запись не найдена.");
         log.warn("EntityNotFoundException: {}", ex.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
     }
@@ -33,7 +33,7 @@ public class RestExceptionHandler {
     @ExceptionHandler({HttpRequestMethodNotSupportedException.class})
     protected ResponseEntity<Object> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex,
                                                                 WebRequest request) {
-        ApiError apiError = new ApiError("Данный HTTP метод не настроен.", null);
+        ApiError apiError = new ApiError("Данный HTTP метод не настроен.");
         log.warn("HttpRequestMethodNotSupportedException: {}", ex.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.METHOD_NOT_ALLOWED);
     }
@@ -41,7 +41,7 @@ public class RestExceptionHandler {
     @ExceptionHandler({ MethodArgumentTypeMismatchException.class })
     public ResponseEntity<Object> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException ex, WebRequest request) {
-        ApiError apiError = new ApiError("Неверный тип параметра в запросе.", null);
+        ApiError apiError = new ApiError("Неверный тип параметра в запросе.");
         log.warn("MethodArgumentTypeMismatchException: {}", ex.getMessage());
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
@@ -112,8 +112,8 @@ public class RestExceptionHandler {
 
     @ExceptionHandler({RuntimeException.class})
     protected ResponseEntity<Object> handleServerEx(RuntimeException ex, WebRequest request) {
-        ApiError apiError = new ApiError("Произошла внутренняя ошибка сервера.", null);
-        log.error("Unexpected RuntimeException occurred", ex); // ← это критично важно!
+        ApiError apiError = new ApiError("Произошла внутренняя ошибка сервера.");
+        log.error("Unexpected RuntimeException occurred", ex);
 
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }

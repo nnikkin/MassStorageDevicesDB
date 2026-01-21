@@ -1,11 +1,10 @@
 package com.nikkin.devicesdb.Views.Pages;
 
-import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Bytes;
 import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
-import com.nikkin.devicesdb.Entities.RandomAccessMemory;
 import com.nikkin.devicesdb.Services.ComputerService;
-import com.nikkin.devicesdb.Services.RAMService;
+import com.nikkin.devicesdb.Services.RamService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -24,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Route("ram")
-public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccessMemoryDto> {
+public class RamTableView extends BaseTableView<RandomAccessMemoryDto> {
     protected static ComputerService computerService;
 
-    public RAMTableView(RAMService service, ComputerService computerService) {
+    public RamTableView(RamService service, ComputerService computerService) {
         super("ОЗУ", service);
         this.computerService = computerService;
     }
@@ -39,54 +38,52 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
 
     @Override
     protected void initTable() {
-        var ramGrid = new Grid<>(RandomAccessMemoryDto.class, false);
+        grid = new Grid<>(RandomAccessMemoryDto.class, false);
 
-        ramGrid.setItems(new ArrayList<>());
-        ramGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        ramGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        ramGrid.setColumnRendering(ColumnRendering.LAZY);
-        ramGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        grid.setItems(new ArrayList<>());
+        grid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.setColumnRendering(ColumnRendering.LAZY);
+        grid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        ramGrid.addColumn(RandomAccessMemoryDto::manufacturer)
+        grid.addColumn(RandomAccessMemoryDto::manufacturer)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(RandomAccessMemoryDto::model)
+        grid.addColumn(RandomAccessMemoryDto::model)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(dto -> String.format("%.2f", dto.capacity()))
+        grid.addColumn(dto -> String.format("%.2f", dto.capacity()))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(RandomAccessMemoryDto::memoryType)
+        grid.addColumn(RandomAccessMemoryDto::memoryType)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(RandomAccessMemoryDto::moduleType)
+        grid.addColumn(RandomAccessMemoryDto::moduleType)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(dto -> String.format("%.2f", dto.frequencyMhz()))
+        grid.addColumn(dto -> String.format("%.2f", dto.frequencyMhz()))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ramGrid.addColumn(
+        grid.addColumn(
                 dto -> {
                     if (dto.computerId() == null) {
                         return "Не назначен";
                     }
 
-                    return computerService.getById(dto.computerId())
-                            .map(ComputerDto::name)
-                            .orElse("Не назначен");
+                    return computerService.getById(dto.computerId());
                 })
                 .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
 
 
-        ramGrid.addSelectionListener(
+        grid.addSelectionListener(
             selectionEvent -> {
                 if (selectionEvent.getAllSelectedItems().isEmpty())
                 {
@@ -100,18 +97,15 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
                 }
             }
         );
-
-        setGrid(ramGrid);
     }
 
     @Override
     protected void setupFilters() {
-        var ramGrid = getGrid();
-        var headerCells = ramGrid.getHeaderRows()
+        var headerCells = grid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
 
-        RandomAccessMemoryFilter filter = new RandomAccessMemoryFilter(ramGrid.getListDataView());
+        RandomAccessMemoryFilter filter = new RandomAccessMemoryFilter(grid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Производитель", filter::setManufacturer));
         headerCells.get(1).setComponent(createFilterHeader("Модель", filter::setModel));
@@ -201,7 +195,7 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
         private ComboBox<ComputerDto> computersField;
 
         private Binder<RandomAccessMemoryDto> binder;
-        private Long currentId = null;
+        private Integer currentId = null;
 
         public RandomAccessMemoryForm() {
             super();
@@ -323,7 +317,7 @@ public class RAMTableView extends BaseTableView<RandomAccessMemory, RandomAccess
                 .asRequired("Связка с компьютером обязательна")
                 .bind(
                         dto -> dto.computerId() == null ? null :
-                                computerService.getById(dto.computerId()).orElse(null),
+                                computerService.getById(dto.computerId()),
                         (dto, value) -> {}
                 );
         }

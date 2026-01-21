@@ -1,7 +1,7 @@
 package com.nikkin.devicesdb.Views;
 
 import com.nikkin.devicesdb.Dto.Identifiable;
-import com.nikkin.devicesdb.Services.BaseService;
+import com.nikkin.devicesdb.Services.IService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -16,20 +16,23 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-// E - Entity, D - Dto
-public abstract class BaseTableView<E, D extends Identifiable> extends BaseAppView {
-    private final BaseService<E, D> service;
-    private BaseForm<D> dialogForm;
-    private Grid<D> grid;
+public abstract class BaseTableView<D extends Identifiable> extends BaseAppView {
+
+    @Setter
+    @Getter
+    protected Grid<D> grid;
     private List<Component> buttons;
+    private final IService<D> service;
     private Button addBtn, delBtn, refreshBtn, editBtn;
 
-    public BaseTableView(String title, BaseService<E, D> service) {
+    public BaseTableView(String title, IService<D> service) {
         super(title);
 
         this.service = service;
@@ -50,13 +53,7 @@ public abstract class BaseTableView<E, D extends Identifiable> extends BaseAppVi
         layout.add(tableMenu, grid);
     }
 
-    public Grid<D> getGrid() {
-        return grid;
-    }
-
-    public void setGrid(Grid<D> grid) {
-        this.grid = grid;
-    }
+    protected abstract BaseForm<D> createForm();
 
     private void fillTable() {
         List<D> items = service.getAll();
@@ -122,11 +119,9 @@ public abstract class BaseTableView<E, D extends Identifiable> extends BaseAppVi
         return layout;
     }
 
-    protected abstract BaseForm<D> createForm();
-
     protected void showNewEntryDialog() {
         BaseForm<D> form = createForm();
-        BaseDialog<D> dialog = new BaseDialog<>(null, form, dto -> {
+        FormDialog<D> dialog = new FormDialog<>(null, form, dto -> {
             service.add(dto);
             refreshGrid();
         });
@@ -137,7 +132,7 @@ public abstract class BaseTableView<E, D extends Identifiable> extends BaseAppVi
 
     protected void showEditDialog(D oldDto) {
         BaseForm<D> form = createForm();
-        BaseDialog<D> dialog = new BaseDialog<>(oldDto, form, dto -> {
+        FormDialog<D> dialog = new FormDialog<>(oldDto, form, dto -> {
             service.update(dto.id(), dto);
             refreshGrid();
         });
@@ -155,14 +150,14 @@ public abstract class BaseTableView<E, D extends Identifiable> extends BaseAppVi
         Div textDiv = new Div(message);
         textDiv.getStyle().set("padding", "var(--lumo-space-m)");
 
-        CustomDialog confirmDialog = new CustomDialog("Удаление записи", textDiv);
+        BaseDialog confirmDialog = new BaseDialog("Удаление записи", textDiv);
         confirmDialog.setOkButtonText("Да, удалить");
         confirmDialog.setCancelDialogButtonText("Нет");
 
         confirmDialog.open();
 
         confirmDialog.addOkClickListener(e -> {
-            List<Long> itemsToDelete = selectedItems
+            List<Integer> itemsToDelete = selectedItems
                     .stream()
                     .map(D::id)
                     .toList();
@@ -186,7 +181,7 @@ public abstract class BaseTableView<E, D extends Identifiable> extends BaseAppVi
     protected void showErrorDialog(String message) {
         Div textDiv = new Div(message);
 
-        CustomDialog errorDialog = new CustomDialog("Ошибка", textDiv);
+        BaseDialog errorDialog = new BaseDialog("Ошибка", textDiv);
         errorDialog.setCancelButtonVisible(false);
 
         errorDialog.open();

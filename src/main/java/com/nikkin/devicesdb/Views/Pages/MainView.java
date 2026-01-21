@@ -15,17 +15,17 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 public class MainView extends BaseAppView {
 
     private final ComputerService computerService;
-    private final RAMService ramService;
+    private final RamService ramService;
     private final FlashDriveService flashDriveService;
-    private final HDDService hddService;
-    private final SSDService ssdService;
+    private final HddService hddService;
+    private final SsdService ssdService;
 
     public MainView(
             ComputerService computerService,
-            RAMService ramService,
+            RamService ramService,
             FlashDriveService flashDriveService,
-            HDDService hddService,
-            SSDService ssdService
+            HddService hddService,
+            SsdService ssdService
     ) {
         super("Запоминающие устройства");
 

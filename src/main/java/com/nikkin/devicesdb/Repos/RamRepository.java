@@ -1,9 +1,9 @@
 package com.nikkin.devicesdb.Repos;
 
-import com.nikkin.devicesdb.Entities.HardDiskDrive;
+import com.nikkin.devicesdb.Entities.RandomAccessMemory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface HDDRepository extends JpaRepository<HardDiskDrive, Long> {
+public interface RamRepository extends JpaRepository<RandomAccessMemory, Integer> {
 }

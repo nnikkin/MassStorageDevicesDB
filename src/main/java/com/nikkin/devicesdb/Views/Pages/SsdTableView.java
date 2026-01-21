@@ -1,11 +1,10 @@
 package com.nikkin.devicesdb.Views.Pages;
 
-import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Bytes;
 import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
-import com.nikkin.devicesdb.Entities.SolidStateDrive;
 import com.nikkin.devicesdb.Services.ComputerService;
-import com.nikkin.devicesdb.Services.SSDService;
+import com.nikkin.devicesdb.Services.SsdService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -24,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Route("ssd")
-public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDriveDto> {
+public class SsdTableView extends BaseTableView<SolidStateDriveDto> {
     protected static ComputerService computerService;
 
-    public SSDTableView(SSDService service, ComputerService computerService) {
+    public SsdTableView(SsdService service, ComputerService computerService) {
         super("Твердотельные накопители", service);
         this.computerService = computerService;
     }
@@ -39,57 +38,55 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
 
     @Override
     protected void initTable() {
-        var ssdGrid = new Grid<>(SolidStateDriveDto.class, false);
+        grid = new Grid<>(SolidStateDriveDto.class, false);
 
-        ssdGrid.setItems(new ArrayList<>());
-        ssdGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        ssdGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        ssdGrid.setColumnRendering(ColumnRendering.LAZY);
-        ssdGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        grid.setItems(new ArrayList<>());
+        grid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.setColumnRendering(ColumnRendering.LAZY);
+        grid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        ssdGrid.addColumn(SolidStateDriveDto::manufacturer)
+        grid.addColumn(SolidStateDriveDto::manufacturer)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ssdGrid.addColumn(SolidStateDriveDto::capacity)
+        grid.addColumn(SolidStateDriveDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ssdGrid.addColumn(SolidStateDriveDto::driveInterface)
+        grid.addColumn(SolidStateDriveDto::driveInterface)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ssdGrid.addColumn(SolidStateDriveDto::nandType)
+        grid.addColumn(SolidStateDriveDto::nandType)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ssdGrid.addColumn(SolidStateDriveDto::writeSpeed)
+        grid.addColumn(SolidStateDriveDto::writeSpeed)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ssdGrid.addColumn(SolidStateDriveDto::readSpeed)
+        grid.addColumn(SolidStateDriveDto::readSpeed)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ssdGrid.addColumn(SolidStateDriveDto::powerConsumption)
+        grid.addColumn(SolidStateDriveDto::powerConsumption)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        ssdGrid.addColumn(
+        grid.addColumn(
                         dto -> {
                             if (dto.computerId() == null) {
                                 return "Не назначен";
                             }
 
-                            return computerService.getById(dto.computerId())
-                                    .map(ComputerDto::name)
-                                    .orElse("Не назначен");
+                            return computerService.getById(dto.computerId());
                         })
                 .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
 
-        ssdGrid.addSelectionListener(
+        grid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
                     {
@@ -103,18 +100,15 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
                     }
                 }
         );
-
-        setGrid(ssdGrid);
     }
 
     @Override
     protected void setupFilters() {
-        var ssdGrid = getGrid();
-        var headerCells = ssdGrid.getHeaderRows()
+        var headerCells = grid.getHeaderRows()
                 .getFirst()
                 .getCells();
 
-        SolidStateDriveFilter filter = new SolidStateDriveFilter(ssdGrid.getListDataView());
+        SolidStateDriveFilter filter = new SolidStateDriveFilter(grid.getListDataView());
 
         headerCells.get(0).setComponent(createFilterHeader("Наименование", filter::setName));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
@@ -212,7 +206,7 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
         private ComboBox<ComputerDto> computersField;
 
         private Binder<SolidStateDriveDto> binder;
-        private Long currentId = null;
+        private Integer currentId = null;
 
         public SolidStateDriveForm() {
             super();
@@ -348,7 +342,7 @@ public class SSDTableView extends BaseTableView<SolidStateDrive, SolidStateDrive
                     .asRequired("Связка с компьютером обязательна")
                     .bind(
                             dto -> dto.computerId() == null ? null :
-                                    computerService.getById(dto.computerId()).orElse(null),
+                                    computerService.getById(dto.computerId()),
                             (dto, value) -> {}
                     );
         }

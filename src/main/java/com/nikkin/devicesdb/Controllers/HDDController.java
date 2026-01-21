@@ -1,22 +1,23 @@
 package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
-import com.nikkin.devicesdb.Services.HDDService;
+import com.nikkin.devicesdb.Services.HddService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("api/hdd")
 public class HDDController {
-    private final HDDService hddService;
+    @Autowired
+    private HddService hddService;
 
-    public HDDController(HDDService hddService) {
+    public HDDController(HddService hddService) {
         this.hddService = hddService;
     }
 
@@ -33,21 +34,22 @@ public class HDDController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<HardDiskDriveDto> getHardDiskDriveById(@PathVariable Long id) {
-        HardDiskDriveDto hddDto = hddService.getById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
-        );
-        return new ResponseEntity<>(hddDto, HttpStatus.OK);
+    public ResponseEntity<HardDiskDriveDto> getHardDiskDriveById(@PathVariable Integer id) {
+        //HardDiskDriveDto hddDto = hddService.getById(id).orElseThrow(
+        //        () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        //);
+        //return new ResponseEntity<>(hddDto, HttpStatus.OK);
+        return null;
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<HardDiskDriveDto> deleteHardDiskDrive(@PathVariable Long id) {
+    public ResponseEntity<HardDiskDriveDto> deleteHardDiskDrive(@PathVariable Integer id) {
         HardDiskDriveDto deleted = hddService.delete(id);
         return ResponseEntity.ok(deleted); // 200 OK с телом
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HardDiskDriveDto> replaceHardDiskDrive(@PathVariable Long id, @RequestBody @Valid HardDiskDriveDto hddDto) {
+    public ResponseEntity<HardDiskDriveDto> replaceHardDiskDrive(@PathVariable Integer id, @RequestBody @Valid HardDiskDriveDto hddDto) {
         HardDiskDriveDto updatedHddDto = hddService.update(id, hddDto);
         return new ResponseEntity<>(updatedHddDto, HttpStatus.OK);
     }

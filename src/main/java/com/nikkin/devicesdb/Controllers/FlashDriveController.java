@@ -2,13 +2,12 @@ package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Services.FlashDriveService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -16,7 +15,8 @@ import java.util.List;
 @RequestMapping("api/flash")
 @Validated
 public class FlashDriveController {
-    private final FlashDriveService flashDriveService;
+    @Autowired
+    private FlashDriveService flashDriveService;
 
     public FlashDriveController(FlashDriveService flashDriveService) {
         this.flashDriveService = flashDriveService;
@@ -35,21 +35,21 @@ public class FlashDriveController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FlashDriveDto> getFlashDriveById(@PathVariable Long id) {
-        FlashDriveDto flashDriveDto = flashDriveService.getById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-
-        return ResponseEntity.ok(flashDriveDto);
+    public ResponseEntity<FlashDriveDto> getFlashDriveById(@PathVariable Integer id) {
+        //FlashDriveDto flashDriveDto = flashDriveService.getById(id)
+        //        .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
+        //return ResponseEntity.ok(flashDriveDto);
+        return null;
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<FlashDriveDto> deleteFlashDrive(@PathVariable Long id) {
+    public ResponseEntity<FlashDriveDto> deleteFlashDrive(@PathVariable Integer id) {
         FlashDriveDto deleted = flashDriveService.delete(id);
         return ResponseEntity.ok(deleted); // 200 OK с телом
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FlashDriveDto> replaceFlashDrive(@PathVariable Long id, @RequestBody @Valid FlashDriveDto flashDriveDto) {
+    public ResponseEntity<FlashDriveDto> replaceFlashDrive(@PathVariable Integer id, @RequestBody @Valid FlashDriveDto flashDriveDto) {
         FlashDriveDto updatedFlashDriveDto = flashDriveService.update(id, flashDriveDto);
         return ResponseEntity.ok(updatedFlashDriveDto);
     }

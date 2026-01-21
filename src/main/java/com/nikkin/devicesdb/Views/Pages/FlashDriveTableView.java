@@ -1,9 +1,8 @@
 package com.nikkin.devicesdb.Views.Pages;
 
-import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Bytes;
 import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.FlashDriveDto;
-import com.nikkin.devicesdb.Entities.FlashDrive;
 import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.FlashDriveService;
 import com.nikkin.devicesdb.Views.BaseForm;
@@ -20,13 +19,12 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
-import java.util.ArrayList;
-
 @Route("flash")
-final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDriveDto> {
-    protected static ComputerService computerService;
+final public class FlashDriveTableView extends BaseTableView<FlashDriveDto> {
+    private static ComputerService computerService;
 
     public FlashDriveTableView(FlashDriveService service, ComputerService computerService) {
         super("Флеш-память", service);
@@ -40,49 +38,45 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
 
     @Override
     protected void initTable() {
-        var flashDriveGrid = new Grid<>(FlashDriveDto.class, false);
+        grid.setItems(new ArrayList<>());
+        grid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.setColumnRendering(ColumnRendering.LAZY);
+        grid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        flashDriveGrid.setItems(new ArrayList<>());
-        flashDriveGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        flashDriveGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        flashDriveGrid.setColumnRendering(ColumnRendering.LAZY);
-        flashDriveGrid.setEmptyStateText("В таблице отсутствуют записи.");
-
-        flashDriveGrid.addColumn(FlashDriveDto::name)
+        grid.addColumn(FlashDriveDto::name)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::capacity)
+        grid.addColumn(FlashDriveDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::usbInterface)
+        grid.addColumn(FlashDriveDto::usbInterface)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::readSpeed)
+        grid.addColumn(FlashDriveDto::readSpeed)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(FlashDriveDto::writeSpeed)
+        grid.addColumn(FlashDriveDto::writeSpeed)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        flashDriveGrid.addColumn(
+        grid.addColumn(
                         dto -> {
                             if (dto.computerId() == null) {
                                 return "Не назначен";
                             }
 
-                            return computerService.getById(dto.computerId())
-                                    .map(ComputerDto::name)
-                                    .orElse("Не назначен");
+                            return computerService.getById(dto.computerId());
                         })
                 .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
 
-        flashDriveGrid.addSelectionListener(
+        grid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
                     {
@@ -96,18 +90,15 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
                     }
                 }
         );
-
-        setGrid(flashDriveGrid);
     }
 
     @Override
     protected void setupFilters() {
-        var flashDriveGrid = getGrid();
-        var headerCells = flashDriveGrid.getHeaderRows()
+        var headerCells = grid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
 
-        FlashDriveFilter filter = new FlashDriveFilter(flashDriveGrid.getListDataView());
+        FlashDriveFilter filter = new FlashDriveFilter(grid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
@@ -188,7 +179,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
         private ComboBox<ComputerDto> computersField;
 
         private Binder<FlashDriveDto> binder;
-        private Long currentId = null;
+        private Integer currentId = null;
 
         public FlashDriveForm() {
             super();
@@ -299,7 +290,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDrive, FlashDr
                     .asRequired("Связка с компьютером обязательна")
                     .bind(
                             dto -> dto.computerId() == null ? null :
-                                    computerService.getById(dto.computerId()).orElse(null),
+                                    computerService.getById(dto.computerId()),
                             (dto, value) -> {}
                     );
         }

@@ -1,60 +1,79 @@
 package com.nikkin.devicesdb.Views;
 
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.dialog.DialogVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class BaseDialog<D> extends CustomDialog {
-    private final BaseForm<D> form;
-    private final SerializableConsumer<D> onSaveCallback;
-    private boolean isEditMode;
+public class BaseDialog extends Dialog {
+    private final VerticalLayout dialogLayout = new VerticalLayout();
+    private final Component[] dialogComponents;
+    private final Button okDialogButton = new Button();
+    private final Button cancelDialogButton = new Button();
 
-    public BaseDialog(D dto, BaseForm<D> form, SerializableConsumer<D> onSaveCallback) {
-        this.onSaveCallback = onSaveCallback;
-
-        this.form = form;
-        isEditMode = false;
-
-        if (dto != null) {
-            isEditMode = true;
-            form.setDto(dto);
-        }
-
-        addToDialogBody(form);
-
-        addOkClickListener(e -> save());
+    public BaseDialog() {
+        setHeaderTitle("Заголовок");
+        dialogComponents = null;
+        Create();
+        okDialogButton.setText("OK");
+        cancelDialogButton.setText("Отмена");
     }
 
-    private void save() {
-        if (!form.isValid()) {
-            Notification notification = Notification.show(
-                    "Пожалуйста, исправьте ошибки в форме",
-                    3000,
-                    Notification.Position.MIDDLE
-            );
-            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            return;
-        }
+    public BaseDialog(String title, Component... dialogComponents) {
+        setHeaderTitle(title);
+        this.dialogComponents = dialogComponents;
+        Create();
+        okDialogButton.setText("OK");
+        cancelDialogButton.setText("Отмена");
+    }
 
-        form.getFormDataObject().ifPresent(entity -> {
-            try {
-                onSaveCallback.accept(entity);
-                close();
+    private void Create() {
+        setWidth(35, Unit.VW);
+        dialogLayout.setWidthFull();
+        dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+        if (dialogComponents != null)
+            dialogLayout.add(dialogComponents);
 
-                Notification notification = Notification.show(
-                        isEditMode ? "Запись обновлена" : "Запись создана",
-                        3000,
-                        Notification.Position.MIDDLE
-                );
-                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-            } catch (Exception e) {
-                Notification notification = Notification.show(
-                        "Ошибка при сохранении: " + e.getMessage(),
-                        5000,
-                        Notification.Position.MIDDLE
-                );
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-        });
+        okDialogButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        getFooter().add(cancelDialogButton, okDialogButton);
+
+        add(dialogLayout);
+
+        cancelDialogButton.addClickListener(e -> close());
+        setCloseOnEsc(true);
+        setCloseOnOutsideClick(false);
+
+        addThemeVariants(DialogVariant.LUMO_NO_PADDING);
+    }
+
+    public void setOkButtonText(String text) {okDialogButton.setText(text);}
+
+    public void setCancelDialogButtonText(String text) {cancelDialogButton.setText(text);}
+
+    public void setOkButtonEnabled(boolean flag) {okDialogButton.setEnabled(flag);}
+
+    public void setCancelButtonEnabled(boolean flag) {cancelDialogButton.setEnabled(flag);}
+
+    public void setOkButtonVisible(boolean flag) {okDialogButton.setVisible(flag);}
+
+    public void setCancelButtonVisible(boolean flag) {cancelDialogButton.setVisible(flag);}
+
+    public void addToDialogBody(Component... components) {
+        dialogLayout.add(components);
+    }
+
+    public void addOkClickListener(ComponentEventListener<ClickEvent<Button>> listener) {
+        okDialogButton.addClickListener(listener);
+    }
+
+    public void addCancelClickListener(ComponentEventListener<ClickEvent<Button>> listener) {
+        cancelDialogButton.addClickListener(listener);
     }
 }

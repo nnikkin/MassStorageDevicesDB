@@ -1,4 +1,4 @@
-package com.nikkin.devicesdb.Domain;
+package com.nikkin.devicesdb;
 
 public enum Bytes {
     BIT("бит", 0), B("байт", 1), KB("килобайт", 2),

@@ -1,22 +1,23 @@
 package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
-import com.nikkin.devicesdb.Services.SSDService;
+import com.nikkin.devicesdb.Services.SsdService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("api/ssd")
 public class SSDController {
-    private final SSDService ssdService;
+    @Autowired
+    private SsdService ssdService;
 
-    public SSDController(SSDService ssdService) {
+    public SSDController(SsdService ssdService) {
         this.ssdService = ssdService;
     }
 
@@ -33,21 +34,22 @@ public class SSDController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SolidStateDriveDto> getSolidStateDriveById(@PathVariable Long id) {
-        SolidStateDriveDto ssdDto = ssdService.getById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
-        );
-        return new ResponseEntity<>(ssdDto, HttpStatus.OK);
+    public ResponseEntity<SolidStateDriveDto> getSolidStateDriveById(@PathVariable Integer id) {
+        //SolidStateDriveDto ssdDto = ssdService.getById(id).orElseThrow(
+        //        () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        //);
+        //return new ResponseEntity<>(ssdDto, HttpStatus.OK);
+        return null;
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<SolidStateDriveDto> deleteSolidStateDrive(@PathVariable Long id) {
+    public ResponseEntity<SolidStateDriveDto> deleteSolidStateDrive(@PathVariable Integer id) {
         SolidStateDriveDto deleted = ssdService.delete(id);
         return ResponseEntity.ok(deleted); // 200 OK с телом
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SolidStateDriveDto> replaceSolidStateDrive(@PathVariable Long id, @RequestBody @Valid SolidStateDriveDto ssdDto) {
+    public ResponseEntity<SolidStateDriveDto> replaceSolidStateDrive(@PathVariable Integer id, @RequestBody @Valid SolidStateDriveDto ssdDto) {
         SolidStateDriveDto updatedSsdDto = ssdService.update(id, ssdDto);
         return new ResponseEntity<>(updatedSsdDto, HttpStatus.OK);
     }

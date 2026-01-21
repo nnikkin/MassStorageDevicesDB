@@ -1,6 +1,6 @@
 package com.nikkin.devicesdb.Views;
 
-import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Bytes;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.data.binder.Binder;
 

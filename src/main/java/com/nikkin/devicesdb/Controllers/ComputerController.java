@@ -4,6 +4,7 @@ import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Services.ComputerService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,7 +16,8 @@ import java.util.List;
 @RequestMapping("api/computers")
 @Validated
 public class ComputerController {
-    private final ComputerService computerService;
+    @Autowired
+    private ComputerService computerService;
 
     public ComputerController(ComputerService computerService) {
         this.computerService = computerService;
@@ -34,21 +36,21 @@ public class ComputerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ComputerDto> getComputerById(@PathVariable Long id) {
-        ComputerDto computerDto = computerService.getById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-
-        return ResponseEntity.ok(computerDto);
+    public ResponseEntity<ComputerDto> getComputerById(@PathVariable Integer id) {
+        //ComputerDto computerDto = computerService.getById(id)
+        //        .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
+        //return ResponseEntity.ok(computerDto);
+        return null;
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ComputerDto> deleteComputer(@PathVariable Long id) {
+    public ResponseEntity<ComputerDto> deleteComputer(@PathVariable Integer id) {
         ComputerDto deleted = computerService.delete(id);
         return ResponseEntity.ok(deleted); // 200 OK с телом
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ComputerDto> replaceComputer(@PathVariable Long id, @RequestBody @Valid ComputerDto computerDto) {
+    public ResponseEntity<ComputerDto> replaceComputer(@PathVariable Integer id, @RequestBody @Valid ComputerDto computerDto) {
         ComputerDto updatedComputerDto = computerService.update(id, computerDto);
         return ResponseEntity.ok(updatedComputerDto);
     }

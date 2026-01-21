@@ -1,16 +1,24 @@
 package com.nikkin.devicesdb.Dto;
 
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
-import java.util.List;
+import java.util.Set;
 
+@Builder
 public record ComputerDto (
-    @Id Long id,
-    @NotBlank @Size(max = 30) String name,
-    List<HardDiskDriveDto> linkedHddDtos,
-    List<SolidStateDriveDto> linkedSsdDtos,
-    List<RandomAccessMemoryDto> linkedRamDtos,
-    List<FlashDriveDto> linkedFlashDtos
+    Integer id,
+
+    @NotBlank
+    @Size(max = 30)
+    String name,
+
+    Set<HardDiskDriveDto> linkedHddDtos,
+
+    Set<SolidStateDriveDto> linkedSsdDtos,
+
+    Set<RandomAccessMemoryDto> linkedRamDtos,
+
+    Set<FlashDriveDto> linkedFlashDtos
 ) implements Identifiable {}

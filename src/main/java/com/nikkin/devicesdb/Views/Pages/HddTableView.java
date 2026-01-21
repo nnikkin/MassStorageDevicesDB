@@ -1,11 +1,10 @@
 package com.nikkin.devicesdb.Views.Pages;
 
-import com.nikkin.devicesdb.Domain.Bytes;
+import com.nikkin.devicesdb.Bytes;
 import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
-import com.nikkin.devicesdb.Entities.HardDiskDrive;
 import com.nikkin.devicesdb.Services.ComputerService;
-import com.nikkin.devicesdb.Services.HDDService;
+import com.nikkin.devicesdb.Services.HddService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -25,10 +24,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Route("hdd")
-public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDriveDto> {
+public final class HddTableView extends BaseTableView<HardDiskDriveDto> {
     protected static ComputerService computerService;
 
-    public HDDTableView(HDDService service, ComputerService computerService) {
+    public HddTableView(HddService service, ComputerService computerService) {
         super("Накопители на жёстких дисках", service);
         this.computerService = computerService;
     }
@@ -40,49 +39,47 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
 
     @Override
     protected void initTable() {
-        var hddGrid = new Grid<>(HardDiskDriveDto.class, false);
+        grid = new Grid<>(HardDiskDriveDto.class, false);
 
-        hddGrid.setItems(new ArrayList<>());
-        hddGrid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-        hddGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-        hddGrid.setColumnRendering(ColumnRendering.LAZY);
-        hddGrid.setEmptyStateText("В таблице отсутствуют записи.");
+        grid.setItems(new ArrayList<>());
+        grid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.setColumnRendering(ColumnRendering.LAZY);
+        grid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        hddGrid.addColumn(HardDiskDriveDto::manufacturer)
+        grid.addColumn(HardDiskDriveDto::manufacturer)
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        hddGrid.addColumn(HardDiskDriveDto::capacity)
+        grid.addColumn(HardDiskDriveDto::capacity)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        hddGrid.addColumn(HardDiskDriveDto::driveInterface)
+        grid.addColumn(HardDiskDriveDto::driveInterface)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        hddGrid.addColumn(HardDiskDriveDto::format)
+        grid.addColumn(HardDiskDriveDto::format)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        hddGrid.addColumn(HardDiskDriveDto::powerConsumption)
+        grid.addColumn(HardDiskDriveDto::powerConsumption)
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        hddGrid.addColumn(
+        grid.addColumn(
                         dto -> {
                             if (dto.computerId() == null) {
                                 return "Не назначен";
                             }
 
-                            return computerService.getById(dto.computerId())
-                                    .map(ComputerDto::name)
-                                    .orElse("Не назначен");
+                            return computerService.getById(dto.computerId());
                         })
                 .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
 
-        hddGrid.addSelectionListener(
+        grid.addSelectionListener(
                 selectionEvent -> {
                     if (selectionEvent.getAllSelectedItems().isEmpty())
                     {
@@ -96,18 +93,15 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
                     }
                 }
         );
-
-        setGrid(hddGrid);
     }
 
     @Override
     protected void setupFilters() {
-        var hddGrid = getGrid();
-        var headerCells = hddGrid.getHeaderRows()
+        var headerCells = grid.getHeaderRows()
                                         .getFirst()
                                         .getCells();
 
-        HardDiskDriveFilter filter = new HardDiskDriveFilter(hddGrid.getListDataView());
+        HardDiskDriveFilter filter = new HardDiskDriveFilter(grid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Производитель", filter::setManufacturer));
         headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
@@ -188,7 +182,7 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
         private ComboBox<ComputerDto> computersField;
 
         private Binder<HardDiskDriveDto> binder;
-        private Long currentId = null;
+        private Integer currentId = null;
 
         public HardDiskDriveForm() {
             super();
@@ -295,7 +289,7 @@ public final class HDDTableView extends BaseTableView<HardDiskDrive, HardDiskDri
                     .asRequired("Связка с компьютером обязательна")
                     .bind(
                             dto -> dto.computerId() == null ? null :
-                                    computerService.getById(dto.computerId()).orElse(null),
+                                    computerService.getById(dto.computerId()),
                             (dto, value) -> {}
                     );
         }

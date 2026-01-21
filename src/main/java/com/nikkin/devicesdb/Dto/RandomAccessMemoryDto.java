@@ -1,16 +1,13 @@
 package com.nikkin.devicesdb.Dto;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
+@Builder
 public record RandomAccessMemoryDto(
-        @Id
-        Long id,
+        Integer id,
 
         @Size(max=30)
         String model,
@@ -30,6 +27,6 @@ public record RandomAccessMemoryDto(
         @Nullable
         @Positive(message = "Тактовая частота не может быть отрицательным либо равным нулю")
         Float frequencyMhz,
-        
-        Long computerId
+
+        Integer computerId
 ) implements Identifiable {}

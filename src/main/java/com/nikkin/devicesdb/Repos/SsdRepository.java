@@ -1,9 +1,9 @@
 package com.nikkin.devicesdb.Repos;
 
-import com.nikkin.devicesdb.Entities.RandomAccessMemory;
+import com.nikkin.devicesdb.Entities.SolidStateDrive;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RAMRepository extends JpaRepository<RandomAccessMemory, Long> {
+public interface SsdRepository extends JpaRepository<SolidStateDrive, Integer> {
 }
