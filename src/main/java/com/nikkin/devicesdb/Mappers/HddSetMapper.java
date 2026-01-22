@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 
 import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = HddMapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+@Mapper(componentModel = "spring", uses = HddMapper.class)
 public interface HddSetMapper {
     Set<HardDiskDriveDto> toDto(Set<HardDiskDrive> entitiesList);
     Set<HardDiskDrive> toEntity(Set<HardDiskDriveDto> dtoList);

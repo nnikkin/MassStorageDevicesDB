@@ -92,8 +92,7 @@ final public class ComputersTableView extends BaseTableView<ComputerDto> {
 
         ComputerFilter filter = new ComputerFilter(grid.getListDataView());
 
-        headerCells.getFirst().setComponent(createFilterHeader("Поиск по названию", filter::setName));
-        // Для связанных устройств фильтры не имеют смысла, так как это списки
+        headerCells.getFirst().setComponent(createFilterHeader("Название", filter::setName));
     }
 
     private static class ComputerFilter {

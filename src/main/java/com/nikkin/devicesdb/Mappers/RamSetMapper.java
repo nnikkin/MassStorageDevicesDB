@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 
 import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = RamMapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+@Mapper(componentModel = "spring", uses = RamMapper.class)
 public interface RamSetMapper {
     Set<RandomAccessMemoryDto> toDto(Set<RandomAccessMemory> entitiesList);
     Set<RandomAccessMemory> toEntity(Set<RandomAccessMemoryDto> dtoList);

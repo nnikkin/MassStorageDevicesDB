@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 
 import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = SsdMapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+@Mapper(componentModel = "spring", uses = SsdMapper.class)
 public interface SsdSetMapper {
     Set<SolidStateDriveDto> toDto(Set<SolidStateDrive> entitiesList);
     Set<SolidStateDrive> toEntity(Set<SolidStateDriveDto> dtoList);

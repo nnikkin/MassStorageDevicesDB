@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 
 import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = FlashMapper.class, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+@Mapper(componentModel = "spring", uses = FlashMapper.class)
 public interface FlashSetMapper {
     Set<FlashDriveDto> toDto(Set<FlashDrive> entitiesList);
     Set<FlashDrive> toEntity(Set<FlashDriveDto> dtoList);
