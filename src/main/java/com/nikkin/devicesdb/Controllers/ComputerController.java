@@ -37,10 +37,8 @@ public class ComputerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ComputerDto> getComputerById(@PathVariable Integer id) {
-        //ComputerDto computerDto = computerService.getById(id)
-        //        .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-        //return ResponseEntity.ok(computerDto);
-        return null;
+        ComputerDto computerDto = computerService.getById(id);
+        return ResponseEntity.ok(computerDto);
     }
 
     @DeleteMapping("/{id}")

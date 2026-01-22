@@ -69,15 +69,15 @@ public class MainView extends BaseAppView {
         layout.setJustifyContentMode(FlexComponent.JustifyContentMode.EVENLY);
 
         layout.add(
-                createStatCard("ПК", computerService.getAll().size(),
+                createStatCard("ПК", computerService.getItemsCount(),
                     new Image(DownloadHandler.forServletResource("icons/pc.ico"), "")),
-                createStatCard("Флеш-память", flashDriveService.getAll().size(),
+                createStatCard("Флеш-память", flashDriveService.getItemsCount(),
                     new Image(DownloadHandler.forServletResource("icons/flash.ico"), "")),
-                createStatCard("Жёсткие диски", hddService.getAll().size(),
+                createStatCard("Жёсткие диски", hddService.getItemsCount(),
                     new Image(DownloadHandler.forServletResource("icons/drive.ico"), "")),
-                createStatCard("ОЗУ", ramService.getAll().size(),
+                createStatCard("ОЗУ", ramService.getItemsCount(),
                     new Image(DownloadHandler.forServletResource("icons/ram2.ico"), "")),
-                createStatCard("Твердотельные накопители", ssdService.getAll().size(),
+                createStatCard("Твердотельные накопители", ssdService.getItemsCount(),
                     new Image(DownloadHandler.forServletResource("icons/drive.ico"), ""))
         );
 

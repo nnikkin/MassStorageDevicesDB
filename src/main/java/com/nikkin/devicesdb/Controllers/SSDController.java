@@ -24,7 +24,7 @@ public class SSDController {
     @PostMapping
     public ResponseEntity<SolidStateDriveDto> addSolidStateDrive(@RequestBody @Valid SolidStateDriveDto ssdDto) {
         SolidStateDriveDto createdSsdDto = ssdService.add(ssdDto);
-        return new ResponseEntity<>(createdSsdDto, HttpStatus.OK);
+        return ResponseEntity.ok(createdSsdDto);
     }
 
     @GetMapping
@@ -35,11 +35,8 @@ public class SSDController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SolidStateDriveDto> getSolidStateDriveById(@PathVariable Integer id) {
-        //SolidStateDriveDto ssdDto = ssdService.getById(id).orElseThrow(
-        //        () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
-        //);
-        //return new ResponseEntity<>(ssdDto, HttpStatus.OK);
-        return null;
+        SolidStateDriveDto ssdDto = ssdService.getById(id);
+        return ResponseEntity.ok(ssdDto);
     }
 
     @DeleteMapping("/{id}")
@@ -51,12 +48,6 @@ public class SSDController {
     @PutMapping("/{id}")
     public ResponseEntity<SolidStateDriveDto> replaceSolidStateDrive(@PathVariable Integer id, @RequestBody @Valid SolidStateDriveDto ssdDto) {
         SolidStateDriveDto updatedSsdDto = ssdService.update(id, ssdDto);
-        return new ResponseEntity<>(updatedSsdDto, HttpStatus.OK);
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(EntityNotFoundException.class)
-    public String handleException(EntityNotFoundException exception) {
-        return exception.getMessage();
+        return ResponseEntity.ok(updatedSsdDto);
     }
 }

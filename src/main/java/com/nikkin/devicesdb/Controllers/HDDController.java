@@ -30,16 +30,13 @@ public class HDDController {
     @GetMapping
     public ResponseEntity<List<HardDiskDriveDto>> getAllHardDiskDrives() {
         List<HardDiskDriveDto> allHddDtos = hddService.getAll();
-        return new ResponseEntity<>(allHddDtos, HttpStatus.OK);
+        return ResponseEntity.ok(allHddDtos);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<HardDiskDriveDto> getHardDiskDriveById(@PathVariable Integer id) {
-        //HardDiskDriveDto hddDto = hddService.getById(id).orElseThrow(
-        //        () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
-        //);
-        //return new ResponseEntity<>(hddDto, HttpStatus.OK);
-        return null;
+        HardDiskDriveDto hddDto = hddService.getById(id);
+        return ResponseEntity.ok(hddDto);
     }
 
     @DeleteMapping("/{id}")
@@ -51,12 +48,6 @@ public class HDDController {
     @PutMapping("/{id}")
     public ResponseEntity<HardDiskDriveDto> replaceHardDiskDrive(@PathVariable Integer id, @RequestBody @Valid HardDiskDriveDto hddDto) {
         HardDiskDriveDto updatedHddDto = hddService.update(id, hddDto);
-        return new ResponseEntity<>(updatedHddDto, HttpStatus.OK);
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(EntityNotFoundException.class)
-    public String handleException(EntityNotFoundException exception) {
-        return exception.getMessage();
+        return ResponseEntity.ok(updatedHddDto);
     }
 }

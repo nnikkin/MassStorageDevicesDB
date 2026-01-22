@@ -2,7 +2,6 @@ package com.nikkin.devicesdb.Controllers;
 
 import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
 import com.nikkin.devicesdb.Services.RamService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,16 +29,13 @@ public class RAMController {
     @GetMapping
     public ResponseEntity<List<RandomAccessMemoryDto>> getAllRandomAccessMemorys() {
         List<RandomAccessMemoryDto> allRamDtos = ramService.getAll();
-        return new ResponseEntity<>(allRamDtos, HttpStatus.OK);
+        return ResponseEntity.ok(allRamDtos);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<RandomAccessMemoryDto> getRandomAccessMemoryById(@PathVariable Integer id) {
-        //RandomAccessMemoryDto ramDto = ramService.getById(id).orElseThrow(
-        //        () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
-        //);
-        //return new ResponseEntity<>(ramDto, HttpStatus.OK);
-        return null;
+        RandomAccessMemoryDto ramDto = ramService.getById(id);
+        return ResponseEntity.ok(ramDto);
     }
 
     @DeleteMapping("/{id}")
@@ -51,12 +47,6 @@ public class RAMController {
     @PutMapping("/{id}")
     public ResponseEntity<RandomAccessMemoryDto> replaceRandomAccessMemory(@PathVariable Integer id, @RequestBody @Valid RandomAccessMemoryDto ramDto) {
         RandomAccessMemoryDto updatedRamDto = ramService.update(id, ramDto);
-        return new ResponseEntity<>(updatedRamDto, HttpStatus.OK);
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(EntityNotFoundException.class)
-    public String handleException(EntityNotFoundException exception) {
-        return exception.getMessage();
+        return ResponseEntity.ok(updatedRamDto);
     }
 }

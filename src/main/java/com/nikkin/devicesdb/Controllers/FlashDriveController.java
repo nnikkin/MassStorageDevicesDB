@@ -36,10 +36,8 @@ public class FlashDriveController {
 
     @GetMapping("/{id}")
     public ResponseEntity<FlashDriveDto> getFlashDriveById(@PathVariable Integer id) {
-        //FlashDriveDto flashDriveDto = flashDriveService.getById(id)
-        //        .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
-        //return ResponseEntity.ok(flashDriveDto);
-        return null;
+        FlashDriveDto flashDriveDto = flashDriveService.getById(id);
+        return ResponseEntity.ok(flashDriveDto);
     }
 
     @DeleteMapping("/{id}")

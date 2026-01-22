@@ -1,13 +1,12 @@
 package com.nikkin.devicesdb.Views.Pages;
 
-import com.nikkin.devicesdb.Dto.ComputerDto;
+import com.nikkin.devicesdb.Dto.*;
 import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
@@ -121,6 +120,7 @@ final public class ComputersTableView extends BaseTableView<ComputerDto> {
 
     static class ComputerForm extends BaseForm<ComputerDto> {
         private TextArea nameField;
+
         private Binder<ComputerDto> binder;
         private Integer currentId = null;
 
