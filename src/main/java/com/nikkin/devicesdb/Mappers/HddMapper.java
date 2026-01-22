@@ -1,11 +1,31 @@
 package com.nikkin.devicesdb.Mappers;
 
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
+import com.nikkin.devicesdb.Entities.Computer;
 import com.nikkin.devicesdb.Entities.HardDiskDrive;
+import com.nikkin.devicesdb.Repos.ComputerRepository;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring")
-public interface HddMapper {
-    HardDiskDriveDto toDto(HardDiskDrive entity);
-    HardDiskDrive toEntity(HardDiskDriveDto dto);
+public abstract class HddMapper {
+
+    @Autowired
+    protected ComputerRepository computerRepository;
+
+    @Mapping(source = "computer.id", target = "computerId")
+    public abstract HardDiskDriveDto toDto(HardDiskDrive entity);
+
+    @Mapping(source = "computerId", target = "computer", qualifiedByName = "idToComputer")
+    public abstract HardDiskDrive toEntity(HardDiskDriveDto dto);
+
+    @Named("idToComputer")
+    protected Computer idToComputer(Integer computerId) {
+        if (computerId == null) {
+            return null;
+        }
+        return computerRepository.findById(computerId).orElse(null);
+    }
 }

@@ -4,6 +4,7 @@ import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
 import com.nikkin.devicesdb.Entities.HardDiskDrive;
 import com.nikkin.devicesdb.Mappers.HddMapper;
 import com.nikkin.devicesdb.Repos.HddRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,8 @@ public class HddService implements IService<HardDiskDriveDto> {
     @Override
     public HardDiskDriveDto getById(Integer id) {
         // получаем HardDiskDrive из БД
-        HardDiskDrive computer = repo.getReferenceById(id);
+        HardDiskDrive computer = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // получаем HardDiskDriveDto
         return toDto(computer);
@@ -52,7 +54,8 @@ public class HddService implements IService<HardDiskDriveDto> {
     @Override
     public HardDiskDriveDto delete(Integer id) {
         // получаем HardDiskDrive из БД
-        HardDiskDrive computer = repo.getReferenceById(id);
+        HardDiskDrive computer = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // Удаляем объект
         HardDiskDrive deletedHardDiskDrive = repo.save(computer);
@@ -64,7 +67,8 @@ public class HddService implements IService<HardDiskDriveDto> {
     @Override
     public HardDiskDriveDto update(Integer id, HardDiskDriveDto new_dto) {
         // получаем HardDiskDrive из БД
-        HardDiskDrive hardDiskDrive = repo.getReferenceById(id);
+        HardDiskDrive hardDiskDrive = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // изменяем значения полей HardDiskDrive на новые
         var tmp = mapper.toEntity(new_dto);
@@ -82,7 +86,7 @@ public class HddService implements IService<HardDiskDriveDto> {
 
     @Override
     public int getItemsCount() {
-        return Math.toIntExact(repo.findAll().size());
+        return Math.toIntExact(repo.count());
     }
 
     private HardDiskDrive toEntity(HardDiskDriveDto dto) {

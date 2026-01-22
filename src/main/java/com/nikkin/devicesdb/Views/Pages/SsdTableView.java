@@ -7,6 +7,7 @@ import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.SsdService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
+import com.nikkin.devicesdb.Views.BytesConverter;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
@@ -46,42 +47,35 @@ public class SsdTableView extends BaseTableView<SolidStateDriveDto> {
         grid.setColumnRendering(ColumnRendering.LAZY);
         grid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        grid.addColumn(SolidStateDriveDto::manufacturer)
+        grid.addColumn(dto -> dto.manufacturer().isEmpty() ? "—" : dto.manufacturer())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(SolidStateDriveDto::capacity)
+        grid.addColumn(dto -> (int)Math.ceil(BytesConverter.convert(dto.capacity(), Bytes.MiB, Bytes.GiB)))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(SolidStateDriveDto::driveInterface)
+        grid.addColumn(dto -> dto.driveInterface() == null ? "—" : dto.driveInterface())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(SolidStateDriveDto::nandType)
+        grid.addColumn(dto -> dto.nandType() == null ? "—" : dto.nandType())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(SolidStateDriveDto::writeSpeed)
+        grid.addColumn(dto -> dto.readSpeed() != null ? dto.readSpeed() : "—")
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(SolidStateDriveDto::readSpeed)
+        grid.addColumn(dto -> dto.writeSpeed() != null ? dto.writeSpeed() : "—")
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(SolidStateDriveDto::powerConsumption)
+        grid.addColumn(dto -> dto.powerConsumption() != null ? dto.powerConsumption() : "—")
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(
-                        dto -> {
-                            if (dto.computerId() == null) {
-                                return "Не назначен";
-                            }
-
-                            return computerService.getById(dto.computerId());
-                        })
+        grid.addColumn(dto -> dto.computerId() != null ? computerService.getById(dto.computerId()).name() : "Не назначен")
                 .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -111,13 +105,13 @@ public class SsdTableView extends BaseTableView<SolidStateDriveDto> {
         SolidStateDriveFilter filter = new SolidStateDriveFilter(grid.getListDataView());
 
         headerCells.get(0).setComponent(createFilterHeader("Наименование", filter::setName));
-        headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
+        headerCells.get(1).setComponent(createFilterHeader("Объём (ГБ)", filter::setCapacity));
         headerCells.get(2).setComponent(createFilterHeader("Интерфейс", filter::setDriveInterface));
         headerCells.get(3).setComponent(createFilterHeader("Тип NAND", filter::setNandType));
-        headerCells.get(4).setComponent(createFilterHeader("Скорость записи (МБ/с)", filter::setWriteSpeed));
-        headerCells.get(5).setComponent(createFilterHeader("Скорость чтения (МБ/с)", filter::setReadSpeed));
+        headerCells.get(4).setComponent(createFilterHeader("Скорость записи (ГБ/с)", filter::setWriteSpeed));
+        headerCells.get(5).setComponent(createFilterHeader("Скорость чтения (ГБ/с)", filter::setReadSpeed));
         headerCells.get(6).setComponent(createFilterHeader("Энергопотребление (Вт)", filter::setPowerConsumption));
-        headerCells.getLast().setComponent(createFilterHeader("Компьютер", null));
+        headerCells.getLast().setComponent(createFilterHeader("Компьютер", filter::setComputerName));
     }
 
     private static class SolidStateDriveFilter {
@@ -130,6 +124,7 @@ public class SsdTableView extends BaseTableView<SolidStateDriveDto> {
         private String writeSpeed;
         private String readSpeed;
         private String powerConsumption;
+        private String computerName;
 
         public SolidStateDriveFilter(GridListDataView<SolidStateDriveDto> dataView) {
             this.dataView = dataView;
@@ -171,8 +166,19 @@ public class SsdTableView extends BaseTableView<SolidStateDriveDto> {
             this.dataView.refreshAll();
         }
 
+        public void setComputerName(String computerName) {
+            this.computerName = computerName;
+            this.dataView.refreshAll();
+        }
+
         private boolean test(SolidStateDriveDto dto) {
+            String compName = "Не назначен";
+            if (dto.computerId() != null) {
+                compName = computerService.getById(dto.computerId()).name();
+            }
+
             return matches(dto.manufacturer(), name)
+                    && matches(compName, computerName)
                     && matchesNumeric(dto.capacity(), capacity)
                     && matches(dto.driveInterface(), driveInterface)
                     && matches(dto.nandType(), nandType)
@@ -252,7 +258,7 @@ public class SsdTableView extends BaseTableView<SolidStateDriveDto> {
             capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
-            capacityUnitBox.setValue(Bytes.GB);
+            capacityUnitBox.setValue(Bytes.GiB);
 
             ssdInterfaceComboBox = new ComboBox<>("Интерфейс:");
             ssdInterfaceComboBox.setItems("SATA", "PCI Express", "SAS", "M.2",

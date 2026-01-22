@@ -2,11 +2,13 @@ package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Bytes;
 import com.nikkin.devicesdb.Dto.ComputerDto;
+import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Dto.HardDiskDriveDto;
 import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.HddService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
+import com.nikkin.devicesdb.Views.BytesConverter;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
@@ -47,34 +49,27 @@ public final class HddTableView extends BaseTableView<HardDiskDriveDto> {
         grid.setColumnRendering(ColumnRendering.LAZY);
         grid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        grid.addColumn(HardDiskDriveDto::manufacturer)
+        grid.addColumn(dto -> dto.manufacturer().isEmpty() ? "—" : dto.manufacturer())
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(HardDiskDriveDto::capacity)
+        grid.addColumn(dto -> (int)Math.ceil(BytesConverter.convert(dto.capacity(), Bytes.MiB, Bytes.GiB)))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(HardDiskDriveDto::driveInterface)
+        grid.addColumn(dto -> dto.driveInterface() == null ? "—" : dto.driveInterface())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(HardDiskDriveDto::format)
+        grid.addColumn(dto -> dto.format() == null ? "—" : dto.format())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(HardDiskDriveDto::powerConsumption)
+        grid.addColumn(dto -> dto.powerConsumption() != null ? dto.powerConsumption() : "—")
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(
-                        dto -> {
-                            if (dto.computerId() == null) {
-                                return "Не назначен";
-                            }
-
-                            return computerService.getById(dto.computerId());
-                        })
+        grid.addColumn(dto -> dto.computerId() != null ? computerService.getById(dto.computerId()).name() : "Не назначен")
                 .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -104,11 +99,11 @@ public final class HddTableView extends BaseTableView<HardDiskDriveDto> {
         HardDiskDriveFilter filter = new HardDiskDriveFilter(grid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Производитель", filter::setManufacturer));
-        headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
+        headerCells.get(1).setComponent(createFilterHeader("Объём (ГБ)", filter::setCapacity));
         headerCells.get(2).setComponent(createFilterHeader("Интерфейс", filter::setDriveInterface));
         headerCells.get(3).setComponent(createFilterHeader("Формат", filter::setFormat));
         headerCells.get(4).setComponent(createFilterHeader("Энергопотребление (Ватт)", filter::setPowerConsumption));
-        headerCells.getLast().setComponent(createFilterHeader("Компьютер", null));
+        headerCells.getLast().setComponent(createFilterHeader("Компьютер", filter::setComputerName));
     }
 
     private static class HardDiskDriveFilter {
@@ -119,6 +114,7 @@ public final class HddTableView extends BaseTableView<HardDiskDriveDto> {
         private String format;
         private String driveInterface;
         private String powerConsumption;
+        private String computerName;
 
         public HardDiskDriveFilter(GridListDataView<HardDiskDriveDto> dataView) {
             this.dataView = dataView;
@@ -150,8 +146,19 @@ public final class HddTableView extends BaseTableView<HardDiskDriveDto> {
             this.dataView.refreshAll();
         }
 
+        public void setComputerName(String computerName) {
+            this.computerName = computerName;
+            this.dataView.refreshAll();
+        }
+
         private boolean test(HardDiskDriveDto dto) {
+            String compName = "Не назначен";
+            if (dto.computerId() != null) {
+                compName = computerService.getById(dto.computerId()).name();
+            }
+
             return matches(dto.manufacturer(), manufacturer)
+                    && matches(compName, computerName)
                     && matchesNumeric(dto.capacity(), capacity)
                     && matches(dto.format(), format)
                     && matchesNumeric(dto.powerConsumption(), powerConsumption)
@@ -227,7 +234,7 @@ public final class HddTableView extends BaseTableView<HardDiskDriveDto> {
             capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
-            capacityUnitBox.setValue(Bytes.MB);
+            capacityUnitBox.setValue(Bytes.GiB);
 
             hddInterfaceComboBox = new ComboBox<>("Интерфейс:");
             hddInterfaceComboBox.setItems("SATA","SCSI", "SAS", "IDE", "ESDI");

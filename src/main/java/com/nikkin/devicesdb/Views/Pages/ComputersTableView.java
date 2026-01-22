@@ -124,7 +124,6 @@ final public class ComputersTableView extends BaseTableView<ComputerDto> {
         private TextArea nameField;
         private Binder<ComputerDto> binder;
         private Integer currentId = null;
-        private VerticalLayout devicesSection;
 
         public ComputerForm() {
             super();

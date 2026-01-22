@@ -110,8 +110,11 @@ public abstract class BaseTableView<D extends Identifiable> extends BaseAppView 
         textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
         textField.setWidthFull();
         textField.getStyle().set("max-width", "100%");
-        textField.addValueChangeListener(
-                e -> filterChangeConsumer.accept(e.getValue()));
+        textField.addValueChangeListener(e -> {
+            if (filterChangeConsumer != null) {
+                filterChangeConsumer.accept(e.getValue());
+            }
+        });
         VerticalLayout layout = new VerticalLayout(label, textField);
         layout.getThemeList().clear();
         layout.getThemeList().add("spacing-xs");

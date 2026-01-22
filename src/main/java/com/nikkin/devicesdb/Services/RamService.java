@@ -4,6 +4,7 @@ import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
 import com.nikkin.devicesdb.Entities.RandomAccessMemory;
 import com.nikkin.devicesdb.Mappers.RamMapper;
 import com.nikkin.devicesdb.Repos.RamRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,8 @@ public class RamService implements IService<RandomAccessMemoryDto> {
     @Override
     public RandomAccessMemoryDto getById(Integer id) {
         // получаем RandomAccessMemory из БД
-        RandomAccessMemory computer = repo.getReferenceById(id);
+        RandomAccessMemory computer = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // получаем RandomAccessMemoryDto
         return toDto(computer);
@@ -52,19 +54,21 @@ public class RamService implements IService<RandomAccessMemoryDto> {
     @Override
     public RandomAccessMemoryDto delete(Integer id) {
         // получаем RandomAccessMemory из БД
-        RandomAccessMemory computer = repo.getReferenceById(id);
+        RandomAccessMemory ram = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // Удаляем объект
-        RandomAccessMemory deletedRandomAccessMemory = repo.save(computer);
+        repo.delete(ram);
 
         // получаем RandomAccessMemoryDto
-        return toDto(deletedRandomAccessMemory);
+        return toDto(ram);
     }
 
     @Override
     public RandomAccessMemoryDto update(Integer id, RandomAccessMemoryDto new_dto) {
         // получаем RandomAccessMemory из БД
-        RandomAccessMemory ram = repo.getReferenceById(id);
+        RandomAccessMemory ram = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // изменяем значения полей RandomAccessMemory на новые
         var tmp = mapper.toEntity(new_dto);
@@ -83,7 +87,7 @@ public class RamService implements IService<RandomAccessMemoryDto> {
 
     @Override
     public int getItemsCount() {
-        return Math.toIntExact(repo.findAll().size());
+        return Math.toIntExact(repo.count());
     }
 
     private RandomAccessMemory toEntity(RandomAccessMemoryDto dto) {

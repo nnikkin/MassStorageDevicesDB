@@ -2,11 +2,13 @@ package com.nikkin.devicesdb.Views.Pages;
 
 import com.nikkin.devicesdb.Bytes;
 import com.nikkin.devicesdb.Dto.ComputerDto;
+import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Dto.RandomAccessMemoryDto;
 import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.RamService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
+import com.nikkin.devicesdb.Views.BytesConverter;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
@@ -46,38 +48,31 @@ public class RamTableView extends BaseTableView<RandomAccessMemoryDto> {
         grid.setColumnRendering(ColumnRendering.LAZY);
         grid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        grid.addColumn(RandomAccessMemoryDto::manufacturer)
+        grid.addColumn(dto -> dto.manufacturer().isEmpty() ?  "—" : dto.manufacturer())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(RandomAccessMemoryDto::model)
+        grid.addColumn(dto -> dto.model().isEmpty() ? "—" : dto.model())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(dto -> String.format("%.2f", dto.capacity()))
+        grid.addColumn(dto -> (int)Math.ceil(BytesConverter.convert(dto.capacity(), Bytes.MiB, Bytes.GiB)))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(RandomAccessMemoryDto::memoryType)
+        grid.addColumn(dto -> dto.memoryType().isEmpty() ? "—" : dto.memoryType())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(RandomAccessMemoryDto::moduleType)
+        grid.addColumn(dto -> dto.moduleType().isEmpty() ? "—" : dto.moduleType())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(dto -> String.format("%.2f", dto.frequencyMhz()))
+        grid.addColumn(dto -> dto.frequencyMhz() != null ? String.format("%.2f", dto.frequencyMhz()) : "—")
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(
-                dto -> {
-                    if (dto.computerId() == null) {
-                        return "Не назначен";
-                    }
-
-                    return computerService.getById(dto.computerId());
-                })
+        grid.addColumn(dto -> dto.computerId() != null ? computerService.getById(dto.computerId()).name() : "Не назначен")
                 .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -109,11 +104,11 @@ public class RamTableView extends BaseTableView<RandomAccessMemoryDto> {
 
         headerCells.getFirst().setComponent(createFilterHeader("Производитель", filter::setManufacturer));
         headerCells.get(1).setComponent(createFilterHeader("Модель", filter::setModel));
-        headerCells.get(2).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
+        headerCells.get(2).setComponent(createFilterHeader("Объём (ГБ)", filter::setCapacity));
         headerCells.get(3).setComponent(createFilterHeader("Вид памяти", filter::setMemoryType));
         headerCells.get(4).setComponent(createFilterHeader("Вид модуля", filter::setModuleType));
         headerCells.get(5).setComponent(createFilterHeader("Тактовая частота (МГц)", filter::setFrequencyMhz));
-        headerCells.getLast().setComponent(createFilterHeader("Компьютер", null));
+        headerCells.getLast().setComponent(createFilterHeader("Компьютер", filter::setComputerName));
     }
 
     private static class RandomAccessMemoryFilter {
@@ -125,6 +120,7 @@ public class RamTableView extends BaseTableView<RandomAccessMemoryDto> {
         private String memoryType;
         private String moduleType;
         private String frequencyMhz;
+        private String computerName;
 
         public RandomAccessMemoryFilter(GridListDataView<RandomAccessMemoryDto> dataView) {
             this.dataView = dataView;
@@ -161,8 +157,19 @@ public class RamTableView extends BaseTableView<RandomAccessMemoryDto> {
             this.dataView.refreshAll();
         }
 
+        public void setComputerName(String computerName) {
+            this.computerName = computerName;
+            this.dataView.refreshAll();
+        }
+
         private boolean test(RandomAccessMemoryDto dto) {
+            String compName = "Не назначен";
+            if (dto.computerId() != null) {
+                compName = computerService.getById(dto.computerId()).name();
+            }
+
             return matchesNumeric(dto.capacity(), capacity)
+                    && matches(compName, computerName)
                     && matches(dto.memoryType(), memoryType)
                     && matches(dto.moduleType(), moduleType)
                     && matches(dto.model(), model)
@@ -248,7 +255,7 @@ public class RamTableView extends BaseTableView<RandomAccessMemoryDto> {
             capacityUnitBox = new ComboBox<>();
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
-            capacityUnitBox.setValue(Bytes.MB);
+            capacityUnitBox.setValue(Bytes.GiB);
 
             ramMemoryTypeBox = new ComboBox<>("Вид памяти:");
             ramMemoryTypeBox.setItems("DDR", "DDR2", "DDR3", "DDR3L", "DDR4", "DDR5");

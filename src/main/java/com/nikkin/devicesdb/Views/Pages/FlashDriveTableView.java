@@ -3,10 +3,12 @@ package com.nikkin.devicesdb.Views.Pages;
 import com.nikkin.devicesdb.Bytes;
 import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Dto.FlashDriveDto;
+import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
 import com.nikkin.devicesdb.Services.ComputerService;
 import com.nikkin.devicesdb.Services.FlashDriveService;
 import com.nikkin.devicesdb.Views.BaseForm;
 import com.nikkin.devicesdb.Views.BaseTableView;
+import com.nikkin.devicesdb.Views.BytesConverter;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnRendering;
 import com.vaadin.flow.component.grid.Grid;
@@ -38,40 +40,35 @@ final public class FlashDriveTableView extends BaseTableView<FlashDriveDto> {
 
     @Override
     protected void initTable() {
+        grid = new Grid<>(FlashDriveDto.class, false);
+
         grid.setItems(new ArrayList<>());
         grid.setMultiSort(true, Grid.MultiSortPriority.APPEND);
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
         grid.setColumnRendering(ColumnRendering.LAZY);
         grid.setEmptyStateText("В таблице отсутствуют записи.");
 
-        grid.addColumn(FlashDriveDto::name)
+        grid.addColumn(dto -> dto.name().isEmpty() ? "—" : dto.name())
                 .setHeader("")  // иначе при добавлении поиска по столбцу в setupFilters будет NoSuchElementException
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(FlashDriveDto::capacity)
+        grid.addColumn(dto -> (int)Math.ceil(BytesConverter.convert(dto.capacity(), Bytes.MiB, Bytes.GiB)))
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(FlashDriveDto::usbInterface)
+        grid.addColumn(dto -> dto.usbInterface() == null ? "—" : dto.usbInterface())
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(FlashDriveDto::readSpeed)
+        grid.addColumn(dto -> dto.readSpeed() != null ? dto.readSpeed() : "—")
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(FlashDriveDto::writeSpeed)
+        grid.addColumn(dto -> dto.writeSpeed() != null ? dto.writeSpeed() : "—")
                 .setHeader("")
                 .setAutoWidth(true)
                 .setSortable(true);
-        grid.addColumn(
-                        dto -> {
-                            if (dto.computerId() == null) {
-                                return "Не назначен";
-                            }
-
-                            return computerService.getById(dto.computerId());
-                        })
+        grid.addColumn(dto -> dto.computerId() != null ? computerService.getById(dto.computerId()).name() : "Не назначен")
                 .setHeader("Компьютер")
                 .setAutoWidth(true)
                 .setSortable(true);
@@ -101,11 +98,11 @@ final public class FlashDriveTableView extends BaseTableView<FlashDriveDto> {
         FlashDriveFilter filter = new FlashDriveFilter(grid.getListDataView());
 
         headerCells.getFirst().setComponent(createFilterHeader("Наименование", filter::setName));
-        headerCells.get(1).setComponent(createFilterHeader("Объём (МБ)", filter::setCapacity));
+        headerCells.get(1).setComponent(createFilterHeader("Объём (ГБ)", filter::setCapacity));
         headerCells.get(2).setComponent(createFilterHeader("Интерфейс USB", filter::setUsbInterface));
-        headerCells.get(3).setComponent(createFilterHeader("Скорость чтения (МБ/сек)", filter::setReadSpeed));
-        headerCells.get(4).setComponent(createFilterHeader("Скорость записи (МБ/сек)", filter::setWriteSpeed));
-        headerCells.getLast().setComponent(createFilterHeader("Компьютер", null));
+        headerCells.get(3).setComponent(createFilterHeader("Скорость чтения (ГБ/сек)", filter::setReadSpeed));
+        headerCells.get(4).setComponent(createFilterHeader("Скорость записи (ГБ/сек)", filter::setWriteSpeed));
+        headerCells.getLast().setComponent(createFilterHeader("Компьютер", filter::setComputerName));
     }
 
     private static class FlashDriveFilter {
@@ -116,6 +113,7 @@ final public class FlashDriveTableView extends BaseTableView<FlashDriveDto> {
         private String capacity;
         private String writeSpeed;
         private String readSpeed;
+        private String computerName;
 
         public FlashDriveFilter(GridListDataView<FlashDriveDto> dataView) {
             this.dataView = dataView;
@@ -147,12 +145,23 @@ final public class FlashDriveTableView extends BaseTableView<FlashDriveDto> {
             this.dataView.refreshAll();
         }
 
+        public void setComputerName(String computerName) {
+            this.computerName = computerName;
+            this.dataView.refreshAll();
+        }
+
         private boolean test(FlashDriveDto dto) {
+            String compName = "Не назначен";
+            if (dto.computerId() != null) {
+                compName = computerService.getById(dto.computerId()).name();
+            }
+
             return matches(dto.name(), name)
-                    && matches(dto.usbInterface(), usbInterface)
-                    && matchesNumeric(dto.capacity(), capacity)
-                    && matchesNumeric(dto.writeSpeed(), writeSpeed)
-                    && matchesNumeric(dto.readSpeed(), readSpeed);
+                && matches(dto.usbInterface(), usbInterface)
+                && matches(compName, computerName)
+                && matchesNumeric(dto.capacity(), capacity)
+                && matchesNumeric(dto.writeSpeed(), writeSpeed)
+                && matchesNumeric(dto.readSpeed(), readSpeed);
         }
 
         private boolean matches(String value, String searchTerm) {
@@ -229,15 +238,15 @@ final public class FlashDriveTableView extends BaseTableView<FlashDriveDto> {
 
             capacityUnitBox.setItems(Bytes.values());
             capacityUnitBox.setItemLabelGenerator(Bytes::getLabel);
-            capacityUnitBox.setValue(Bytes.MB);
+            capacityUnitBox.setValue(Bytes.GiB);
 
             usbInterfaceBox.setItems("Type-A", "Type-C", "Micro-USB");
             usbInterfaceBox.setClearButtonVisible(true);
 
-            readSpeedField.setSuffixComponent(new Div("МБ/с"));
+            readSpeedField.setSuffixComponent(new Div("ГБ/с"));
             readSpeedField.setClearButtonVisible(true);
 
-            writeSpeedField.setSuffixComponent(new Div("МБ/с"));
+            writeSpeedField.setSuffixComponent(new Div("ГБ/с"));
             writeSpeedField.setClearButtonVisible(true);
 
             computersField = new ComboBox<>("Компьютер:");

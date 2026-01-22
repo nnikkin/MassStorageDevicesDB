@@ -4,6 +4,7 @@ import com.nikkin.devicesdb.Dto.FlashDriveDto;
 import com.nikkin.devicesdb.Entities.FlashDrive;
 import com.nikkin.devicesdb.Mappers.FlashMapper;
 import com.nikkin.devicesdb.Repos.FlashDriveRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,8 @@ public class FlashDriveService implements IService<FlashDriveDto> {
     @Override
     public FlashDriveDto getById(Integer id) {
         // получаем FlashDrive из БД
-        FlashDrive computer = repo.getReferenceById(id);
+        FlashDrive computer = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // получаем FlashDriveDto
         return toDto(computer);
@@ -52,19 +54,21 @@ public class FlashDriveService implements IService<FlashDriveDto> {
     @Override
     public FlashDriveDto delete(Integer id) {
         // получаем FlashDrive из БД
-        FlashDrive computer = repo.getReferenceById(id);
+        FlashDrive flashDrive = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // Удаляем объект
-        FlashDrive deletedFlashDrive = repo.save(computer);
+        repo.delete(flashDrive);
 
         // получаем FlashDriveDto
-        return toDto(deletedFlashDrive);
+        return toDto(flashDrive);
     }
 
     @Override
     public FlashDriveDto update(Integer id, FlashDriveDto new_dto) {
         // получаем FlashDrive из БД
-        FlashDrive flashDrive = repo.getReferenceById(id);
+        FlashDrive flashDrive = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // изменяем значения полей FlashDrive на новые
         var tmp = mapper.toEntity(new_dto);
@@ -82,7 +86,7 @@ public class FlashDriveService implements IService<FlashDriveDto> {
 
     @Override
     public int getItemsCount() {
-        return Math.toIntExact(repo.findAll().size());
+        return Math.toIntExact(repo.count());
     }
 
     private FlashDrive toEntity(FlashDriveDto dto) {

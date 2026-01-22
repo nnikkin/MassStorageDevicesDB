@@ -26,17 +26,17 @@ public abstract class BaseForm<D> extends FormLayout {
     }
 
     protected float toMegabytes(float value, Bytes unit) {
-        if (unit == Bytes.MB)
+        if (unit == Bytes.MiB)
             return value;
         else {
-            if (unit.getRank() > Bytes.MB.getRank())
-                return (float) (value * Math.pow(1024, unit.getRank() - Bytes.MB.getRank()));
+            if (unit.getRank() > Bytes.MiB.getRank())
+                return (float) (value * Math.pow(1024, unit.getRank() - Bytes.MiB.getRank()));
 
             else {
                 if (unit == Bytes.BIT)
-                    return (float) ((value / 8) / Math.pow(1024, Bytes.MB.getRank() - 1));
+                    return (float) ((value / 8) / Math.pow(1024, Bytes.MiB.getRank() - 1));
 
-                return (float) (value / Math.pow(1024, Bytes.MB.getRank() - unit.getRank()));
+                return (float) (value / Math.pow(1024, Bytes.MiB.getRank() - unit.getRank()));
             }
         }
     }

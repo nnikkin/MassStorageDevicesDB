@@ -4,6 +4,7 @@ import com.nikkin.devicesdb.Dto.ComputerDto;
 import com.nikkin.devicesdb.Entities.Computer;
 import com.nikkin.devicesdb.Mappers.ComputerMapper;
 import com.nikkin.devicesdb.Repos.ComputerRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,8 @@ public class ComputerService implements IService<ComputerDto> {
     @Override
     public ComputerDto getById(Integer id) {
         // получаем Computer из БД
-        Computer computer = repo.getReferenceById(id);
+        Computer computer = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // получаем ComputerDto
         return toDto(computer);
@@ -52,19 +54,21 @@ public class ComputerService implements IService<ComputerDto> {
     @Override
     public ComputerDto delete(Integer id) {
         // получаем Computer из БД
-        Computer computer = repo.getReferenceById(id);
+        Computer computer = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // Удаляем объект
-        Computer deletedComputer = repo.save(computer);
+        repo.delete(computer);
 
         // получаем ComputerDto
-        return toDto(deletedComputer);
+        return toDto(computer);
     }
 
     @Override
     public ComputerDto update(Integer id, ComputerDto new_dto) {
         // получаем Computer из БД
-        Computer computer = repo.getReferenceById(id);
+        Computer computer = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // изменяем значения полей Computer на новые
         var tmp = mapper.toEntity(new_dto);
@@ -81,7 +85,7 @@ public class ComputerService implements IService<ComputerDto> {
 
     @Override
     public int getItemsCount() {
-        return Math.toIntExact(repo.findAll().size());
+        return Math.toIntExact(repo.count());
     }
 
     private Computer toEntity(ComputerDto dto) {

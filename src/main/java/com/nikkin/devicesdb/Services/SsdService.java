@@ -4,6 +4,7 @@ import com.nikkin.devicesdb.Dto.SolidStateDriveDto;
 import com.nikkin.devicesdb.Entities.SolidStateDrive;
 import com.nikkin.devicesdb.Mappers.SsdMapper;
 import com.nikkin.devicesdb.Repos.SsdRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,8 @@ public class SsdService implements IService<SolidStateDriveDto> {
     @Override
     public SolidStateDriveDto getById(Integer id) {
         // получаем SolidStateDrive из БД
-        SolidStateDrive computer = repo.getReferenceById(id);
+        SolidStateDrive computer = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // получаем SolidStateDriveDto
         return toDto(computer);
@@ -52,19 +54,20 @@ public class SsdService implements IService<SolidStateDriveDto> {
     @Override
     public SolidStateDriveDto delete(Integer id) {
         // получаем SolidStateDrive из БД
-        SolidStateDrive computer = repo.getReferenceById(id);
+        SolidStateDrive ssd = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
-        // Удаляем объект
-        SolidStateDrive deletedSolidStateDrive = repo.save(computer);
+        repo.delete(ssd);
 
         // получаем SolidStateDriveDto
-        return toDto(deletedSolidStateDrive);
+        return toDto(ssd);
     }
 
     @Override
     public SolidStateDriveDto update(Integer id, SolidStateDriveDto new_dto) {
         // получаем SolidStateDrive из БД
-        SolidStateDrive solidStateDrive = repo.getReferenceById(id);
+        SolidStateDrive solidStateDrive = repo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Запись не найдена"));
 
         // изменяем значения полей SolidStateDrive на новые
         var tmp = mapper.toEntity(new_dto);
@@ -84,7 +87,7 @@ public class SsdService implements IService<SolidStateDriveDto> {
 
     @Override
     public int getItemsCount() {
-        return Math.toIntExact(repo.findAll().size());
+        return Math.toIntExact(repo.count());
     }
 
     private SolidStateDrive toEntity(SolidStateDriveDto dto) {
